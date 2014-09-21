@@ -67,6 +67,32 @@
        (into-array org.jooq.Field)
        (DSL/select)))
 
+(defn select-distinct
+  "Start select statement."
+  [& fields]
+  (->> (map field fields)
+       (into-array org.jooq.Field)
+       (DSL/selectDistinct)))
+
+(defn select-from
+  "Helper for create select * from <table>
+  statement directly (without specify fields)"
+  [table']
+  (-> (table table')
+      (DSL/selectFrom)))
+
+(defn select-count
+  []
+  (DSL/selectCount))
+
+(defn select-one
+  []
+  (DSL/selectOne))
+
+(defn select-zero
+  []
+  (DSL/selectZero))
+
 (defn from
   "Creates from clause."
   [q & tables]
