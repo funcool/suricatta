@@ -4,6 +4,8 @@
             [cljooq.proto :as proto]))
 
 (defn context
+  "Creates new context. It usually created from
+  dbspec or open jdbc connection."
   [source]
   (proto/make-context source))
 
@@ -44,14 +46,17 @@
     (proto/result-query query' (proto/get-context ctx) opts)))
 
 (defn get-sql
+  "Get SQL string from previously builded query."
   ([query] (get-sql query :indexed))
   ([query type]
      (proto/get-sql query type)))
 
 (defn get-bind-values
+  "Get bind values from previously builded query."
   [query]
   (proto/get-bind-values query))
 
 (defn sqlvec
+  "Get sql with bind values in a `sqlvec` format."
   [query]
   (proto/sqlvec query))
