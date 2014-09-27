@@ -103,9 +103,15 @@
 (defn select
   "Start select statement."
   [& fields]
-  (->> (map field fields)
-       (into-array org.jooq.Field)
-       (DSL/select)))
+  (cond
+   (instance? org.jooq.WithStep (first fields))
+   (.select (first fields)
+            (->> (map field (rest fields))
+                 (into-array org.jooq.Field)))
+   :else
+   (->> (map field fields)
+        (into-array org.jooq.Field)
+        (DSL/select))))
 
 (defn select-distinct
   "Start select statement."
