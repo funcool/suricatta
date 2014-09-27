@@ -215,3 +215,15 @@
   [c]
   (DSL/not c))
 
+(defn with
+  "Create a WITH clause"
+  [& tables]
+  (->> (into-array org.jooq.CommonTableExpression tables)
+       (DSL/with)))
+
+(defn with-fields
+  "Add a list of fields to this name to make this name a DerivedColumnList."
+  [n & fields]
+  (let [fields' (->> (map clojure.core/name fields)
+                     (into-array String))]
+    (.fields n fields')))
