@@ -1,6 +1,14 @@
 (ns cljooq.dsl
   "Sql building dsl"
-  (:import org.jooq.impl.DSL))
+  (:refer-clojure :exclude [val group-by and or not name])
+  (:require [cljooq.core :as core]
+            [cljooq.proto :as proto])
+  (:import org.jooq.impl.DSL
+           org.jooq.impl.DefaultConfiguration))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SQL Renderer Code
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocols for constructors
@@ -11,6 +19,9 @@
 
 (defprotocol ITable
   (table [_] "Table constructor"))
+
+(defprotocol IName
+  (name [_] "Name constructor"))
 
 (defprotocol ICondition
   (condition [_] "Condition constructor"))
@@ -24,20 +35,38 @@
 
 (extend-protocol IField
   java.lang.String
-  (field [s] (DSL/field s))
+  (field* [s] (DSL/field s))
 
   clojure.lang.Keyword
-  (field [kw] (field (name kw))))
+  (field* [kw] (field* (clojure.core/name kw)))
+
+  org.jooq.Field
+  (field* [f] f)
+
+  ;; org.jooq.impl.SelectQueryAsExistsCondition
+  ;; (field* [f] f)
+
+  org.jooq.impl.Val
+  (field* [v] v))
 
 (extend-protocol ITable
   java.lang.String
   (table [s] (DSL/table s))
 
   clojure.lang.Keyword
-  (table [kw] (table (name kw)))
+  (table [kw] (table (clojure.core/name kw)))
 
   org.jooq.Table
   (table [t] t))
+
+(extend-protocol IName
+  java.lang.String
+  (name [s]
+    (-> (into-array String [s])
+        (DSL/name)))
+
+  clojure.lang.Keyword
+  (name [kw] (name (clojure.core/name kw))))
 
 (extend-protocol ICondition
   java.lang.String
