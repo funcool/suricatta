@@ -15,7 +15,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol IField
-  (field [_] "Field constructor"))
+  (field* [_] "Field constructor"))
 
 (defprotocol ITable
   (table [_] "Table constructor"))
@@ -88,6 +88,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DSL functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn field
+  [data & {:keys [alias] :as opts}]
+  (let [f (field* data)]
+    (if alias
+      (.as f (clojure.core/name alias))
+      f)))
 
 (defn select
   "Start select statement."
