@@ -18,7 +18,6 @@
 (defprotocol IResultQuery
   (result-query [obj ctx opts] "ResultQuery constructor."))
 
-(defprotocol ISqlVector
-  (get-sql [_ type] "Get sql.")
-  (get-bind-values [_] "Get bind values.")
-  (sqlvec [_] "Get sql in sqlvector format."))
+(defprotocol IRenderer
+  (get-sql [_ type dialect] "Render a query sql into a string.")
+  (get-bind-values [_] "Get query bind values."))

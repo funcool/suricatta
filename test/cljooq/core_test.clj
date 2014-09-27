@@ -1,6 +1,7 @@
 (ns cljooq.core-test
   (:require [clojure.test :refer :all]
             [cljooq.core :refer :all]
+            [cljooq.format :refer [get-sql get-bind-values sqlvec] :as fmt]
             [jdbc.core :as jdbc]))
 
 (def dbspec {:subprotocol "h2"

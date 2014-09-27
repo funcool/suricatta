@@ -39,24 +39,8 @@
 
 (defn result-query
   "ResultQuery constructor"
-  ([ctx query']
-    (proto/result-query query' (proto/get-context ctx) {}))
+  ([ctx q]
+    (proto/result-query q ctx {}))
 
-  ([ctx query' opts]
-    (proto/result-query query' (proto/get-context ctx) opts)))
-
-(defn get-sql
-  "Get SQL string from previously builded query."
-  ([query] (get-sql query :indexed))
-  ([query type]
-     (proto/get-sql query type)))
-
-(defn get-bind-values
-  "Get bind values from previously builded query."
-  [query]
-  (proto/get-bind-values query))
-
-(defn sqlvec
-  "Get sql with bind values in a `sqlvec` format."
-  [query]
-  (proto/sqlvec query))
+  ([ctx q opts]
+    (proto/result-query q ctx opts)))
