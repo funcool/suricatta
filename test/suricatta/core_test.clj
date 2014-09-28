@@ -35,10 +35,9 @@
 
       (testing "Simple sqlvec constructor and getter"
         (let [q (query ctx ["select ?" 1])]
-          (is (= (fmt/sqlvec q) ["select ?" 1]))))
-)))
+          (is (= (fmt/sqlvec q) ["select ?" 1])))))))
 
-(deftest basic-query-executor
+(deftest query-execute
   (with-open [conn (jdbc/make-connection dbspec)]
     (jdbc/execute! conn "CREATE TABLE foo (n int)")
     (let [ctx (context conn)]
@@ -58,28 +57,26 @@
 
       (testing "Execute sqlvec directly"
         (let [r (execute ctx ["insert into foo (n) values (?), (?)" 1 2])]
-          (is (= r 2))))
-)))
+          (is (= r 2)))))))
 
-(deftest basic-query-result-fetch
-  (with-open [conn (jdbc/make-connection dbspec)]
-    ;; (jdbc/execute! conn "CREATE TABLE foo (n int)")
-    ;; (let [sql "INSERT INTO foo (n) VALUES (?)"]
-    ;;   (execute-prepared! conn sql [1] [2] [3]))
-    (let [ctx (context conn)]
-      (testing "Simple fetch"
-        (let [sql "select * from system_range(1, 3)"
-              q   (result-query ctx sql)
-              r   (fetch q)]
-          (is (= r [{:x 1} {:x 2} {:x 3}]))))
-)))
-
-
-(deftest transactions-support
+(deftest query-fetch
   (with-open [ctx (context dbspec)]
-    (testing "Execute in a transaction"
-      (execute ctx "create table foo (id int)")
+    (testing "Fetch by default vector of records."
+      (let [sql "select x from system_range(1, 3)"
+            q   (result-query ctx sql)
+            r   (fetch q)]
+        (is (= r [{:x 1} {:x 2} {:x 3}]))))
 
+    (testing "Fetch vector of rows"
+      (let [sql    "select x, x+1 as i from system_range(1, 3)"
+            result (fetch ctx sql {:rows true})]
+        (is (= result [[1 2] [2 3] [3 4]]))))))
+
+
+(deftest transactions
+  (testing "Execute in a transaction"
+    (with-open [ctx (context dbspec)]
+      (execute ctx "create table foo (id int)")
       (with-transaction ctx
         (execute ctx ["insert into foo (id) values (?), (?)" 1 2])
         (try

@@ -133,28 +133,33 @@
   [m]
   (into {} (map (fn [[k v]] [(keyword (.toLowerCase k)) v]) m)))
 
-(defn- default-record->map
+(defn- result-record->record
   [^org.jooq.Record record]
   (keywordize-keys (.intoMap record)))
 
-;; (defn- fetch-result-query-impl
-;;   [^org.jooq.Query query ^org.jooq.DSLContext ctx
-;;    {:keys [mapfn] :or {mapfn default-record->map}}]
-;;   (let [result (.fetch ctx query)]
-;;     (mapv mapfn result)))
+(defn- result-record->row
+  [^org.jooq.Record record]
+  (into [] (.intoArray record)))
+
+(defn- result->vector
+  [^org.jooq.Result result {:keys [rows mapfn] :or {rows false}}]
+  (cond
+   mapfn (mapv mapfn result)
+   rows  (mapv result-record->row result)
+   :else (mapv result-record->record result)))
 
 (extend-protocol proto/IFetch
   String
   (fetch [^String sql ^Context ctx opts]
     (let [^DSLContext context (proto/get-context ctx)]
-      (->> (.fetch context sql)
-           (mapv default-record->map))))
+      (-> (.fetch context sql)
+          (result->vector opts))))
 
   ResultQuery
   (fetch [^ResultQuery q ^Context ctx opts]
     (let [^DSLContext context (proto/get-context q)]
-      (->> (.fetch context (:q q))
-           (mapv default-record->map))))
+      (-> (.fetch context (:q q))
+          (result->vector opts))))
 
   PersistentVector
   (fetch [^PersistentVector sqlvec ^Context ctx opts]
