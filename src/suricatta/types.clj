@@ -38,64 +38,35 @@
 ;; Query and QueryResult Types
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Insitu implementation for performance reasons.
-
-(defn- keywordize-keys
-  "Recursively transforms all map keys from strings to keywords."
-  [m]
-  (into {} (map (fn [[k v]] [(keyword (.toLowerCase k)) v]) m)))
-
-(defn- default-record->map
-  [^org.jooq.Record record]
-  (keywordize-keys (.intoMap record)))
-
-(defn- fetch-result-query-impl
-  [^org.jooq.Query query ^org.jooq.DSLContext ctx
-   {:keys [mapfn] :or {mapfn default-record->map}}]
-  (let [result (.fetch ctx query)]
-    (mapv mapfn result)))
-
-(deftype Query [^org.jooq.Query q
-                ^org.jooq.Configuration conf]
+(defrecord Query [^org.jooq.Query q
+                  ^org.jooq.Configuration conf]
   proto/IContext
   (get-context [_] (DSL/using conf))
   (get-configuration [_] conf)
 
   proto/IQuery
-  (query [self _] self)
+  (query [self _] self))
 
-  proto/IExecute
-  (execute [self _]
-    (let [ctx (DSL/using conf)]
-      (.execute ctx q)))
-
-  Object
-  (equals [self other]
-    (= q (.-q other)))
-
-  (toString [_]
-    (with-out-str (print [q (.dialect conf)]))))
-
-(deftype ResultQuery [^org.jooq.ResultQuery q
-                      ^org.jooq.Configuration conf]
+(defrecord ResultQuery [^org.jooq.ResultQuery q
+                        ^org.jooq.Configuration conf]
   proto/IContext
   (get-context [_] (DSL/using conf))
   (get-configuration [_] conf)
 
   proto/IQuery
-  (query [_ _] (Query. q conf))
+  (query [_ _] (Query. q conf)))
 
-  proto/IFetch
-  (fetch [self _ opts]
-    (let [ctx (DSL/using conf)]
-      (fetch-result-query-impl q ctx opts)))
+;; Constructors
 
-  Object
-  (equals [self other]
-    (= q (.-q other)))
+(defn ^Query ->query
+  "Default constructor for Query."
+  [q conf]
+  (Query. q conf))
 
-  (toString [_]
-    (with-out-str (print [q (.dialect conf)]))))
+(defn ^ResultQuery ->result-query
+  "Default constructor for ResultQuery."
+  [q conf]
+  (ResultQuery. q conf))
 
 ;; Predicates
 

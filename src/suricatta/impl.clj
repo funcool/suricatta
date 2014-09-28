@@ -66,7 +66,7 @@
     (let [^DSLContext    context (proto/get-context ctx)
           ^Configuration conf    (.-conf ctx)]
       (-> (.query context sql)
-          (Query. conf))))
+          (types/->query conf))))
 
   PersistentVector
   (query [^PersistentVector sqlvec ^Context ctx]
@@ -75,12 +75,12 @@
       (-> (->> (rest sqlvec)
                (into-array Object)
                (.query context (first sqlvec)))
-          (Query. conf))))
+          (types/->query conf))))
 
   org.jooq.impl.AbstractQueryPart
   (query [^org.jooq.impl.AbstractQueryPart q ^Context ctx]
     (let [^Configuration conf (.-conf ctx)]
-      (Query. q conf))))
+      (types/->query q conf))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Result Query Constructor Implementation
@@ -92,7 +92,7 @@
     (let [^DSLContext context (proto/get-context ctx)
           ^Configuration conf (.-conf ctx)]
       (-> (.resultQuery context sql)
-          (ResultQuery. conf))))
+          (types/->result-query conf))))
 
   PersistentVector
   (result-query [^PersistentVector sqlvec ^Context ctx _]
@@ -101,15 +101,11 @@
       (-> (->> (rest sqlvec)
                (into-array Object)
                (.resultQuery context (first sqlvec)))
-          (ResultQuery. conf)))))
+          (types/->result-query conf)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Convenience implementation for IExecute
+;; IExecute implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Convenience implementations for make easy executing
-;; simple queries directly without explictly creating
-;; a Query instance.
 
 (extend-protocol proto/IExecute
   String
@@ -117,7 +113,50 @@
     (let [^DSLContext context (proto/get-context ctx)]
       (.execute context sql)))
 
+  Query
+  (execute [^Query q ^Context ctx]
+    (let [^DSLContext context (proto/get-context q)]
+      (.execute context (:q q))))
+
   PersistentVector
   (execute [^PersistentVector sqlvec ^Context ctx]
     (let [query (proto/query sqlvec ctx)]
       (proto/execute query ctx))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; IFetch Implementation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- keywordize-keys
+  "Recursively transforms all map keys from strings to keywords."
+  [m]
+  (into {} (map (fn [[k v]] [(keyword (.toLowerCase k)) v]) m)))
+
+(defn- default-record->map
+  [^org.jooq.Record record]
+  (keywordize-keys (.intoMap record)))
+
+;; (defn- fetch-result-query-impl
+;;   [^org.jooq.Query query ^org.jooq.DSLContext ctx
+;;    {:keys [mapfn] :or {mapfn default-record->map}}]
+;;   (let [result (.fetch ctx query)]
+;;     (mapv mapfn result)))
+
+(extend-protocol proto/IFetch
+  String
+  (fetch [^String sql ^Context ctx opts]
+    (let [^DSLContext context (proto/get-context ctx)]
+      (->> (.fetch context sql)
+           (mapv default-record->map))))
+
+  ResultQuery
+  (fetch [^ResultQuery q ^Context ctx opts]
+    (let [^DSLContext context (proto/get-context q)]
+      (->> (.fetch context (:q q))
+           (mapv default-record->map))))
+
+  PersistentVector
+  (fetch [^PersistentVector sqlvec ^Context ctx opts]
+    (let [q (proto/result-query sqlvec ctx opts)]
+      (proto/fetch q ctx opts))))
