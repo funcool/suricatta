@@ -1,0 +1,321 @@
+suricatta documentation
+========================
+Andrey Antukh, <niwi@niwi.be>
+0.1.0-SNAPSHOT, 2014-09-27
+
+:toc:
+:numbered:
+
+
+Introduction
+------------
+
+_suricatta_ is a high level sql toolkit for clojure (backed by jooq library)
+
+It consists in two main modules:
+
+- sql executor: jdbc abstraction layer for executing queries.
+- sql builder: small dsl for idiomatic sql building using clojure code.
+- sql formatter: utils for format in string or sqlvec queryes builded by `sql builder` module.
+
+
+Why I should use it?
+~~~~~~~~~~~~~~~~~~~~
+
+Unlike _clojure.jdbc_, this library/toolkit works in slightly higher level than
+jdbc libraries, and it hides a lot of idiosyncrasies of jdbc under much simpler, cleaner
+and less error prone api.
+
+It also, has clear diferentiation between queries that can return results and that cannot, and
+much better resource and memmory management with result sets and prepared statements.
+
+
+Use cases
+~~~~~~~~~
+
+_suricatta_ library is very flexible and it can be used in very different ways:
+
+- Build queries with _suricatta_ and execute them with _clojure.jdbc_ (it has good interoparability)
+- Execute queries with _suricatta_ and use raw string queries or any other sql building library.
+- Combine usage of _clojure.jdbc_ and _suricatta_ in one code base (you can create suricatta context
+  from existing jdbc connection).
+
+
+Project Maturity
+----------------
+
+Since _suricatta_ is a young project there may be some API breakage.
+
+Install
+-------
+
+This section covers a installing _suricatta and its requirements.
+
+Requirements
+~~~~~~~~~~~~
+
+_suricatta_ is tested with these platforms:
+
+- JDK7
+- JDK8
+
+
+Leiningen
+~~~~~~~~~
+
+The simplest way to use _suricatta_ in a clojure project, is by including it in the dependency
+vector on your *_project.clj_* file:
+
+._on project.clj_
+[source,clojure]
+----
+[suricatta "0.1.0-SNAPSHOT"]
+----
+
+Gradle
+~~~~~~
+
+If you are using gradle, this is a dependency line for gradle dsl:
+
+[source,groovy]
+----
+compile "suricatta:suricatta:0.1.0-SNAPSHOT"
+----
+
+Maven
+~~~~~
+
+And for old school people, who are using a ugly XML files to configure everything,
+this is a XML block that you should put in a dependency section of a maven config file:
+
+.Repository entry.
+[source,xml]
+----
+<repository>
+    <id>clojars.org</id>
+    <url>http://clojars.org/repo</url>
+</repository>
+----
+
+.Dependency entry.
+[source,xml]
+----
+<dependency>
+  <groupId>suricatta</groupId>
+  <artifactId>suricatta</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+</dependency>
+----
+
+
+Get the Code
+~~~~~~~~~~~~
+
+_suricatta_ is open source and is entirely developed on
+link:https://github.com/niwibe/suricatta[github].
+
+You can clone the public repository with this command:
+
+[source,text]
+----
+git clone https://github.com/niwibe/suricatta
+----
+
+
+SQL Execution
+-------------
+
+This section intends to explain the usage of sql execution part of the library.
+
+Connecting to database
+~~~~~~~~~~~~~~~~~~~~~~
+
+With difference with other database connection libraries, _surricata_ does not uses the
+concept of _connection_. It tries abstract it with much simpler concept: **context**.
+
+The **context** has the resposibility of connection resource management, transaction isolation
+flags and sql rendering dialect.
+
+
+You can create one **context** from:
+
+- Plain jdbc connection.
+- link:http://niwibe.github.io/clojure.jdbc[clojure.jdbc] connection object
+- `dbspec` hash-map (same format that link:http://niwibe.github.io/clojure.jdbc/#_connecting_to_database[clojure.jdbc] accepts, including with datasource)
+
+Let see some examples:
+
+Creating context from _dbspec_
+
+[source, clojure]
+----
+(require '[suricatta.core :as sc])
+
+(with-open [ctx (sc/context {:subprotocol "h2"
+                             :subname "mem:"})]
+  (do-something-with ctx))
+----
+
+
+Create context from existing _clojure.jdbc_ connection.
+
+[source, clojure]
+----
+(require '[jdbc.core :as jdbc])
+(require '[suricatta.core :as sc])
+
+(def dbspec {:subprotocol "h2"
+             :subname "mem:"})
+
+(jdbc/with-connection [conn dbspec]
+  (let [ctx (sc/context conn)
+        res (do-something ctx)]
+    res))
+----
+
+Executing queries
+~~~~~~~~~~~~~~~~~
+
+_suricatta_ has clear separation between queries that can return result, and queries that cannot.
+
+With `suricatta.core/query` function you can build queries that does not return results, like _ddl_
+operations or any other sql commands.
+
+[source, clojure]
+----
+(require '[suricatta.core :as sc])
+
+(let [q (sc/query ctx "CREATE TABLE foo")]
+  (sc/execute q))
+----
+
+The return value of `suricatta.core/execute` function depends on the query.
+
+Exists a convenience method that can avoid one step:
+
+[source, clojure]
+----
+(require '[suricatta.core :as sc])
+(sc/execute ctx "CREATE TABLE foo")
+----
+
+Fetching results
+~~~~~~~~~~~~~~~~
+
+With `suricatta.core/result-query` you can build `ResultQuery` that support
+fetching results.
+
+[source, clojure]
+----
+(require '[suricatta.core :as sc])
+
+(let [q (sc/result-query ctx "select x from generate_series(1,3) as x")]
+  (sc/fetch q))
+;; => [{:x 1} {:x 2} {:x 3}]
+----
+
+Exists a convenience method that can avoid one step:
+
+[source, clojure]
+----
+(require '[suricatta.core :as sc])
+(sc/fetch ctx "select x from generate_series(1,3) as x")
+;; => [{:x 1} {:x 2} {:x 3}]
+----
+
+Transactions
+~~~~~~~~~~~~
+
+TODO
+
+Lazy result fetching
+~~~~~~~~~~~~~~~~~~~~
+
+TODO
+
+Batch execution
+~~~~~~~~~~~~~~~
+
+TODO
+
+
+SQL Building and Formatting
+---------------------------
+
+This section intends to explain the usage of sql building library.
+
+Select clause
+~~~~~~~~~~~~~
+
+TODO
+
+Common Table Expressions (WITH)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO
+
+DDL
+~~~
+
+TODO
+
+
+How to Contribute?
+------------------
+
+Philosophy
+~~~~~~~~~~
+
+Five most important rules:
+
+- Beautiful is better than ugly.
+- Explicit is better than implicit.
+- Simple is better than complex.
+- Complex is better than complicated.
+- Readability counts.
+
+All contributions to _suricatta_ should keep these important rules in mind.
+
+
+Procedure
+~~~~~~~~~
+
+**suricatta** unlike Clojure and other Clojure contrib libs, does not have many
+restrictions for contributions. Just follow the following steps depending on the
+situation:
+
+**Bugfix**:
+
+- Fork the GitHub repo.
+- Fix a bug/typo on a new branch.
+- Make a pull-request to master.
+
+**New feature**:
+
+- Open new issue with the new feature proposal.
+- If it is accepted, follow the same steps as "bugfix".
+
+
+License
+-------
+
+_suricatta_ is writen from scratch and is licensed under Apache 2.0 license:
+
+----
+Copyright (c) 2014 Andrey Antukh <niwi@niwi.be>
+
+Licensed under the Apache License, Version 2.0 (the "License")
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+----
+
+You can see the full license in the LICENSE file located in the root of the project
+repo.
