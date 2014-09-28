@@ -13,13 +13,24 @@
 (deftest basic-query-constructors
   (with-open [conn (jdbc/make-connection dbspec)]
     (let [ctx (context conn)]
-      (testing "Simple string constructor"
+      (testing "Simple string constructor using query function"
         (let [q (query ctx "select 1")]
           (is (= (get-sql q) "select 1"))))
 
-      (testing "Simple sqlvec constructor with binds"
+      (testing "Simple sqlvec constructor with binds using query function"
         (let [q (query ctx ["select ?" 1])]
           (is (= (get-bind-values q) [1]))
+          ;; query instances always renders inlined
+          (is (= (get-sql q) "select 1"))))
+
+      (testing "Simple string constructor using result-query function"
+        (let [q (result-query ctx "select 1")]
+          (is (= (get-sql q) "select 1"))))
+
+      (testing "Simple sqlvec constructor with binds using result-query function"
+        (let [q (result-query ctx ["select ?" 1])]
+          (is (= (get-bind-values q) [1]))
+          ;; query instances always renders indexed
           (is (= (get-sql q) "select ?"))))
 
       (testing "Simple sqlvec constructor and getter"
