@@ -15,27 +15,27 @@
     (let [ctx (context conn)]
       (testing "Simple string constructor using query function"
         (let [q (query ctx "select 1")]
-          (is (= (get-sql q) "select 1"))))
+          (is (= (fmt/get-sql q) "select 1"))))
 
       (testing "Simple sqlvec constructor with binds using query function"
         (let [q (query ctx ["select ?" 1])]
-          (is (= (get-bind-values q) [1]))
+          (is (= (fmt/get-bind-values q) [1]))
           ;; query instances always renders inlined
-          (is (= (get-sql q) "select 1"))))
+          (is (= (fmt/get-sql q) "select 1"))))
 
       (testing "Simple string constructor using result-query function"
         (let [q (result-query ctx "select 1")]
-          (is (= (get-sql q) "select 1"))))
+          (is (= (fmt/get-sql q) "select 1"))))
 
       (testing "Simple sqlvec constructor with binds using result-query function"
         (let [q (result-query ctx ["select ?" 1])]
-          (is (= (get-bind-values q) [1]))
+          (is (= (fmt/get-bind-values q) [1]))
           ;; query instances always renders indexed
-          (is (= (get-sql q) "select ?"))))
+          (is (= (fmt/get-sql q) "select ?"))))
 
       (testing "Simple sqlvec constructor and getter"
         (let [q (query ctx ["select ?" 1])]
-          (is (= (sqlvec q) ["select ?" 1]))))
+          (is (= (fmt/sqlvec q) ["select ?" 1]))))
 )))
 
 (deftest basic-query-executor
