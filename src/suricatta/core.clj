@@ -20,10 +20,7 @@
 
 (defn execute
   "Execute a query and return a number of rows affected."
-  ([query]
-     (assert (or (types/query? query) (types/result-query? query))
-             "execute/1 only works with query/queryresult instances")
-     (proto/execute query nil))
+  ([query] (proto/execute query nil))
   ([^Context ctx query] (proto/execute query ctx)))
 
 (defn fetch
@@ -48,9 +45,12 @@
   "ResultQuery constructor"
   ([^Context ctx q]
     (proto/result-query q ctx {}))
-
   ([^Context ctx q opts]
     (proto/result-query q ctx opts)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Transactions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn transaction
   [^Context ctx func]
