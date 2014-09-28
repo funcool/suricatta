@@ -3,7 +3,7 @@
   :url "http://example.com/FIXME"
   :license {:name "Apache 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0.txt"}
-  :dependencies [[org.clojure/clojure "1.7.0-alpha2"]
+  :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.jooq/jooq "3.4.2"]
                  [clojure.jdbc "0.3.0-SNAPSHOT"]
                  [postgresql "9.3-1101.jdbc41"]
