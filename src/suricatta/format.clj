@@ -59,7 +59,7 @@
       (when dialect
         (.set conf (impl/translate-dialect dialect)))
     (condp = type
-      nil      (.renderInlined ctx q)
+      nil      (.render ctx q)
       :named   (.renderNamedParams ctx q)
       :indexed (.render ctx q)
       :inlined (.renderInlined ctx q))))
@@ -91,5 +91,5 @@
   "Get sql with bind values in a `sqlvec` format."
   [q]
   (apply vector
-         (get-sql q {type :indexed})
+         (get-sql q {:type :indexed})
          (get-bind-values q)))
