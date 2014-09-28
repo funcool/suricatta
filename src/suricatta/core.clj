@@ -1,8 +1,8 @@
-(ns cljooq.core
+(ns suricatta.core
   "High level sql toolkit for Clojure"
-  (:require [cljooq.types :as types]
-            [cljooq.proto :as proto]
-            [cljooq.impl :as impl])
+  (:require [suricatta.types :as types]
+            [suricatta.proto :as proto]
+            [suricatta.impl :as impl])
   (:import org.jooq.impl.DSL
            org.jooq.SQLDialect))
 

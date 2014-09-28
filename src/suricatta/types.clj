@@ -1,7 +1,6 @@
-(ns cljooq.types
+(ns suricatta.types
   "High level sql toolkit for Clojure"
-  (:require [clojure.walk :refer [postwalk]]
-            [cljooq.proto :as proto])
+  (:require [suricatta.proto :as proto])
   (:import org.jooq.impl.DSL
            org.jooq.SQLDialect))
 

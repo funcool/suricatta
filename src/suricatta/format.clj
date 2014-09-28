@@ -1,13 +1,13 @@
-(ns cljooq.format
+(ns suricatta.format
   "Sql formatting related code."
-  (:require [cljooq.core :as core]
-            [cljooq.proto :as proto]
-            [cljooq.types :as types]
-            [cljooq.impl :as impl])
+  (:require [suricatta.core :as core]
+            [suricatta.proto :as proto]
+            [suricatta.types :as types]
+            [suricatta.impl :as impl])
   (:import org.jooq.impl.DefaultConfiguration
            org.jooq.impl.DSL
-           cljooq.types.Query
-           cljooq.types.ResultQuery))
+           suricatta.types.Query
+           suricatta.types.ResultQuery))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation
@@ -32,7 +32,7 @@
           ctx  (DSL/using conf)]
       (.extractBindValues ctx q)))
 
-  cljooq.types.Query
+  suricatta.types.Query
   (get-sql [self type dialect]
     (let [conf (.derive (.-conf self))
           q    (.-q self)
@@ -51,7 +51,7 @@
           ctx  (DSL/using conf)]
       (.extractBindValues ctx q)))
 
-  cljooq.types.ResultQuery
+  suricatta.types.ResultQuery
   (get-sql [self type dialect]
     (let [conf (.derive (.-conf self))
           q    (.-q self)

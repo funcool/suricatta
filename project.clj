@@ -1,4 +1,4 @@
-(defproject cljooq "0.1.0-SNAPSHOT"
+(defproject suricatta "0.1.0-SNAPSHOT"
   :description "High level sql toolkit for clojure (backed by jooq library)"
   :url "http://example.com/FIXME"
   :license {:name "Apache 2.0"

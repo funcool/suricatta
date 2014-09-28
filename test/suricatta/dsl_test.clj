@@ -1,8 +1,8 @@
-(ns cljooq.dsl-test
+(ns suricatta.dsl-test
   (:require [clojure.test :refer :all]
-            [cljooq.core :refer :all]
-            [cljooq.dsl :as dsl]
-            [cljooq.format :as fmt]
+            [suricatta.core :refer :all]
+            [suricatta.dsl :as dsl]
+            [suricatta.format :as fmt]
             [jdbc.core :as jdbc]))
 
 (def dbspec {:subprotocol "h2"

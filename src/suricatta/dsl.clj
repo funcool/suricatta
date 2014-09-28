@@ -1,8 +1,8 @@
-(ns cljooq.dsl
+(ns suricatta.dsl
   "Sql building dsl"
   (:refer-clojure :exclude [val group-by and or not name])
-  (:require [cljooq.core :as core]
-            [cljooq.proto :as proto])
+  (:require [suricatta.core :as core]
+            [suricatta.proto :as proto])
   (:import org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration))
 

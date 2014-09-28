@@ -1,4 +1,4 @@
-(ns cljooq.proto)
+(ns suricatta.proto)
 
 (defprotocol IContextBuilder
   (make-context [_] "Create new context (dslcontext)."))

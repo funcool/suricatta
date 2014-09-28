@@ -1,8 +1,8 @@
-(ns cljooq.impl
+(ns suricatta.impl
   (:require [jdbc.core :as jdbc]
             [jdbc.types :as jdbctypes]
-            [cljooq.types :as types]
-            [cljooq.proto :as proto])
+            [suricatta.types :as types]
+            [suricatta.proto :as proto])
   (:import org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
            org.jooq.tools.jdbc.JDBCUtils
@@ -11,9 +11,9 @@
            org.jooq.Configuration
            clojure.lang.PersistentVector
            clojure.lang.APersistentMap
-           cljooq.types.Context
-           cljooq.types.Query
-           cljooq.types.ResultQuery))
+           suricatta.types.Context
+           suricatta.types.Query
+           suricatta.types.ResultQuery))
 
 (defn translate-dialect
   "Translate keyword dialect name to proper
