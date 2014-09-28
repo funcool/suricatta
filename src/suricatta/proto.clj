@@ -4,7 +4,8 @@
   (make-context [_] "Create new context (dslcontext)."))
 
 (defprotocol IContext
-  (get-context [_] "Get inner context"))
+  (get-context [_] "Get context with attached configuration")
+  (get-configuration [_] "Get attached configuration."))
 
 (defprotocol IExecute
   (execute [query ctx] "Execute a query and return a number of rows affected."))

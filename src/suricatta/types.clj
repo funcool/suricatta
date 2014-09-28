@@ -15,6 +15,7 @@
                   ^Boolean closeable]
   proto/IContext
   (get-context [_] (DSL/using conf))
+  (get-configuration [_] conf)
 
   java.io.Closeable
   (close [_]
@@ -58,6 +59,7 @@
                 ^org.jooq.Configuration conf]
   proto/IContext
   (get-context [_] (DSL/using conf))
+  (get-configuration [_] conf)
 
   proto/IQuery
   (query [self _] self)
@@ -74,11 +76,11 @@
   (toString [_]
     (with-out-str (print [q (.dialect conf)]))))
 
-
 (deftype ResultQuery [^org.jooq.ResultQuery q
                       ^org.jooq.Configuration conf]
   proto/IContext
   (get-context [_] (DSL/using conf))
+  (get-configuration [_] conf)
 
   proto/IQuery
   (query [_ _] (Query. q conf))
