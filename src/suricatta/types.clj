@@ -1,22 +1,33 @@
 (ns suricatta.types
   "High level sql toolkit for Clojure"
   (:require [suricatta.proto :as proto])
-  (:import org.jooq.impl.DSL
+  (:import java.sql.Connection
+           org.jooq.impl.DSL
+           org.jooq.Configuration
            org.jooq.SQLDialect))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Context
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftype Context [^java.sql.Connection conn
-                  ^org.jooq.Configuration conf]
+(deftype Context [^Connection conn
+                  ^Configuration conf
+                  ^Boolean closeable]
   proto/IContext
   (get-context [_] (DSL/using conf))
 
   java.io.Closeable
   (close [_]
-    (.set conf (org.jooq.impl.NoConnectionProvider.))
-    (.close conn)))
+    (when closeable
+      (.set conf (org.jooq.impl.NoConnectionProvider.))
+      (.close conn))))
+
+(defn context
+  "Context instance constructor."
+  ([^Connection conn ^Configuration conf]
+     (Context. conn conf true))
+  ([^Connection conn ^Configuration conf ^Boolean closeable]
+     (Context. conn conf closeable)))
 
 (defn context?
   [ctx]
