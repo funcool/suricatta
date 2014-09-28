@@ -127,6 +127,7 @@ SQL Execution
 
 This section intends to explain the usage of sql execution part of the library.
 
+
 Connecting to database
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -221,6 +222,31 @@ Exists a convenience method that can avoid one step:
 (require '[suricatta.core :as sc])
 (sc/fetch ctx "select x from generate_series(1,3) as x")
 ;; => [{:x 1} {:x 2} {:x 3}]
+----
+
+[NOTE]
+====
+_suricatta_ gives you the power of use the raw sql queries without
+any restrictions (unlike jdbs). As great example, _suricatta_ does
+not have special syntax for queries with `RETURNING` clause:
+
+[source, clojure]
+----
+(sc/fetch ctx "INSERT INTO foo (name) values ('bar') returning id")
+;; => [{:id 27}]
+----
+====
+
+Parametrized queries
+~~~~~~~~~~~~~~~~~~~~
+
+Like _clojure.jdbc_ and _clojure.java.jdbc_, _suricatta_ has support for parametrized
+queries in *sqlvec* format.
+
+[source, clojure]
+----
+(sc/fetch ctx ["select id from books where age > ? limit 1" 100])
+;; => [{:id 4232}]
 ----
 
 Transactions
