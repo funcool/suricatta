@@ -73,3 +73,22 @@
               r   (fetch q)]
           (is (= r [{:x 1} {:x 2} {:x 3}]))))
 )))
+
+
+(deftest transactions-support
+  (with-open [ctx (context dbspec)]
+    (testing "Execute in a transaction"
+      (execute ctx "create table foo (id int)")
+
+      (with-transaction ctx
+        (execute ctx ["insert into foo (id) values (?), (?)" 1 2])
+        (try
+          (with-transaction ctx
+            (execute ctx ["insert into foo (id) values (?), (?)" 3 4])
+            (let [result (fetch ctx "select * from foo")]
+              (is (= 4 (count result))))
+            (throw (RuntimeException. "test")))
+          (catch RuntimeException e
+            (let [result (fetch ctx "select * from foo")]
+              (is (= 2 (count result))))))))))
+
