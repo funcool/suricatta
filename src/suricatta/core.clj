@@ -3,8 +3,11 @@
   (:require [suricatta.types :as types]
             [suricatta.proto :as proto]
             [suricatta.impl :as impl])
-  (:import org.jooq.impl.DSL
-           org.jooq.SQLDialect))
+  (:import org.jooq.DSLContext
+           org.jooq.SQLDialect
+           org.jooq.TransactionalCallable
+           org.jooq.Configuration
+           suricatta.types.Context))
 
 (defn context
   "Context constructor."
@@ -21,12 +24,11 @@
      (assert (or (types/query? query) (types/result-query? query))
              "execute/1 only works with query/queryresult instances")
      (proto/execute query nil))
-  ([ctx query] (proto/execute query ctx)))
+  ([^Context ctx query] (proto/execute query ctx)))
 
 (defn fetch
   "Fetch eagerly results executing a query."
-  ([q] (fetch q {}))
-
+  ([q] (proto/fetch q nil {}))
   ([ctx q]
      (cond
       (types/context? ctx)
@@ -34,19 +36,18 @@
 
       (types/result-query? ctx)
       (proto/fetch ctx nil q)))
-
-  ([ctx q opts]
+  ([^Context ctx q opts]
      (proto/fetch q ctx opts)))
 
 (defn query
   "Creates a Query instance."
-  [ctx q]
+  [^Context ctx q]
   (proto/query q ctx))
 
 (defn result-query
   "ResultQuery constructor"
-  ([ctx q]
+  ([^Context ctx q]
     (proto/result-query q ctx {}))
 
-  ([ctx q opts]
+  ([^Context ctx q opts]
     (proto/result-query q ctx opts)))
