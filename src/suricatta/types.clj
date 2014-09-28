@@ -23,7 +23,7 @@
       (.set conf (org.jooq.impl.NoConnectionProvider.))
       (.close conn))))
 
-(defn context
+(defn ->context
   "Context instance constructor."
   ([^Connection conn ^Configuration conf]
      (Context. conn conf true))

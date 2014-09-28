@@ -57,7 +57,7 @@
   (let [^DSLContext context (proto/get-context ctx)]
     (.transactionResult context (reify TransactionalCallable
                                   (run [_ ^Configuration conf]
-                                    (let [ctx (types/context (.-conn ctx) conf false)]
+                                    (let [ctx (types/->context (.-conn ctx) conf false)]
                                       (apply func [ctx])))))))
 
 (defmacro with-transaction

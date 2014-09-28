@@ -42,7 +42,7 @@
       (->> (doto (DefaultConfiguration.)
              (.set dialect)
              (.set connection))
-           (types/context connection))))
+           (types/->context connection))))
 
   java.sql.Connection
   (make-context [^java.sql.Connection connection]
@@ -50,7 +50,7 @@
       (->> (doto (DefaultConfiguration.)
              (.set dialect)
              (.set connection))
-           (types/context connection))))
+           (types/->context connection))))
 
   jdbc.types.Connection
   (make-context [^jdbc.types.Connection connection]
