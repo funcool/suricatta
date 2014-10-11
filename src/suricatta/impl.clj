@@ -19,10 +19,15 @@
   "Translate keyword dialect name to proper
   jooq SQLDialect enum value."
   [dialect]
-  (case dialect
-    :postgresql SQLDialect/POSTGRES
-    :postgres   SQLDialect/POSTGRES
-    :pgsql      SQLDialect/POSTGRES))
+  (if (instance? SQLDialect dialect)
+    dialect
+    (case dialect
+      :postgresql SQLDialect/POSTGRES
+      :postgres   SQLDialect/POSTGRES
+      :pgsql      SQLDialect/POSTGRES
+      :mariadb    SQLDialect/MARIADB
+      :mysql      SQLDialect/MYSQL
+      :h2         SQLDialect/H2)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Context Constructor Implementation
