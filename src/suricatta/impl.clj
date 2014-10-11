@@ -170,3 +170,24 @@
   (fetch [^PersistentVector sqlvec ^Context ctx opts]
     (let [q (proto/result-query sqlvec ctx opts)]
       (proto/fetch q ctx opts))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clojure.jdbc interoperability
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(extend-protocol jdbctypes/ISQLStatement
+  Query
+  (normalize [q conn options]
+    (let [dialect (JDBCUtils/dialect (:connection conn))]
+      (-> (apply vector
+                 (proto/get-sql q :indexed dialect)
+                 (proto/get-bind-values q))
+          (jdbctypes/normalize conn options))))
+
+  ResultQuery
+  (normalize [q conn options]
+    (let [dialect (JDBCUtils/dialect (:connection conn))]
+      (-> (apply vector
+                 (proto/get-sql q :indexed dialect)
+                 (proto/get-bind-values q))
+          (jdbctypes/normalize conn options)))))

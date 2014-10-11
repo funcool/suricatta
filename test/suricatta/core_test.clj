@@ -73,6 +73,15 @@
         (is (= result [[1 2] [2 3] [3 4]]))))))
 
 
+(deftest jdbc-interoperability
+  (with-open [conn (jdbc/make-connection dbspec)]
+    (testing "Pass query as prepared statement",
+      (let [ctx (context conn)
+            sql "select x from system_range(1, 3)"
+            q   (result-query ctx sql)
+            r   (jdbc/query conn q)]
+        (is (= r [{:x 1} {:x 2} {:x 3}]))))))
+
 (deftest transactions
   (testing "Execute in a transaction"
     (with-open [ctx (context dbspec)]
@@ -88,4 +97,3 @@
           (catch RuntimeException e
             (let [result (fetch ctx "select * from foo")]
               (is (= 2 (count result))))))))))
-
