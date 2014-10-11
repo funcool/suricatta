@@ -13,6 +13,9 @@
 (defprotocol IField
   (field* [_] "Field constructor"))
 
+(defprotocol ISortField
+  (sort-field* [_] "Sort field constructor"))
+
 (defprotocol ITable
   (table* [_] "Table constructor"))
 
@@ -44,6 +47,29 @@
 
   org.jooq.impl.Val
   (field* [v] v))
+
+(extend-protocol ISortField
+  java.lang.String
+  (sort-field* [s]
+    (-> (DSL/field s)
+        (.asc)))
+
+  clojure.lang.Keyword
+  (sort-field* [kw] (sort-field* (clojure.core/name kw)))
+
+  org.jooq.Field
+  (sort-field* [f]
+    (.asc f))
+
+  org.jooq.SortField
+  (sort-field* [v] v)
+
+  clojure.lang.PersistentVector
+  (sort-field* [v]
+    (let [field (field* (first v))]
+      (case (second v)
+        :asc (.asc field)
+        :desc (.desc field)))))
 
 (extend-protocol ITable
   java.lang.String
@@ -192,6 +218,12 @@
   (->> (map condition* clauses)
        (into-array org.jooq.Condition)
        (.having q)))
+
+(defn order-by
+  [q & clauses]
+  (->> (map sort-field* clauses)
+       (into-array org.jooq.SortField)
+       (.orderBy q)))
 
 (defn limit
   "Creates limit clause."

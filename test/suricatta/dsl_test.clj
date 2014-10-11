@@ -99,6 +99,19 @@
       (is (= (fmt/get-sql q)
              "select authorid, count(*) from book group by authorid having (count(*) > ?)"))))
 
+  (testing "Select clause with order by without explicit order"
+    (let [q (-> (dsl/select :name)
+                (dsl/from "book")
+                (dsl/order-by :name))]
+      (is (= (fmt/get-sql q)
+             "select name from book order by name asc"))))
+
+  (testing "Select clause with order by with explicit order"
+    (let [q (-> (dsl/select :name)
+                (dsl/from "book")
+                (dsl/order-by [:name :desc]))]
+      (is (= (fmt/get-sql q)
+             "select name from book order by name desc"))))
 )
 
 (deftest dsl-common-table-expressions
