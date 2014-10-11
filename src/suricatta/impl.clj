@@ -26,8 +26,17 @@
       :postgres   SQLDialect/POSTGRES
       :pgsql      SQLDialect/POSTGRES
       :mariadb    SQLDialect/MARIADB
+      :firebird   SQLDialect/FIREBIRD
+      :oracle     SQLDialect/ORACLE
+      :oracle10g  SQLDialect/ORACLE10G
+      :oracle11g  SQLDialect/ORACLE11G
+      :oracle12g  SQLDialect/ORACLE12G
       :mysql      SQLDialect/MYSQL
-      :h2         SQLDialect/H2)))
+      :h2         SQLDialect/H2
+      :sqlite     SQLDialect/SQLITE
+      :sqlserver  SQLDialect/SQLSERVER
+      :ingres     SQLDialect/INGRES
+      SQLDialect/SQL99)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Context Constructor Implementation
