@@ -127,6 +127,14 @@
                 (dsl/order-by [:name :desc :nulls-last]))]
       (is (= (fmt/get-sql q)
              "select name from book order by name desc nulls last"))))
+
+  (testing "select with limit and offset"
+    (let [q (-> (dsl/select :name)
+                (dsl/from :book)
+                (dsl/limit 10)
+                (dsl/offset 100))]
+      (is (= (fmt/get-sql q)
+             "select name from book limit ? offset ?"))))
 )
 
 (deftest dsl-common-table-expressions
