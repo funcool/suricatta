@@ -604,6 +604,35 @@ given transaction for subsequent updates. Let see an example of how use it with 
 ;; => "select * from book for update of \"name\""
 ----
 
+The UNION and UNION ALL clause
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These operators combine two results into one. UNION removes all duplicate records resulting from this combination and UNION ALL preserves all results as they are.
+
+.Using UNION clause
+[source, clojure]
+----
+(-> (dsl/union
+    (-> (dsl/select :name)
+        (dsl/from :books))
+    (-> (dsl/select :name)
+        (dsl/from :articles)))
+    (fmt/get-sql))
+;; => "(select name from books) union (select name from articles)"
+----
+
+.Using UNION ALL clause
+[source, clojure]
+----
+(-> (dsl/union-all
+    (-> (dsl/select :name)
+        (dsl/from :books))
+    (-> (dsl/select :name)
+        (dsl/from :articles)))
+    (fmt/get-sql))
+;; => "(select name from books) union all (select name from articles)"
+----
+
 
 How to Contribute?
 ------------------
