@@ -634,6 +634,30 @@ These operators combine two results into one. UNION removes all duplicate record
 ----
 
 
+The INSERT statement
+~~~~~~~~~~~~~~~~~~~~
+
+TODO
+
+
+The UPDATE statement
+~~~~~~~~~~~~~~~~~~~~
+
+TODO
+
+
+The DELETE statement
+~~~~~~~~~~~~~~~~~~~~
+
+TODO
+
+
+Other SQL Statements (DDL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO
+
+
 How to Contribute?
 ------------------
 
