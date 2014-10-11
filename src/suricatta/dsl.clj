@@ -231,6 +231,15 @@
        (into-array org.jooq.SortField)
        (.orderBy q)))
 
+(defn for-update
+  [q & fields]
+  (let [q (.forUpdate q)]
+    (if (seq fields)
+      (->> (map field* fields)
+           (into-array org.jooq.Field)
+           (.of q))
+      q)))
+
 (defn limit
   "Creates limit clause."
   [q num]

@@ -135,6 +135,20 @@
                 (dsl/offset 100))]
       (is (= (fmt/get-sql q)
              "select name from book limit ? offset ?"))))
+
+  (testing "select with for update without fields"
+    (let [q (-> (dsl/select :name)
+                (dsl/from :book)
+                (dsl/for-update))]
+      (is (= (fmt/get-sql q)
+             "select name from book for update"))))
+
+  (testing "select with for update with fields"
+    (let [q (-> (dsl/select :name)
+                (dsl/from :book)
+                (dsl/for-update :name))]
+      (is (= (fmt/get-sql q)
+             "select name from book for update of \"name\""))))
 )
 
 (deftest dsl-common-table-expressions
