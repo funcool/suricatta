@@ -86,10 +86,10 @@
   (testing "Execute in a transaction"
     (with-open [ctx (context dbspec)]
       (execute ctx "create table foo (id int)")
-      (with-transaction ctx
+      (with-atomic ctx
         (execute ctx ["insert into foo (id) values (?), (?)" 1 2])
         (try
-          (with-transaction ctx
+          (with-atomic ctx
             (execute ctx ["insert into foo (id) values (?), (?)" 3 4])
             (let [result (fetch ctx "select * from foo")]
               (is (= 4 (count result))))

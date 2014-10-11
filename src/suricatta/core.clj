@@ -52,7 +52,7 @@
 ;; Transactions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn transaction
+(defn atomic
   [^Context ctx func]
   (let [^DSLContext context (proto/get-context ctx)]
     (.transactionResult context (reify TransactionalCallable
@@ -60,6 +60,6 @@
                                     (let [ctx (types/->context (.-conn ctx) conf false)]
                                       (apply func [ctx])))))))
 
-(defmacro with-transaction
+(defmacro with-atomic
   [ctx & body]
-  `(transaction ~ctx (fn [~ctx] ~@body)))
+  `(atomic ~ctx (fn [~ctx] ~@body)))
