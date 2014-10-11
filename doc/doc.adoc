@@ -294,22 +294,315 @@ Not implemented yet.
 SQL Building and Formatting
 ---------------------------
 
-This section intends to explain the usage of sql building library.
+This section intends to explain the usage of sql building library, the lightweight layer on
+top of `jooq` dsl.
+
+You can found all related functions of sql dsl on `suricatta.dsl` namespace:
+
+[source, clojure]
+----
+(require '[suricatta.dsl :as dsl])
+----
+
+The SELECT statement
+~~~~~~~~~~~~~~~~~~~~
 
 Select clause
-~~~~~~~~~~~~~
+^^^^^^^^^^^^^
 
-TODO
+Simple select clause without from part:
 
-Common Table Expressions (WITH)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[source, clojure]
+----
+(dsl/select :id :name)
+----
 
-TODO
+Would generate SQL like this:
 
-DDL
-~~~
+[source,sql]
+----
+select id, name from dual
+----
 
-TODO
+The rendering result depends of used dialect. You can specify an other dialect
+passing `:dialect` option to `get-sql` function of `suricatta.format` namespace:
+
+[source, clojure]
+----
+(require '[suricatta.format :as fmt])
+(-> (dsl/select :id :name)
+    (fmt/get-sql {:dialect :postgresql}))
+;; => "select id, name"
+----
+
+
+Select DISTINCT
+^^^^^^^^^^^^^^^
+
+You can add distinct keyword using special select function:
+
+[source, clojure]
+----
+(-> (dsl/select-distinct :name)
+    (fmt/get-sql))
+;; => "select distinct name"
+----
+
+
+Select *
+^^^^^^^^
+
+You can ommit fields on `select` function for use the "SELECT *" form:
+
+[source, clojure]
+----
+(-> (dsl/select)
+    (dsl/from :book)
+    (fmt/get-sql))
+;; => "select * from book"
+----
+
+
+The FROM clause
+^^^^^^^^^^^^^^^
+
+Simple select sql with form clause:
+
+[source, clojure]
+----
+(-> (dsl/select :book.id :book.name)
+    (dsl/from :book)
+    (fmt/get-sql))
+;; => "select book.id, book.name from book"
+----
+
+Also, sql form clause supports specify any number of tables:
+
+[source, clojure]
+----
+(-> (dsl/select-one)
+    (dsl/from :book :article)
+    (fmt/get-sql))
+;; => "select 1 from book, article"
+----
+
+Also, you can specify alias for each table:
+
+[source, clojure]
+----
+(-> (dsl/select-one)
+    (dsl/from (dsl/table "book" :alias "a")
+              (dsl/table "article" :alias "b"))
+    (fmt/get-sql))
+;; => "select 1 from book \"a\", article \"b\""
+----
+
+
+The JOIN clause
+^^^^^^^^^^^^^^^
+
+_suricata_ comes with complete dsl for making join clauses. Let see one simple example:
+
+[source, clojure]
+----
+(-> (dsl/select :name)
+    (dsl/from :book)
+    (dsl/join :author)
+    (dsl/on "book.author_id = book.id")
+    (fmt/get-sql))
+;; => "select name from book join author on (book.author_id = book.id)"
+----
+
+Also, join clause can be applied to table expression:
+
+[source, clojure]
+----
+(-> (dsl/select :name)
+    (dsl/from (-> (dsl/table "book")
+                  (dsl/join "author")
+                  (dsl/on "book.author_id = book.id")))
+    (fmt/get-sql))
+;; => "select name from book join author on (book.author_id = book.id)"
+----
+
+
+The WHERE clause
+^^^^^^^^^^^^^^^^
+
+The WHERE clause can be used for JOIN or filter predicates, in order to restrict the data returned
+by the query:
+
+[source, clojure]
+----
+(-> (dsl/select :name)
+    (dsl/from :book)
+    (dsl/where "book.age > 100")
+    (fmt/get-sql))
+;; => "select name from book where (book.age > 100)"
+----
+
+Build where clause with multiple conditions:
+
+[source, clojure]
+----
+(-> (dsl/select :name)
+    (dsl/from :book)
+    (dsl/where "book.age > 100"
+               "book.in_store = true")
+    (fmt/get-sql))
+;; => "select name from book where ((book.age > 100) and (book.in_store = true))"
+----
+
+
+Bind parameters instead of inline them on conditions:
+
+[source, clojure]
+----
+(-> (dsl/select :name)
+    (dsl/from :book)
+    (dsl/where ["book.age > ?" 100]
+               ["book.in_store = ?", true])
+    (fmt/sqlvec))
+;; => ["select name from book where ((book.age > ?) and (book.in_store = ?))" 100 true]
+----
+
+Using explicit logical operators:
+
+[source, clojure]
+----
+(-> (dsl/select :name)
+    (dsl/from :book)
+    (dsl/where (dsl/or "book.age > 20"
+                       (dsl/not "book.in_store")))
+    (fmt/get-sql))
+;; => "select name from book where ((book.age > 20) or (not book.in_store))"
+----
+
+
+The GROUP BY clause
+^^^^^^^^^^^^^^^^^^^
+
+GROUP BY can be used to create unique groups of data, to form aggregations, to remove duplicates and for other reasons. Let see an example of how it can be done using _suricatta_ dsl:
+
+[source, clojure]
+----
+(-> (dsl/select (dsl/field "name")
+                (dsl/field "count(*)"))
+    (dsl/from :book)
+    (dsl/group-by :name)
+    (fmt/get-sql))
+;; => "select name, count(*) from book group by name"
+----
+
+
+The HAVING clause
+^^^^^^^^^^^^^^^^^
+
+The HAVING clause is used to further restrict aggregated data. Let see an example:
+
+[source, clojure]
+----
+(-> (dsl/select (dsl/field "name")
+                (dsl/field "count(*)"))
+    (dsl/from :book)
+    (dsl/group-by :name)
+    (dsl/having ["count(*) > ?", 2])
+    (fmt/get-sql))
+;; => "select name, count(*) from book group by name having (count(*) > ?)"
+----
+
+The ORDER BY clause
+^^^^^^^^^^^^^^^^^^^
+
+Here an example of how specify the ordering to the query:
+
+.Ordering by field with implicit sort direction
+[source, clojure]
+----
+(-> (dsl/select :name)
+    (dsl/from :book)
+    (dsl/order-by :name)
+    (fmt/get-sql))
+;; => "select name from book order by name asc"
+----
+
+In previous example we have specified order field without order direction, _surricata_ automatically
+uses `ASC` for sort fields that comes without explicit ordering direction.
+
+.Specify sort direction explicitly
+[source, clojure]
+----
+(-> (dsl/select :name)
+    (dsl/from :book)
+    (dsl/order-by [:name :desc])
+    (fmt/get-sql))
+;; => "select name from book order by name desc"
+----
+
+.Handling nulls
+[source, clojure]
+----
+(-> (dsl/select :name)
+    (dsl/from :book)
+    (dsl/order-by [:name :desc :nulls-last])
+    (fmt/get-sql))
+;; => "select name from book order by name desc nulls last"
+----
+
+.Ordering by index
+[source, clojure]
+----
+(-> (dsl/select :id :name)
+    (dsl/from :book)
+    (dsl/order-by ["1" :asc]
+                  ["2" :desc])
+    (fmt/get-sql))
+;; => "select name from book order by 1 asc, 2 desc"
+----
+
+
+The LIMIT and OFFSET clauses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Let see some examples of how to apply limit and offset to your queries with _suricatta_:
+
+[source, clojure]
+----
+(-> (dsl/select :id :name)
+    (dsl/from :book)
+    (dsl/limit 10)
+    (dsl/offset 100)
+    (fmt/get-sql))
+;; => "select name from book limit ? offset ?"
+----
+
+
+The FOR UPDATE clause
+^^^^^^^^^^^^^^^^^^^^^
+
+For inter-process synchronisation and other reasons, you may choose to use the SELECT .. FOR UPDATE
+clause to indicate to the database, that a set of cells or records should be locked by a
+given transaction for subsequent updates. Let see an example of how use it with _suricatta_ dsl:
+
+.Without specific fields
+[source, clojure]
+----
+(-> (dsl/select)
+    (dsl/from :book)
+    (dsl/for-update)
+    (fmt/get-sql))
+;; => "select * from book for update"
+----
+
+.With specific fields
+[source, clojure]
+----
+(-> (dsl/select)
+    (dsl/from :book)
+    (dsl/for-update :name)
+    (fmt/get-sql))
+;; => "select * from book for update of \"name\""
+----
 
 
 How to Contribute?
@@ -349,7 +642,7 @@ situation:
 
 
 License
--------
+~~~~~~~
 
 _suricatta_ is writen from scratch and is licensed under Apache 2.0 license:
 
