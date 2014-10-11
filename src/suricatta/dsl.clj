@@ -118,8 +118,13 @@
   (val [v] (DSL/val v)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; DSL functions
+;; Common DSL functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn as
+  "Set alias."
+  [q name]
+  (.as q name))
 
 (defn field
   [data & {:keys [alias] :as opts}]
@@ -250,10 +255,21 @@
   [q num]
   (.offset q num))
 
-(defn as
-  "Set alias."
-  [q name]
-  (.as q name))
+(defn union
+  [& clauses]
+  (reduce (fn [acc v] (.union acc v))
+          (first clauses)
+          (rest clauses)))
+
+(defn union-all
+  [& clauses]
+  (reduce (fn [acc v] (.unionAll acc v))
+          (first clauses)
+          (rest clauses)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Logical operators (for conditions)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn and
   "Logican operator `and`."
@@ -275,6 +291,10 @@
   "Negate a condition."
   [c]
   (DSL/not c))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Common Table Expresions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn with
   "Create a WITH clause"

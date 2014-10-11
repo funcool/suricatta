@@ -149,6 +149,24 @@
                 (dsl/for-update :name))]
       (is (= (fmt/get-sql q)
              "select name from book for update of \"name\""))))
+
+  (testing "union two selects"
+    (let [q (dsl/union
+             (-> (dsl/select :name)
+                 (dsl/from :books))
+             (-> (dsl/select :name)
+                 (dsl/from :articles)))]
+      (is (= (fmt/get-sql q)
+             "(select name from books) union (select name from articles)"))))
+
+  (testing "union all two selects"
+    (let [q (dsl/union-all
+             (-> (dsl/select :name)
+                 (dsl/from :books))
+             (-> (dsl/select :name)
+                 (dsl/from :articles)))]
+      (is (= (fmt/get-sql q)
+             "(select name from books) union all (select name from articles)"))))
 )
 
 (deftest dsl-common-table-expressions
