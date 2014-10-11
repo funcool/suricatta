@@ -184,6 +184,15 @@
        (into-array org.jooq.GroupField)
        (.groupBy q)))
 
+(defn having
+  "Create having clause with variable number
+  of conditions (that are implicitly combined
+  with `and` logical operator)."
+  [q & clauses]
+  (->> (map condition* clauses)
+       (into-array org.jooq.Condition)
+       (.having q)))
+
 (defn limit
   "Creates limit clause."
   [q num]

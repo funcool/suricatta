@@ -90,6 +90,15 @@
       (is (= (fmt/get-sql q)
              "select authorid, count(*) from book group by authorid"))))
 
+  (testing "Select clause with group by with having"
+    (let [q (-> (dsl/select (dsl/field "authorid")
+                            (dsl/field "count(*)"))
+                (dsl/from "book")
+                (dsl/group-by (dsl/field "authorid"))
+                (dsl/having ["count(*) > ?", 2]))]
+      (is (= (fmt/get-sql q)
+             "select authorid, count(*) from book group by authorid having (count(*) > ?)"))))
+
 )
 
 (deftest dsl-common-table-expressions
