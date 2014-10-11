@@ -73,6 +73,23 @@
                               (dsl/on "book.authorid = book.id"))))]
       (is (= (fmt/get-sql q)
              "select 1 \"one\" from book join author on (book.authorid = book.id)"))))
+
+  (testing "Select clause with where"
+    (let [q (-> (dsl/select-one)
+                (dsl/from "book")
+                (dsl/where ["book.age > ?" 100]
+                           ["book.in_store is ?", true]))]
+      (is (= (fmt/get-sql q)
+             "select 1 \"one\" from book where ((book.age > ?) and (book.in_store is ?))"))))
+
+  (testing "Select clause with group by"
+    (let [q (-> (dsl/select (dsl/field "authorid")
+                            (dsl/field "count(*)"))
+                (dsl/from "book")
+                (dsl/group-by (dsl/field "authorid")))]
+      (is (= (fmt/get-sql q)
+             "select authorid, count(*) from book group by authorid"))))
+
 )
 
 (deftest dsl-common-table-expressions

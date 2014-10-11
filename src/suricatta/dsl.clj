@@ -178,15 +178,11 @@
   [select']
   (DSL/exists select'))
 
-;; (defn group-by
-;;   [q & groups]
-;;   (->> (map (fn [fields]
-;;               (->> (map field fields)
-;;                    (into-array org.jooq.Field)
-;;                    (DSL/groupingSets)))
-;;             groups)
-;;        (into-array org.jooq.GroupField)
-;;        (.groupBy q)))
+(defn group-by
+  [q & fields]
+  (->> (map field* fields)
+       (into-array org.jooq.GroupField)
+       (.groupBy q)))
 
 (defn limit
   "Creates limit clause."
