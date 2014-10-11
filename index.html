@@ -516,6 +516,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_sql_building_and_formatting">5. SQL Building and Formatting</a>
 <ul class="sectlevel2">
 <li><a href="#_the_select_statement">5.1. The SELECT statement</a></li>
+<li><a href="#_the_insert_statement">5.2. The INSERT statement</a></li>
+<li><a href="#_the_update_statement">5.3. The UPDATE statement</a></li>
+<li><a href="#_the_delete_statement">5.4. The DELETE statement</a></li>
+<li><a href="#_other_sql_statements_ddl">5.5. Other SQL Statements (DDL)</a></li>
 </ul>
 </li>
 <li><a href="#_how_to_contribute">6. How to Contribute?</a>
@@ -1216,6 +1220,60 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_the_union_and_union_all_clause">5.1.12. The UNION and UNION ALL clause</h4>
+<div class="paragraph">
+<p>These operators combine two results into one. UNION removes all duplicate records resulting from this combination and UNION ALL preserves all results as they are.</p>
+</div>
+<div class="listingblock">
+<div class="title">Using UNION clause</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/union</span>
+    <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+        <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:books</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+        <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:articles</span><span class="tok-p">)))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;(select name from books) union (select name from articles)&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Using UNION ALL clause</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/union-all</span>
+    <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+        <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:books</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+        <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:articles</span><span class="tok-p">)))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;(select name from books) union all (select name from articles)&quot;</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_insert_statement">5.2. The INSERT statement</h3>
+<div class="paragraph">
+<p>TODO</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_update_statement">5.3. The UPDATE statement</h3>
+<div class="paragraph">
+<p>TODO</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_delete_statement">5.4. The DELETE statement</h3>
+<div class="paragraph">
+<p>TODO</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_other_sql_statements_ddl">5.5. Other SQL Statements (DDL)</h3>
+<div class="paragraph">
+<p>TODO</p>
+</div>
 </div>
 </div>
 </div>
@@ -1320,7 +1378,7 @@ repo.</p>
 <div id="footer">
 <div id="footer-text">
 Version 0.1.0-SNAPSHOT<br>
-Last updated 2014-10-11 21:02:48 CEST
+Last updated 2014-10-11 22:48:04 CEST
 </div>
 </div>
 </body>
