@@ -28,8 +28,8 @@
         (is (= (fmt/get-sql q2)
                "select id, name from dual"))))))
 
-(deftest dsl-basic-tests
-  (testing "Simple select clause"
+(deftest dsl-select-clause
+  (testing "Basic select clause"
     (let [q   (-> (dsl/select :id :name)
                   (dsl/from :books)
                   (dsl/where ["books.id = ?" 2]))
@@ -38,12 +38,44 @@
       (is (= sql "select id, name from books where (books.id = ?)"))
       (is (= bv [2]))))
 
-  (testing "Field as condition"
+  (testing "Select clause with field as condition and alias"
     (let [q (-> (dsl/select (dsl/field "foo > 5" :alias "bar"))
                 (dsl/from "baz"))]
       (is (= (fmt/get-sql q)
              "select foo > 5 \"bar\" from baz"))))
 
+  (testing "Select clause with count(*) expresion"
+    (let [q (-> (dsl/select (dsl/field "count(*)" :alias "count"))
+                (dsl/from "baz"))]
+      (is (= (fmt/get-sql q)
+             "select count(*) \"count\" from baz"))))
+
+  (testing "Select with two tables in from clause"
+    (let [q (-> (dsl/select-one)
+                (dsl/from
+                 (dsl/table "table1" :alias "foo")
+                 (dsl/table "table2" :alias "bar")))]
+      (is (= (fmt/get-sql q)
+             "select 1 \"one\" from table1 \"foo\", table2 \"bar\""))))
+
+  (testing "Select clause with join"
+    (let [q (-> (dsl/select-one)
+                (dsl/from (dsl/table "book"))
+                (dsl/join "author")
+                (dsl/on "book.authorid = book.id"))]
+      (is (= (fmt/get-sql q)
+             "select 1 \"one\" from book join author on (book.authorid = book.id)"))))
+
+  (testing "Select clause with join on table"
+    (let [q (-> (dsl/select-one)
+                (dsl/from (-> (dsl/table "book")
+                              (dsl/join "author")
+                              (dsl/on "book.authorid = book.id"))))]
+      (is (= (fmt/get-sql q)
+             "select 1 \"one\" from book join author on (book.authorid = book.id)"))))
+)
+
+(deftest dsl-common-table-expressions
   (testing "Common table expressions"
     (let [cte1 (-> (dsl/name :t1)
                    (dsl/with-fields :f1 :f2)
