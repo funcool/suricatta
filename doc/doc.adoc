@@ -253,17 +253,42 @@ queries in *sqlvec* format.
 Transactions
 ~~~~~~~~~~~~
 
-TODO
+_suricatta_ does not have support for low level usage of transactions, instead of it, offers
+lightweight abstraction: `atomic` high order function and `with-atomic` convenient macro.
+
+.Execute some query in a transaction block
+[source, clojure]
+----
+(sc/atomic ctx (fn [ctx]
+                 (sc/fetch ctx "select id, name from book for update")))
+----
+
+Additionally to `atomic` high order functiom, _suricatta_ comes with convenient macro offering
+lightweight sugar sytax for atomic blocks:
+
+[source, clojure]
+----
+(cs/with-atomic ctx
+  (sc/fetch ctx "select id, name from book for update"))
+----
+
+If something happens inside atomic wrapped function, the transaction will be aborted.
+
+[NOTE]
+You can neest as deeps as you want atomic usage, _suricatta_ (thanks to jooq) has good support
+for subtransactions (savepoints).
+
 
 Lazy result fetching
 ~~~~~~~~~~~~~~~~~~~~
 
-TODO
+Not implemented yet.
+
 
 Batch execution
 ~~~~~~~~~~~~~~~
 
-TODO
+Not implemented yet.
 
 
 SQL Building and Formatting
