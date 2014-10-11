@@ -515,18 +515,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_sql_building_and_formatting">5. SQL Building and Formatting</a>
 <ul class="sectlevel2">
-<li><a href="#_select_clause">5.1. Select clause</a></li>
-<li><a href="#_common_table_expressions_with">5.2. Common Table Expressions (WITH)</a></li>
-<li><a href="#_ddl">5.3. DDL</a></li>
+<li><a href="#_the_select_statement">5.1. The SELECT statement</a></li>
 </ul>
 </li>
 <li><a href="#_how_to_contribute">6. How to Contribute?</a>
 <ul class="sectlevel2">
 <li><a href="#_philosophy">6.1. Philosophy</a></li>
 <li><a href="#_procedure">6.2. Procedure</a></li>
+<li><a href="#_license">6.3. License</a></li>
 </ul>
 </li>
-<li><a href="#_license">7. License</a></li>
 </ul>
 </div>
 </div>
@@ -843,19 +841,53 @@ queries in <strong>sqlvec</strong> format.</p>
 <div class="sect2">
 <h3 id="_transactions">4.5. Transactions</h3>
 <div class="paragraph">
-<p>TODO</p>
+<p><em>suricatta</em> does not have support for low level usage of transactions, instead of it, offers
+lightweight abstraction: <code>atomic</code> high order function and <code>with-atomic</code> convenient macro.</p>
+</div>
+<div class="listingblock">
+<div class="title">Execute some query in a transaction block</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">sc/atomic</span> <span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-k">fn </span><span class="tok-p">[</span><span class="tok-nv">ctx</span><span class="tok-p">]</span>
+                 <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;select id, name from book for update&quot;</span><span class="tok-p">)))</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Additionally to <code>atomic</code> high order functiom, <em>suricatta</em> comes with convenient macro offering
+lightweight sugar sytax for atomic blocks:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">cs/with-atomic</span> <span class="tok-nv">ctx</span>
+  <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;select id, name from book for update&quot;</span><span class="tok-p">))</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If something happens inside atomic wrapped function, the transaction will be aborted.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+You can neest as deeps as you want atomic usage, <em>suricatta</em> (thanks to jooq) has good support
+for subtransactions (savepoints).
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_lazy_result_fetching">4.6. Lazy result fetching</h3>
 <div class="paragraph">
-<p>TODO</p>
+<p>Not implemented yet.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_batch_execution">4.7. Batch execution</h3>
 <div class="paragraph">
-<p>TODO</p>
+<p>Not implemented yet.</p>
 </div>
 </div>
 </div>
@@ -864,24 +896,325 @@ queries in <strong>sqlvec</strong> format.</p>
 <h2 id="_sql_building_and_formatting">5. SQL Building and Formatting</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section intends to explain the usage of sql building library.</p>
+<p>This section intends to explain the usage of sql building library, the lightweight layer on
+top of <code>jooq</code> dsl.</p>
 </div>
-<div class="sect2">
-<h3 id="_select_clause">5.1. Select clause</h3>
 <div class="paragraph">
-<p>TODO</p>
+<p>You can found all related functions of sql dsl on <code>suricatta.dsl</code> namespace:</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_common_table_expressions_with">5.2. Common Table Expressions (WITH)</h3>
-<div class="paragraph">
-<p>TODO</p>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.dsl</span> <span class="tok-ss">:as</span> <span class="tok-nv">dsl</span><span class="tok-p">])</span></code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_ddl">5.3. DDL</h3>
+<h3 id="_the_select_statement">5.1. The SELECT statement</h3>
+<div class="sect3">
+<h4 id="_select_clause">5.1.1. Select clause</h4>
 <div class="paragraph">
-<p>TODO</p>
+<p>Simple select clause without from part:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:id</span> <span class="tok-ss">:name</span><span class="tok-p">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Would generate SQL like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sql"><span class="tok-k">select</span> <span class="tok-n">id</span><span class="tok-p">,</span> <span class="tok-n">name</span> <span class="tok-k">from</span> <span class="tok-n">dual</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The rendering result depends of used dialect. You can specify an other dialect
+passing <code>:dialect</code> option to <code>get-sql</code> function of <code>suricatta.format</code> namespace:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.format</span> <span class="tok-ss">:as</span> <span class="tok-nv">fmt</span><span class="tok-p">])</span>
+<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:id</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:postgresql</span><span class="tok-p">}))</span>
+<span class="tok-c1">;; =&gt; &quot;select id, name&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_select_distinct">5.1.2. Select DISTINCT</h4>
+<div class="paragraph">
+<p>You can add distinct keyword using special select function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select-distinct</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select distinct name&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_select">5.1.3. Select *</h4>
+<div class="paragraph">
+<p>You can ommit fields on <code>select</code> function for use the "SELECT *" form:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select * from book&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_from_clause">5.1.4. The FROM clause</h4>
+<div class="paragraph">
+<p>Simple select sql with form clause:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:book.id</span> <span class="tok-ss">:book.name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select book.id, book.name from book&quot;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Also, sql form clause supports specify any number of tables:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select-one</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span> <span class="tok-ss">:article</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select 1 from book, article&quot;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Also, you can specify alias for each table:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select-one</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nf">dsl/table</span> <span class="tok-s">&quot;book&quot;</span> <span class="tok-ss">:alias</span> <span class="tok-s">&quot;a&quot;</span><span class="tok-p">)</span>
+              <span class="tok-p">(</span><span class="tok-nf">dsl/table</span> <span class="tok-s">&quot;article&quot;</span> <span class="tok-ss">:alias</span> <span class="tok-s">&quot;b&quot;</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select 1 from book \&quot;a\&quot;, article \&quot;b\&quot;&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_join_clause">5.1.5. The JOIN clause</h4>
+<div class="paragraph">
+<p><em>suricata</em> comes with complete dsl for making join clauses. Let see one simple example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/join</span> <span class="tok-ss">:author</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-s">&quot;book.author_id = book.id&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book join author on (book.author_id = book.id)&quot;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Also, join clause can be applied to table expression:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/table</span> <span class="tok-s">&quot;book&quot;</span><span class="tok-p">)</span>
+                  <span class="tok-p">(</span><span class="tok-nf">dsl/join</span> <span class="tok-s">&quot;author&quot;</span><span class="tok-p">)</span>
+                  <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-s">&quot;book.author_id = book.id&quot;</span><span class="tok-p">)))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book join author on (book.author_id = book.id)&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_where_clause">5.1.6. The WHERE clause</h4>
+<div class="paragraph">
+<p>The WHERE clause can be used for JOIN or filter predicates, in order to restrict the data returned
+by the query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-s">&quot;book.age &gt; 100&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book where (book.age &gt; 100)&quot;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Build where clause with multiple conditions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-s">&quot;book.age &gt; 100&quot;</span>
+               <span class="tok-s">&quot;book.in_store = true&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book where ((book.age &gt; 100) and (book.in_store = true))&quot;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Bind parameters instead of inline them on conditions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">[</span><span class="tok-s">&quot;book.age &gt; ?&quot;</span> <span class="tok-mi">100</span><span class="tok-p">]</span>
+               <span class="tok-p">[</span><span class="tok-s">&quot;book.in_store = ?&quot;</span>, <span class="tok-nv">true</span><span class="tok-p">])</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sqlvec</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; [&quot;select name from book where ((book.age &gt; ?) and (book.in_store = ?))&quot; 100 true]</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Using explicit logical operators:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">(</span><span class="tok-nf">dsl/or</span> <span class="tok-s">&quot;book.age &gt; 20&quot;</span>
+                       <span class="tok-p">(</span><span class="tok-nf">dsl/not</span> <span class="tok-s">&quot;book.in_store&quot;</span><span class="tok-p">)))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book where ((book.age &gt; 20) or (not book.in_store))&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_group_by_clause">5.1.7. The GROUP BY clause</h4>
+<div class="paragraph">
+<p>GROUP BY can be used to create unique groups of data, to form aggregations, to remove duplicates and for other reasons. Let see an example of how it can be done using <em>suricatta</em> dsl:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-p">(</span><span class="tok-nf">dsl/field</span> <span class="tok-s">&quot;name&quot;</span><span class="tok-p">)</span>
+                <span class="tok-p">(</span><span class="tok-nf">dsl/field</span> <span class="tok-s">&quot;count(*)&quot;</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/group-by</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name, count(*) from book group by name&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_having_clause">5.1.8. The HAVING clause</h4>
+<div class="paragraph">
+<p>The HAVING clause is used to further restrict aggregated data. Let see an example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-p">(</span><span class="tok-nf">dsl/field</span> <span class="tok-s">&quot;name&quot;</span><span class="tok-p">)</span>
+                <span class="tok-p">(</span><span class="tok-nf">dsl/field</span> <span class="tok-s">&quot;count(*)&quot;</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/group-by</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/having</span> <span class="tok-p">[</span><span class="tok-s">&quot;count(*) &gt; ?&quot;</span>, <span class="tok-mi">2</span><span class="tok-p">])</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name, count(*) from book group by name having (count(*) &gt; ?)&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_order_by_clause">5.1.9. The ORDER BY clause</h4>
+<div class="paragraph">
+<p>Here an example of how specify the ordering to the query:</p>
+</div>
+<div class="listingblock">
+<div class="title">Ordering by field with implicit sort direction</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/order-by</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book order by name asc&quot;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In previous example we have specified order field without order direction, <em>surricata</em> automatically
+uses <code>ASC</code> for sort fields that comes without explicit ordering direction.</p>
+</div>
+<div class="listingblock">
+<div class="title">Specify sort direction explicitly</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/order-by</span> <span class="tok-p">[</span><span class="tok-ss">:name</span> <span class="tok-ss">:desc</span><span class="tok-p">])</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book order by name desc&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Handling nulls</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/order-by</span> <span class="tok-p">[</span><span class="tok-ss">:name</span> <span class="tok-ss">:desc</span> <span class="tok-ss">:nulls-last</span><span class="tok-p">])</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book order by name desc nulls last&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Ordering by index</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:id</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/order-by</span> <span class="tok-p">[</span><span class="tok-s">&quot;1&quot;</span> <span class="tok-ss">:asc</span><span class="tok-p">]</span>
+                  <span class="tok-p">[</span><span class="tok-s">&quot;2&quot;</span> <span class="tok-ss">:desc</span><span class="tok-p">])</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book order by 1 asc, 2 desc&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_limit_and_offset_clauses">5.1.10. The LIMIT and OFFSET clauses</h4>
+<div class="paragraph">
+<p>Let see some examples of how to apply limit and offset to your queries with <em>suricatta</em>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:id</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/limit</span> <span class="tok-mi">10</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/offset</span> <span class="tok-mi">100</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book limit ? offset ?&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_for_update_clause">5.1.11. The FOR UPDATE clause</h4>
+<div class="paragraph">
+<p>For inter-process synchronisation and other reasons, you may choose to use the SELECT .. FOR UPDATE
+clause to indicate to the database, that a set of cells or records should be locked by a
+given transaction for subsequent updates. Let see an example of how use it with <em>suricatta</em> dsl:</p>
+</div>
+<div class="listingblock">
+<div class="title">Without specific fields</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/for-update</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select * from book for update&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">With specific fields</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/for-update</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select * from book for update of \&quot;name\&quot;&quot;</span></code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -954,11 +1287,8 @@ situation:</p>
 </ul>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_license">7. License</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_license">6.3. License</h3>
 <div class="paragraph">
 <p><em>suricatta</em> is writen from scratch and is licensed under Apache 2.0 license:</p>
 </div>
@@ -986,10 +1316,11 @@ repo.</p>
 </div>
 </div>
 </div>
+</div>
 <div id="footer">
 <div id="footer-text">
 Version 0.1.0-SNAPSHOT<br>
-Last updated 2014-10-11 13:10:02 CEST
+Last updated 2014-10-11 21:02:48 CEST
 </div>
 </div>
 </body>
