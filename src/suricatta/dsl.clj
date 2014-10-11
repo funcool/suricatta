@@ -66,10 +66,16 @@
 
   clojure.lang.PersistentVector
   (sort-field* [v]
-    (let [field (field* (first v))]
-      (case (second v)
-        :asc (.asc field)
-        :desc (.desc field)))))
+    (let [field (field* (first v))
+          field (case (second v)
+                  :asc (.asc field)
+                  :desc (.desc field))]
+      (if (= (count v) 3)
+        (case (first (drop 2 v))
+          :nulls-last (.nullsLast field)
+          :nulls-first (.nullsFirst field))
+        field))))
+
 
 (extend-protocol ITable
   java.lang.String

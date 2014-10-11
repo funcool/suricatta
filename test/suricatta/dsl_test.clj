@@ -112,6 +112,21 @@
                 (dsl/order-by [:name :desc]))]
       (is (= (fmt/get-sql q)
              "select name from book order by name desc"))))
+
+  (testing "Select clause with order by with explicit order by index"
+    (let [q (-> (dsl/select :name)
+                (dsl/from "book")
+                (dsl/order-by ["1" :desc]
+                              ["2" :asc]))]
+      (is (= (fmt/get-sql q)
+             "select name from book order by 1 desc, 2 asc"))))
+
+  (testing "Select clause with order by with explicit order with nulls"
+    (let [q (-> (dsl/select :name)
+                (dsl/from "book")
+                (dsl/order-by [:name :desc :nulls-last]))]
+      (is (= (fmt/get-sql q)
+             "select name from book order by name desc nulls last"))))
 )
 
 (deftest dsl-common-table-expressions
