@@ -3,6 +3,7 @@
 /checkouts
 pom.xml
 pom.xml.asc
+doc/index.html
 *.jar
 *.class
 /.lein-*
