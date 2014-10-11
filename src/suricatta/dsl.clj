@@ -14,13 +14,16 @@
   (field* [_] "Field constructor"))
 
 (defprotocol ITable
-  (table [_] "Table constructor"))
+  (table* [_] "Table constructor"))
 
 (defprotocol IName
   (name [_] "Name constructor"))
 
+(defprotocol IOnStep
+  (on [_ conditions]))
+
 (defprotocol ICondition
-  (condition [_] "Condition constructor"))
+  (condition* [_] "Condition constructor"))
 
 (defprotocol IVal
   (val [_] "Val constructor"))
@@ -39,21 +42,18 @@
   org.jooq.Field
   (field* [f] f)
 
-  ;; org.jooq.impl.SelectQueryAsExistsCondition
-  ;; (field* [f] f)
-
   org.jooq.impl.Val
   (field* [v] v))
 
 (extend-protocol ITable
   java.lang.String
-  (table [s] (DSL/table s))
+  (table* [s] (DSL/table s))
 
   clojure.lang.Keyword
-  (table [kw] (table (clojure.core/name kw)))
+  (table* [kw] (table* (clojure.core/name kw)))
 
   org.jooq.Table
-  (table [t] t))
+  (table* [t] t))
 
 (extend-protocol IName
   java.lang.String
@@ -66,16 +66,16 @@
 
 (extend-protocol ICondition
   java.lang.String
-  (condition [s] (DSL/condition s))
+  (condition* [s] (DSL/condition s))
 
   org.jooq.impl.CombinedCondition
-  (condition [c] c)
+  (condition* [c] c)
 
   org.jooq.impl.SQLCondition
-  (condition [c] c)
+  (condition* [c] c)
 
   clojure.lang.PersistentVector
-  (condition [v]
+  (condition* [v]
     (let [sql    (first v)
           params (rest v)]
       (->> (into-array Object params)
@@ -92,6 +92,13 @@
 (defn field
   [data & {:keys [alias] :as opts}]
   (let [f (field* data)]
+    (if alias
+      (.as f (clojure.core/name alias))
+      f)))
+
+(defn table
+  [data & {:keys [alias] :as opts}]
+  (let [f (table* data)]
     (if alias
       (.as f (clojure.core/name alias))
       f)))
@@ -148,15 +155,17 @@
   (.join q t))
 
 (defn on
-  [q cond]
-  (.on q cond))
+  [q & clauses]
+  (->> (map condition* clauses)
+       (into-array org.jooq.Condition)
+       (.on q)))
 
 (defn where
   "Create where clause with variable number
   of conditions (that are implicitly combined
   with `and` logical operator)."
   [q & clauses]
-  (->> (map condition clauses)
+  (->> (map condition* clauses)
        (into-array org.jooq.Condition)
        (.where q)))
 
@@ -193,7 +202,7 @@
 (defn and
   "Logican operator `and`."
   [& conditions]
-  (let [conditions (map condition conditions)]
+  (let [conditions (map condition* conditions)]
     (reduce (fn [acc v] (.and acc v))
             (first conditions)
             (rest conditions))))
@@ -201,7 +210,7 @@
 (defn or
   "Logican operator `or`."
   [& conditions]
-  (let [conditions (map condition conditions)]
+  (let [conditions (map condition* conditions)]
     (reduce (fn [acc v] (.or acc v))
             (first conditions)
             (rest conditions))))
