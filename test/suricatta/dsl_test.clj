@@ -188,6 +188,24 @@
     (let [q (dsl/truncate :table1)]
       (is (= (fmt/get-sql q)
              "truncate table table1"))))
+
+  (testing "Alter table with add column"
+    (let [q (-> (dsl/alter-table :t1)
+                (dsl/add-column :title :pg/varchar {:length 2 :null false}))]
+      (is (= (fmt/get-sql q)
+             "alter table t1 add title varchar(2) not null"))))
+
+  (testing "Alter table with set new datatype"
+    (let [q (-> (dsl/alter-table :t1)
+                (dsl/set-column-type :title :pg/varchar {:length 100}))]
+      (is (= (fmt/get-sql q)
+             "alter table t1 alter title varchar(100)"))))
+
+  (testing "Alter table with drop column"
+    (let [q (-> (dsl/alter-table :t1)
+                (dsl/drop-column :title :cascade))]
+      (is (= (fmt/get-sql q)
+             "alter table t1 drop title cascade"))))
 )
 
 (deftest dsl-common-table-expressions

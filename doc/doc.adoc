@@ -659,6 +659,38 @@ The TRUNCATE statement
 ;; => "truncate table table1"
 ----
 
+The ALTER statement
+^^^^^^^^^^^^^^^^^^^
+
+Alter statements are used mainly for add, modify or delete columns from table.
+
+.Add new column
+[source, clojure]
+----
+(-> (dsl/alter-table :t1)
+    (dsl/add-column :title :pg/varchar {:length 2 :null false})
+    (fmt/get-sql))
+;; => "alter table t1 add title varchar(2) not null"
+----
+
+.Change type of column
+[source, clojure]
+----
+(-> (dsl/alter-table :t1)
+    (dsl/set-column-type :title :pg/varchar {:length 100})
+    (fmt/get-sql))
+;; => "alter table t1 alter title varchar(100)"
+----
+
+.Drop column
+[source, clojure]
+----
+(-> (dsl/alter-table :t1)
+    (dsl/drop-column :title :cascade)
+    (fmt/get-sql))
+;; => "alter table t1 drop title cascade"
+----
+
 How to Contribute?
 ------------------
 

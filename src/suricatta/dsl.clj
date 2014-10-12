@@ -4,7 +4,8 @@
   (:require [suricatta.core :as core]
             [suricatta.proto :as proto])
   (:import org.jooq.impl.DSL
-           org.jooq.impl.DefaultConfiguration))
+           org.jooq.impl.DefaultConfiguration
+           org.jooq.util.postgres.PostgresDataType))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocols for constructors
@@ -313,7 +314,47 @@
 ;; DDL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def ^{:doc "Datatypes translation map" :dynamic true}
+  *datatypes*
+  {:pg/varchar PostgresDataType/VARCHAR})
+
 (defn truncate
   [t]
   (-> (table* t)
       (DSL/truncate)))
+
+(defn alter-table
+  [t]
+  (-> (table* t)
+      (DSL/alterTable)))
+
+(defn- datatype-transformer
+  [opts ^org.jooq.DataType acc attr]
+  (case attr
+    :length (.length acc (attr opts))
+    :null   (.nullable acc (attr opts))))
+
+(defn set-column-type
+  [^org.jooq.AlterTableStep t ^String name datatype & [opts]]
+  (let [^org.jooq.AlterTableFinalStep t (.alter t (field* name))]
+    (->> (reduce (partial datatype-transformer opts)
+                 (datatype *datatypes*)
+                 (keys opts))
+         (.set t))))
+
+(defn add-column
+  "Add column to alter table step."
+  [^org.jooq.AlterTableStep t name datatype & [opts]]
+  (->> (reduce (partial datatype-transformer opts)
+               (datatype *datatypes*)
+               (keys opts))
+       (.add t (field* name))))
+
+(defn drop-column
+  "Drop column from alter table step."
+  [^org.jooq.AlterTableStep t name & [type]]
+  (let [^org.jooq.AlterTableDropStep t (.drop t (field* name))]
+    (case type
+      :cascade (.cascade t)
+      :restrict (.restrict t)
+      t)))
