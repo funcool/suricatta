@@ -646,8 +646,8 @@ The DELETE statement
 TODO
 
 
-Other SQL Statements (DDL)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+SQL Statements (DDL)
+~~~~~~~~~~~~~~~~~~~~
 
 The TRUNCATE statement
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -701,6 +701,28 @@ The DROP statement
     (fmt/get-sql))
 ;; => "drop table t1"
 ----
+
+Table Expressions
+~~~~~~~~~~~~~~~~~
+
+The VALUES() table constructor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some databases allow for expressing in-memory temporary tables using a `values()`.
+
+.Select from `values()` example
+[source, clojure]
+----
+(-> (dsl/select :f1 :f2)
+    (dsl/from (-> (dsl/values (row 1 2)
+                              (row 3 4))
+                  (dsl/as "t1" "f1" "f2")))
+    (fmt/get-sql {:type :inlined}))
+;; => "select f1, f2 from (values(1, 2), (3, 4)) as \"t1\" (\"f1\", \"f2\")"
+----
+
+WARNING: `suricatta.dsl/row` is defined as macro and only accept literals.
+
 
 How to Contribute?
 ------------------
