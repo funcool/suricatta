@@ -23,6 +23,9 @@
 (defprotocol IName
   (name [_] "Name constructor"))
 
+(defprotocol IAlias
+  (as* [_ params] "Alias constructor"))
+
 (defprotocol IOnStep
   (on [_ conditions]))
 
@@ -119,14 +122,28 @@
   Object
   (val [v] (DSL/val v)))
 
+(extend-protocol IAlias
+  org.jooq.Name
+  (as* [n args]
+    (.as n (first args)))
+
+  org.jooq.DerivedColumnList
+  (as* [n args]
+    (.as n (first args)))
+
+  org.jooq.Table
+  (as* [n args]
+    (let [^String alias (first args)]
+      (->> (into-array String (rest args))
+           (.as n alias)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common DSL functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn as
-  "Set alias."
-  [q name]
-  (.as q name))
+  [o & args]
+  (as* o args))
 
 (defn field
   [data & {:keys [alias] :as opts}]
