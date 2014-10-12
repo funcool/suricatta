@@ -38,35 +38,37 @@
 
 (extend-protocol IField
   java.lang.String
-  (field* [s] (DSL/field s))
+  (field* ^org.jooq.Field [^String s]
+    (DSL/field s))
 
   clojure.lang.Keyword
-  (field* [kw] (field* (clojure.core/name kw)))
+  (field* ^org.jooq.Field [kw]
+    (field* (clojure.core/name kw)))
 
   org.jooq.Field
-  (field* [f] f)
+  (field* ^org.jooq.Field [f] f)
 
   org.jooq.impl.Val
-  (field* [v] v))
+  (field* ^org.jooq.Field [v] v))
 
 (extend-protocol ISortField
   java.lang.String
-  (sort-field* [s]
+  (sort-field* ^org.jooq.SortField [s]
     (-> (DSL/field s)
         (.asc)))
 
   clojure.lang.Keyword
-  (sort-field* [kw] (sort-field* (clojure.core/name kw)))
+  (sort-field* ^org.jooq.SortField [kw]
+    (sort-field* (clojure.core/name kw)))
 
   org.jooq.Field
-  (sort-field* [f]
-    (.asc f))
+  (sort-field* ^org.jooq.SortField [f] (.asc f))
 
   org.jooq.SortField
-  (sort-field* [v] v)
+  (sort-field* ^org.jooq.SortField [v] v)
 
   clojure.lang.PersistentVector
-  (sort-field* [v]
+  (sort-field* ^org.jooq.SortField [v]
     (let [field (field* (first v))
           field (case (second v)
                   :asc (.asc field)
@@ -76,7 +78,6 @@
           :nulls-last (.nullsLast field)
           :nulls-first (.nullsFirst field))
         field))))
-
 
 (extend-protocol ITable
   java.lang.String
