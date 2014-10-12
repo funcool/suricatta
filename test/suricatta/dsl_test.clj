@@ -249,6 +249,14 @@
              "select fullname, (select count(*) from book where (book.authorid = author.id)) \"books\" from author"))))
 )
 
+(deftest dsl-insert
+  (testing "Insert statement"
+    (let [q (-> (dsl/insert-into :t1 :f1 :f2 :f3)
+                (dsl/insert-values 1 2 0)
+                (dsl/insert-values 3 4 0))]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "insert into t1 (f1, f2, f3) values (?, ?, ?), (?, ?, ?)")))))
+
 (deftest dsl-common-table-expressions
   (testing "Common table expressions"
     (let [cte1 (-> (dsl/name :t1)

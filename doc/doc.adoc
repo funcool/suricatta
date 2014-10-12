@@ -631,8 +631,20 @@ These operators combine two results into one. UNION removes all duplicate record
 The INSERT statement
 ~~~~~~~~~~~~~~~~~~~~
 
-TODO
+The INSERT statement is used to insert new records into a database table. 
 
+.INSERT statement example with multiple values
+[source, clojure]
+----
+(-> (dsl/insert-into :table1 :f1 :f2 :f3)
+    (dsl/insert-values 1 2 0)
+    (dsl/insert-values 3 4 0)
+    (fmt/sqlvec))
+;; => ["insert into t1 (f1, f2, f3) values (?, ?, ?), (?, ?, ?)" 1 2 0 3 4 0]
+----
+
+WARNING: both `insert-into` and `insert-values` functions are macros and they only accept
+literals as parameters.
 
 The UPDATE statement
 ~~~~~~~~~~~~~~~~~~~~
