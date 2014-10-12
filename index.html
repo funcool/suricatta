@@ -538,7 +538,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_introduction">1. Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><em>suricatta</em> is a high level sql toolkit for clojure (backed by jooq library)</p>
+<p><em>suricatta</em> is a high level sql toolkit for clojure (backed by fantastic <a href="http://www.jooq.org/">jooq library</a>)</p>
 </div>
 <div class="paragraph">
 <p>It consists in two main modules:</p>
@@ -905,6 +905,14 @@ top of <code>jooq</code> dsl.</p>
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.dsl</span> <span class="tok-ss">:as</span> <span class="tok-nv">dsl</span><span class="tok-p">])</span></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>And functions related to formating sql into string or sqlvec format in <code>suricatta.format</code> namespace:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.format</span> <span class="tok-ss">:as</span> <span class="tok-nv">fmt</span><span class="tok-p">])</span></code></pre>
+</div>
+</div>
 <div class="sect2">
 <h3 id="_the_select_statement">5.1. The SELECT statement</h3>
 <div class="sect3">
@@ -931,8 +939,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.format</span> <span class="tok-ss">:as</span> <span class="tok-nv">fmt</span><span class="tok-p">])</span>
-<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:id</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:id</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:postgresql</span><span class="tok-p">}))</span>
 <span class="tok-c1">;; =&gt; &quot;select id, name&quot;</span></code></pre>
 </div>
@@ -1515,7 +1522,7 @@ repo.</p>
 <div id="footer">
 <div id="footer-text">
 Version 0.1.0-SNAPSHOT<br>
-Last updated 2014-10-12 17:43:05 CEST
+Last updated 2014-10-12 20:59:49 CEST
 </div>
 </div>
 </body>
