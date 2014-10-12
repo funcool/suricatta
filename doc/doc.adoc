@@ -649,8 +649,15 @@ TODO
 Other SQL Statements (DDL)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO
+The TRUNCATE statement
+^^^^^^^^^^^^^^^^^^^^^^
 
+[source, clojure]
+----
+(-> (dsl/truncate :table1)
+    (fmt/get-sql))
+;; => "truncate table table1"
+----
 
 How to Contribute?
 ------------------

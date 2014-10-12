@@ -169,6 +169,13 @@
              "(select name from books) union all (select name from articles)"))))
 )
 
+(deftest dsl-ddl
+  (testing "Truncate table"
+    (let [q (dsl/truncate :table1)]
+      (is (= (fmt/get-sql q)
+             "truncate table table1"))))
+)
+
 (deftest dsl-common-table-expressions
   (testing "Common table expressions"
     (let [cte1 (-> (dsl/name :t1)
