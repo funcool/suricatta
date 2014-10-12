@@ -575,7 +575,7 @@ much better resource and memmory management with result sets and prepared statem
 <div class="ulist">
 <ul>
 <li>
-<p>Build queries with <em>suricatta</em> and execute them with <em>clojure.jdbc</em> (it has good interoparability)</p>
+<p>Build queries with <em>suricatta</em> and execute them with <em>clojure.jdbc</em> (it has good interoperability)</p>
 </li>
 <li>
 <p>Execute queries with <em>suricatta</em> and use raw string queries or any other sql building library.</p>
@@ -695,12 +695,9 @@ this is a XML block that you should put in a dependency section of a maven confi
 <div class="sect2">
 <h3 id="_connecting_to_database">4.1. Connecting to database</h3>
 <div class="paragraph">
-<p>With difference with other database connection libraries, <em>surricata</em> does not uses the
-concept of <em>connection</em>. It tries abstract it with much simpler concept: <strong>context</strong>.</p>
-</div>
-<div class="paragraph">
-<p>The <strong>context</strong> has the resposibility of connection resource management, transaction isolation
-flags and sql rendering dialect.</p>
+<p><em>surricata</em> uses the concept of <strong>context</strong> instead of <strong>connection</strong> unlike any other database
+libraries. The <strong>context</strong> has the resposibility of connection resource management,
+transaction isolation flags and sql rendering dialect.</p>
 </div>
 <div class="paragraph">
 <p>You can create one <strong>context</strong> from:</p>
@@ -721,10 +718,8 @@ flags and sql rendering dialect.</p>
 <div class="paragraph">
 <p>Let see some examples:</p>
 </div>
-<div class="paragraph">
-<p>Creating context from <em>dbspec</em></p>
-</div>
 <div class="listingblock">
+<div class="title">Creating context from <em>dbspec</em></div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">sc</span><span class="tok-p">])</span>
 
@@ -733,10 +728,8 @@ flags and sql rendering dialect.</p>
   <span class="tok-p">(</span><span class="tok-nf">do-something-with</span> <span class="tok-nv">ctx</span><span class="tok-p">))</span></code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>Create context from existing <em>clojure.jdbc</em> connection.</p>
-</div>
 <div class="listingblock">
+<div class="title">Create context from existing <em>clojure.jdbc</em> connection.</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">jdbc.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">jdbc</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">sc</span><span class="tok-p">])</span>
@@ -784,7 +777,7 @@ operations or any other sql commands.</p>
 <div class="sect2">
 <h3 id="_fetching_results">4.3. Fetching results</h3>
 <div class="paragraph">
-<p>With <code>suricatta.core/result-query</code> you can build <code>ResultQuery</code> that support
+<p>With <code>suricatta.core/result-query</code> you can build <code>ResultQuery</code> instance, which has support for
 fetching results.</p>
 </div>
 <div class="listingblock">
@@ -1378,7 +1371,7 @@ repo.</p>
 <div id="footer">
 <div id="footer-text">
 Version 0.1.0-SNAPSHOT<br>
-Last updated 2014-10-11 22:48:04 CEST
+Last updated 2014-10-12 11:25:18 CEST
 </div>
 </div>
 </body>
