@@ -1,6 +1,7 @@
 (ns suricatta.impl
   (:require [jdbc.core :as jdbc]
             [jdbc.types :as jdbctypes]
+            [jdbc.proto :as jdbcproto]
             [suricatta.types :as types]
             [suricatta.proto :as proto])
   (:import org.jooq.impl.DSL
@@ -178,14 +179,14 @@
 ;; clojure.jdbc interoperability
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(extend-protocol jdbctypes/ISQLStatement
+(extend-protocol jdbcproto/ISQLStatement
   Query
   (normalize [q conn options]
     (let [dialect (JDBCUtils/dialect (:connection conn))]
       (-> (apply vector
                  (proto/get-sql q :indexed dialect)
                  (proto/get-bind-values q))
-          (jdbctypes/normalize conn options))))
+          (jdbcproto/normalize conn options))))
 
   ResultQuery
   (normalize [q conn options]
@@ -193,4 +194,4 @@
       (-> (apply vector
                  (proto/get-sql q :indexed dialect)
                  (proto/get-bind-values q))
-          (jdbctypes/normalize conn options)))))
+          (jdbcproto/normalize conn options)))))
