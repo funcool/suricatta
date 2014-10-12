@@ -1,7 +1,7 @@
 suricatta documentation
 ========================
 Andrey Antukh, <niwi@niwi.be>
-0.1.0-SNAPSHOT, 2014-09-27
+0.1.0-SNAPSHOT
 :toc: left
 :numbered:
 :source-highlighter: pygments
