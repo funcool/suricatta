@@ -213,6 +213,17 @@
              "drop table t1"))))
 )
 
+(deftest dsl-derived-columns
+  (testing "Experiment 1"
+    (let [q (-> (dsl/select :f1 :f2)
+                (dsl/from
+                 (-> (dsl/values
+                      (dsl/row 1 2)
+                      (dsl/row 3 4))
+                     (.as "t1" (into-array String ["f1" "f2"])))))]
+      (is (= (fmt/get-sql q)
+             "select f1, f2 from (values(?, ?), (?, ?)) \"t1\"(\"f1\", \"f2\")")))))
+
 (deftest dsl-common-table-expressions
   (testing "Common table expressions"
     (let [cte1 (-> (dsl/name :t1)

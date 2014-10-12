@@ -328,6 +328,15 @@
                      (into-array String))]
     (.fields n fields')))
 
+(defmacro row
+  [& values]
+  `(DSL/row ~@(map (fn [x#] `(field* (val ~x#))) values)))
+
+(defn values
+  [& rows]
+  (->> (into-array org.jooq.RowN rows)
+       (DSL/values)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DDL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
