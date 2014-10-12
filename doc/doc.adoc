@@ -726,8 +726,8 @@ Some databases allow for expressing in-memory temporary tables using a `values()
 [source, clojure]
 ----
 (-> (dsl/select :f1 :f2)
-    (dsl/from (-> (dsl/values (row 1 2)
-                              (row 3 4))
+    (dsl/from (-> (dsl/values (dsl/row 1 2)
+                              (dsl/row 3 4))
                   (dsl/as "t1" "f1" "f2")))
     (fmt/get-sql {:type :inlined}))
 ;; => "select f1, f2 from (values(1, 2), (3, 4)) as \"t1\" (\"f1\", \"f2\")"
