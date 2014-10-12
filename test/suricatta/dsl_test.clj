@@ -206,6 +206,11 @@
                 (dsl/drop-column :title :cascade))]
       (is (= (fmt/get-sql q)
              "alter table t1 drop title cascade"))))
+
+  (testing "Drop table"
+    (let [q (dsl/drop-table :t1)]
+      (is (= (fmt/get-sql q)
+             "drop table t1"))))
 )
 
 (deftest dsl-common-table-expressions

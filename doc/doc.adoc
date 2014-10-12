@@ -691,6 +691,17 @@ Alter statements are used mainly for add, modify or delete columns from table.
 ;; => "alter table t1 drop title cascade"
 ----
 
+The DROP statement
+^^^^^^^^^^^^^^^^^^
+
+.Drop table example
+[source, clojure]
+----
+(-> (dsl/drop-table :t1)
+    (fmt/get-sql))
+;; => "drop table t1"
+----
+
 How to Contribute?
 ------------------
 

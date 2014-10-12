@@ -359,3 +359,9 @@
       :cascade (.cascade t)
       :restrict (.restrict t)
       t)))
+
+(defn drop-table
+  "Drop table statement constructor."
+  [t]
+  (-> (table* t)
+      (DSL/dropTable)))
