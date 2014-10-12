@@ -132,12 +132,9 @@ This section intends to explain the usage of sql execution part of the library.
 Connecting to database
 ~~~~~~~~~~~~~~~~~~~~~~
 
-With difference with other database connection libraries, _surricata_ does not uses the
-concept of _connection_. It tries abstract it with much simpler concept: **context**.
-
-The **context** has the resposibility of connection resource management, transaction isolation
-flags and sql rendering dialect.
-
+_surricata_ uses the concept of **context** instead of **connection** unlike any other database
+libraries. The **context** has the resposibility of connection resource management,
+transaction isolation flags and sql rendering dialect.
 
 You can create one **context** from:
 
@@ -147,8 +144,7 @@ You can create one **context** from:
 
 Let see some examples:
 
-Creating context from _dbspec_
-
+.Creating context from _dbspec_
 [source, clojure]
 ----
 (require '[suricatta.core :as sc])
@@ -158,9 +154,7 @@ Creating context from _dbspec_
   (do-something-with ctx))
 ----
 
-
-Create context from existing _clojure.jdbc_ connection.
-
+.Create context from existing _clojure.jdbc_ connection.
 [source, clojure]
 ----
 (require '[jdbc.core :as jdbc])
@@ -204,7 +198,7 @@ Exists a convenience method that can avoid one step:
 Fetching results
 ~~~~~~~~~~~~~~~~
 
-With `suricatta.core/result-query` you can build `ResultQuery` that support
+With `suricatta.core/result-query` you can build `ResultQuery` instance, which has support for
 fetching results.
 
 [source, clojure]
