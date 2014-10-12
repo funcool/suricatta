@@ -36,7 +36,7 @@ Use cases
 
 _suricatta_ library is very flexible and it can be used in very different ways:
 
-- Build queries with _suricatta_ and execute them with _clojure.jdbc_ (it has good interoparability)
+- Build queries with _suricatta_ and execute them with _clojure.jdbc_ (it has good interoperability)
 - Execute queries with _suricatta_ and use raw string queries or any other sql building library.
 - Combine usage of _clojure.jdbc_ and _suricatta_ in one code base (you can create suricatta context
   from existing jdbc connection).
