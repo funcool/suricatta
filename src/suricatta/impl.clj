@@ -124,14 +124,20 @@
 
   Query
   (execute [^Query q ^Context ctx]
+    ;; In this case, incoming context is ignored
+    ;; and query embedded context will be used
     (let [^DSLContext context (proto/get-context q)]
       (.execute context (:q q))))
+
+  org.jooq.impl.AbstractQueryPart
+  (execute [^org.jooq.impl.AbstractQueryPart q ^Context ctx]
+    (let [^DSLContext context (proto/get-context ctx)]
+      (.execute context q)))
 
   PersistentVector
   (execute [^PersistentVector sqlvec ^Context ctx]
     (let [query (proto/query sqlvec ctx)]
       (proto/execute query ctx))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IFetch Implementation
@@ -166,8 +172,16 @@
 
   ResultQuery
   (fetch [^ResultQuery q ^Context ctx opts]
+    ;; In this case, incoming context is ignored
+    ;; and resultquery embedded context will be used
     (let [^DSLContext context (proto/get-context q)]
       (-> (.fetch context (:q q))
+          (result->vector opts))))
+
+  org.jooq.impl.AbstractQueryPart
+  (fetch [^org.jooq.impl.AbstractQueryPart q ^Context ctx opts]
+    (let [^DSLContext context (proto/get-context ctx)]
+      (-> (.fetch context q)
           (result->vector opts))))
 
   PersistentVector

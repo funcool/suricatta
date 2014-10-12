@@ -28,6 +28,20 @@
         (is (= (fmt/get-sql q2)
                "select id, name from dual"))))))
 
+
+(deftest dsl-fetch-and-execute
+  (testing "Fetch using query builded with dsl"
+    (with-open [ctx (context dbspec)
+                q   (dsl/select-one)]
+      (is (= (fetch ctx q)
+             [{:one 1}]))))
+
+  (testing "Execute using query builded with dsl"
+    (with-open [ctx (context dbspec)]
+      (execute ctx "create table foo (id integer)")
+      (let [r (execute ctx (dsl/truncate :foo))]
+        (is (= r 0))))))
+
 (deftest dsl-select-clause
   (testing "Basic select clause"
     (let [q   (-> (dsl/select :id :name)
