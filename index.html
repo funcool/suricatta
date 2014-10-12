@@ -1354,8 +1354,8 @@ literals as parameters.
 <div class="title">Select from <code>values()</code> example</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:f1</span> <span class="tok-ss">:f2</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/values</span> <span class="tok-p">(</span><span class="tok-nf">row</span> <span class="tok-mi">1</span> <span class="tok-mi">2</span><span class="tok-p">)</span>
-                              <span class="tok-p">(</span><span class="tok-nf">row</span> <span class="tok-mi">3</span> <span class="tok-mi">4</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/values</span> <span class="tok-p">(</span><span class="tok-nf">dsl/row</span> <span class="tok-mi">1</span> <span class="tok-mi">2</span><span class="tok-p">)</span>
+                              <span class="tok-p">(</span><span class="tok-nf">dsl/row</span> <span class="tok-mi">3</span> <span class="tok-mi">4</span><span class="tok-p">))</span>
                   <span class="tok-p">(</span><span class="tok-nf">dsl/as</span> <span class="tok-s">&quot;t1&quot;</span> <span class="tok-s">&quot;f1&quot;</span> <span class="tok-s">&quot;f2&quot;</span><span class="tok-p">)))</span>
     <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:type</span> <span class="tok-ss">:inlined</span><span class="tok-p">}))</span>
 <span class="tok-c1">;; =&gt; &quot;select f1, f2 from (values(1, 2), (3, 4)) as \&quot;t1\&quot; (\&quot;f1\&quot;, \&quot;f2\&quot;)&quot;</span></code></pre>
@@ -1515,7 +1515,7 @@ repo.</p>
 <div id="footer">
 <div id="footer-text">
 Version 0.1.0-SNAPSHOT<br>
-Last updated 2014-10-12 17:39:18 CEST
+Last updated 2014-10-12 17:42:39 CEST
 </div>
 </div>
 </body>
