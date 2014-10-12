@@ -23,8 +23,11 @@
 (defprotocol IName
   (name [_] "Name constructor"))
 
-(defprotocol IAlias
-  (as* [_ params] "Alias constructor"))
+(defprotocol ITableAlias
+  (as* [_ params] "Table alias constructor"))
+
+(defprotocol IFieldAlias
+  (as-field* [_ params] "Field alias constructor"))
 
 (defprotocol IOnStep
   (on [_ conditions]))
@@ -90,7 +93,10 @@
   (table* [kw] (table* (clojure.core/name kw)))
 
   org.jooq.Table
-  (table* [t] t))
+  (table* [t] t)
+
+  org.jooq.TableLike
+  (table* [t] (.asTable t)))
 
 (extend-protocol IName
   java.lang.String
@@ -111,6 +117,13 @@
   org.jooq.impl.SQLCondition
   (condition* [c] c)
 
+  clojure.lang.PersistentList
+  (condition* [v]
+    (let [sql   (first v)
+          parts (rest v)]
+      (->> (into-array org.jooq.QueryPart parts)
+           (DSL/condition sql))))
+
   clojure.lang.PersistentVector
   (condition* [v]
     (let [sql    (first v)
@@ -122,7 +135,13 @@
   Object
   (val [v] (DSL/val v)))
 
-(extend-protocol IAlias
+(extend-protocol IFieldAlias
+  org.jooq.FieldLike
+  (as-field* [n args]
+    (let [^String alias (first args)]
+      (.asField n alias))))
+
+(extend-protocol ITableAlias
   org.jooq.Name
   (as* [n args]
     (.as n (first args)))
@@ -131,11 +150,11 @@
   (as* [n args]
     (.as n (first args)))
 
-  org.jooq.Table
+  org.jooq.TableLike
   (as* [n args]
     (let [^String alias (first args)]
       (->> (into-array String (rest args))
-           (.as n alias)))))
+           (.asTable n alias)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common DSL functions
@@ -144,6 +163,10 @@
 (defn as
   [o & args]
   (as* o args))
+
+(defn as-field
+  [o & args]
+  (as-field* o args))
 
 (defn field
   [data & {:keys [alias] :as opts}]
@@ -202,7 +225,7 @@
   "Creates from clause."
   [q & tables]
   (->> (map table tables)
-       (into-array org.jooq.Table)
+       (into-array org.jooq.TableLike)
        (.from q)))
 
 (defn join

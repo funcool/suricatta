@@ -222,7 +222,32 @@
                       (dsl/row 3 4))
                      (dsl/as "t1" "f1" "f2"))))]
       (is (= (fmt/get-sql q {:dialect :pgsql})
-             "select f1, f2 from (values(?, ?), (?, ?)) as \"t1\"(\"f1\", \"f2\")")))))
+             "select f1, f2 from (values(?, ?), (?, ?)) as \"t1\"(\"f1\", \"f2\")"))))
+
+  (testing "Nested select in condition clause"
+    (let [q (-> (dsl/select)
+                (dsl/from :book)
+                (dsl/where (list "book.age = ({0})" (dsl/select-one))))]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "select * from book where (book.age = (select 1 as \"one\"))"))))
+
+  (testing "Nested select in from clause"
+    (let [q (-> (dsl/select)
+                (dsl/from (-> (dsl/select :f1)
+                              (dsl/from :t1)
+                              (dsl/as "tt1" "f1"))))]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "select \"tt1\".\"f1\" from (select f1 from t1) as \"tt1\"(\"f1\")"))))
+
+  (testing "Nested select in select fields"
+    (let [sq (-> (dsl/select (dsl/field "count(*)"))
+                 (dsl/from :book)
+                 (dsl/where "book.authorid = author.id"))
+          q  (-> (dsl/select :fullname, (dsl/as-field sq "books"))
+                 (dsl/from :author))]
+      (is (= (fmt/get-sql q)
+             "select fullname, (select count(*) from book where (book.authorid = author.id)) \"books\" from author"))))
+)
 
 (deftest dsl-common-table-expressions
   (testing "Common table expressions"

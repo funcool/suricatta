@@ -723,6 +723,42 @@ Some databases allow for expressing in-memory temporary tables using a `values()
 
 WARNING: `suricatta.dsl/row` is defined as macro and only accept literals.
 
+Nested SELECTs
+^^^^^^^^^^^^^^
+
+.Using nested select in where clause
+[source, clojure]
+----
+(-> (dsl/select)
+    (dsl/from :book)
+    (dsl/where (list "book.age = ({0})" (dsl/select-one)))
+    (fmt/get-sql))
+
+;; => "select * from book where (book.age = (select 1 as \"one\"))"
+----
+
+.Using nested select in from clause
+[source, clojure]
+----
+(-> (dsl/select)
+    (dsl/from (-> (dsl/select :f1)
+                  (dsl/from :t1)
+                  (dsl/as "tt1")))
+    (fmt/get-sql))
+;; => "select \"tt1\".\"f1\" from (select f1 from t1) as \"tt1\"(\"f1\")"
+----
+
+.Using nested select in select fields clauses
+[source, clojure]
+----
+(-> (dsl/select :fullname, (-> (dsl/select (dsl/field "count(*)"))
+                               (dsl/from :book)
+                               (dsl/where "book.authorid = author.id")
+                               (dsl/as-field "books")))
+    (dsl/from :author)
+    (fmt/get-sql))
+;; => "select fullname, (select count(*) from book where (book.authorid = author.id)) "books" from author"
+----
 
 How to Contribute?
 ------------------
