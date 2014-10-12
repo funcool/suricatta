@@ -11,7 +11,7 @@ Andrey Antukh, <niwi@niwi.be>
 Introduction
 ------------
 
-_suricatta_ is a high level sql toolkit for clojure (backed by jooq library)
+_suricatta_ is a high level sql toolkit for clojure (backed by fantastic link:http://www.jooq.org/[jooq library])
 
 It consists in two main modules:
 
@@ -298,6 +298,13 @@ You can found all related functions of sql dsl on `suricatta.dsl` namespace:
 (require '[suricatta.dsl :as dsl])
 ----
 
+And functions related to formating sql into string or sqlvec format in `suricatta.format` namespace:
+
+[source, clojure]
+----
+(require '[suricatta.format :as fmt])
+----
+
 The SELECT statement
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -323,7 +330,6 @@ passing `:dialect` option to `get-sql` function of `suricatta.format` namespace:
 
 [source, clojure]
 ----
-(require '[suricatta.format :as fmt])
 (-> (dsl/select :id :name)
     (fmt/get-sql {:dialect :postgresql}))
 ;; => "select id, name"
