@@ -519,7 +519,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_the_insert_statement">5.2. The INSERT statement</a></li>
 <li><a href="#_the_update_statement">5.3. The UPDATE statement</a></li>
 <li><a href="#_the_delete_statement">5.4. The DELETE statement</a></li>
-<li><a href="#_other_sql_statements_ddl">5.5. Other SQL Statements (DDL)</a></li>
+<li><a href="#_sql_statements_ddl">5.5. SQL Statements (DDL)</a></li>
+<li><a href="#_table_expressions">5.6. Table Expressions</a></li>
 </ul>
 </li>
 <li><a href="#_how_to_contribute">6. How to Contribute?</a>
@@ -1247,7 +1248,30 @@ given transaction for subsequent updates. Let see an example of how use it with 
 <div class="sect2">
 <h3 id="_the_insert_statement">5.2. The INSERT statement</h3>
 <div class="paragraph">
-<p>TODO</p>
+<p>The INSERT statement is used to insert new records into a database table.</p>
+</div>
+<div class="listingblock">
+<div class="title">INSERT statement example with multiple values</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/insert-into</span> <span class="tok-ss">:table1</span> <span class="tok-ss">:f1</span> <span class="tok-ss">:f2</span> <span class="tok-ss">:f3</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/insert-values</span> <span class="tok-mi">1</span> <span class="tok-mi">2</span> <span class="tok-mi">0</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/insert-values</span> <span class="tok-mi">3</span> <span class="tok-mi">4</span> <span class="tok-mi">0</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sqlvec</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; [&quot;insert into t1 (f1, f2, f3) values (?, ?, ?), (?, ?, ?)&quot; 1 2 0 3 4 0]</span></code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+both <code>insert-into</code> and <code>insert-values</code> functions are macros and they only accept
+literals as parameters.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -1263,9 +1287,129 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_other_sql_statements_ddl">5.5. Other SQL Statements (DDL)</h3>
+<h3 id="_sql_statements_ddl">5.5. SQL Statements (DDL)</h3>
+<div class="sect3">
+<h4 id="_the_truncate_statement">5.5.1. The TRUNCATE statement</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/truncate</span> <span class="tok-ss">:table1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;truncate table table1&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_alter_statement">5.5.2. The ALTER statement</h4>
 <div class="paragraph">
-<p>TODO</p>
+<p>Alter statements are used mainly for add, modify or delete columns from table.</p>
+</div>
+<div class="listingblock">
+<div class="title">Add new column</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/alter-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/add-column</span> <span class="tok-ss">:title</span> <span class="tok-ss">:pg/varchar</span> <span class="tok-p">{</span><span class="tok-ss">:length</span> <span class="tok-mi">2</span> <span class="tok-ss">:null</span> <span class="tok-nv">false</span><span class="tok-p">})</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;alter table t1 add title varchar(2) not null&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Change type of column</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/alter-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/set-column-type</span> <span class="tok-ss">:title</span> <span class="tok-ss">:pg/varchar</span> <span class="tok-p">{</span><span class="tok-ss">:length</span> <span class="tok-mi">100</span><span class="tok-p">})</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;alter table t1 alter title varchar(100)&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Drop column</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/alter-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/drop-column</span> <span class="tok-ss">:title</span> <span class="tok-ss">:cascade</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;alter table t1 drop title cascade&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_drop_statement">5.5.3. The DROP statement</h4>
+<div class="listingblock">
+<div class="title">Drop table example</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/drop-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;drop table t1&quot;</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_table_expressions">5.6. Table Expressions</h3>
+<div class="sect3">
+<h4 id="_the_values_table_constructor">5.6.1. The VALUES() table constructor</h4>
+<div class="paragraph">
+<p>Some databases allow for expressing in-memory temporary tables using a <code>values()</code>.</p>
+</div>
+<div class="listingblock">
+<div class="title">Select from <code>values()</code> example</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:f1</span> <span class="tok-ss">:f2</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/values</span> <span class="tok-p">(</span><span class="tok-nf">row</span> <span class="tok-mi">1</span> <span class="tok-mi">2</span><span class="tok-p">)</span>
+                              <span class="tok-p">(</span><span class="tok-nf">row</span> <span class="tok-mi">3</span> <span class="tok-mi">4</span><span class="tok-p">))</span>
+                  <span class="tok-p">(</span><span class="tok-nf">dsl/as</span> <span class="tok-s">&quot;t1&quot;</span> <span class="tok-s">&quot;f1&quot;</span> <span class="tok-s">&quot;f2&quot;</span><span class="tok-p">)))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:type</span> <span class="tok-ss">:inlined</span><span class="tok-p">}))</span>
+<span class="tok-c1">;; =&gt; &quot;select f1, f2 from (values(1, 2), (3, 4)) as \&quot;t1\&quot; (\&quot;f1\&quot;, \&quot;f2\&quot;)&quot;</span></code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+<code>suricatta.dsl/row</code> is defined as macro and only accept literals.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_nested_selects">5.6.2. Nested SELECTs</h4>
+<div class="listingblock">
+<div class="title">Using nested select in where clause</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">(</span><span class="tok-nb">list </span><span class="tok-s">&quot;book.age = ({0})&quot;</span> <span class="tok-p">(</span><span class="tok-nf">dsl/select-one</span><span class="tok-p">)))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+
+<span class="tok-c1">;; =&gt; &quot;select * from book where (book.age = (select 1 as \&quot;one\&quot;))&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Using nested select in from clause</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:f1</span><span class="tok-p">)</span>
+                  <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+                  <span class="tok-p">(</span><span class="tok-nf">dsl/as</span> <span class="tok-s">&quot;tt1&quot;</span><span class="tok-p">)))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select \&quot;tt1\&quot;.\&quot;f1\&quot; from (select f1 from t1) as \&quot;tt1\&quot;(\&quot;f1\&quot;)&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Using nested select in select fields clauses</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:fullname</span>, <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-p">(</span><span class="tok-nf">dsl/field</span> <span class="tok-s">&quot;count(*)&quot;</span><span class="tok-p">))</span>
+                               <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+                               <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-s">&quot;book.authorid = author.id&quot;</span><span class="tok-p">)</span>
+                               <span class="tok-p">(</span><span class="tok-nf">dsl/as-field</span> <span class="tok-s">&quot;books&quot;</span><span class="tok-p">)))</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:author</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select fullname, (select count(*) from book where (book.authorid = author.id)) &quot;books&quot; from author&quot;</span></code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1371,7 +1515,7 @@ repo.</p>
 <div id="footer">
 <div id="footer-text">
 Version 0.1.0-SNAPSHOT<br>
-Last updated 2014-10-12 11:25:18 CEST
+Last updated 2014-10-12 17:39:18 CEST
 </div>
 </div>
 </body>
