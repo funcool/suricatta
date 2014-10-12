@@ -50,7 +50,7 @@ Since _suricatta_ is a young project there may be some API breakage.
 Install
 -------
 
-This section covers a installing _suricatta and its requirements.
+This section covers a installing _suricatta_ and its requirements.
 
 Requirements
 ~~~~~~~~~~~~
