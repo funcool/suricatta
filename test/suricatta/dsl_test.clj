@@ -270,8 +270,15 @@
                 (dsl/set :name "foo")
                 (dsl/where ["id = ?" 2]))]
       (is (= (fmt/get-sql q)
-             "update t1 set name = ? where (id = ?)")))))
+             "update t1 set name = ? where (id = ?)"))))
 
+  (testing "Update statement with subquery"
+    (let [q (-> (dsl/update :t1)
+                (dsl/set :f1 (-> (dsl/select :f2)
+                                 (dsl/from :t2)
+                                 (dsl/where ["id = ?" 2]))))]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "update t1 set f1 = (select f2 from t2 where (id = ?))")))))
 
 (deftest dsl-common-table-expressions
   (testing "Common table expressions"
