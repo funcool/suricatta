@@ -129,8 +129,8 @@
     (let [^DSLContext context (proto/get-context q)]
       (.execute context (:q q))))
 
-  org.jooq.impl.AbstractQueryPart
-  (execute [^org.jooq.impl.AbstractQueryPart q ^Context ctx]
+  org.jooq.Query
+  (execute [^org.jooq.Query q ^Context ctx]
     (let [^DSLContext context (proto/get-context ctx)]
       (.execute context q)))
 
@@ -178,8 +178,8 @@
       (-> (.fetch context (:q q))
           (result->vector opts))))
 
-  org.jooq.impl.AbstractQueryPart
-  (fetch [^org.jooq.impl.AbstractQueryPart q ^Context ctx opts]
+  org.jooq.ResultQuery
+  (fetch [^org.jooq.ResultQuery q ^Context ctx opts]
     (let [^DSLContext context (proto/get-context ctx)]
       (-> (.fetch context q)
           (result->vector opts))))
