@@ -1257,7 +1257,7 @@ given transaction for subsequent updates. Let see an example of how use it with 
 <p>The INSERT statement is used to insert new records into a database table.</p>
 </div>
 <div class="listingblock">
-<div class="title">INSERT statement example with multiple values</div>
+<div class="title">Example of insert two rows in one table.</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/insert-into</span> <span class="tok-ss">:table1</span> <span class="tok-ss">:f1</span> <span class="tok-ss">:f2</span> <span class="tok-ss">:f3</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/insert-values</span> <span class="tok-mi">1</span> <span class="tok-mi">2</span> <span class="tok-mi">0</span><span class="tok-p">)</span>
@@ -1283,13 +1283,72 @@ literals as parameters.
 <div class="sect2">
 <h3 id="_the_update_statement">5.3. The UPDATE statement</h3>
 <div class="paragraph">
-<p>TODO</p>
+<p>The UPDATE statement is used to modify one or several pre-existing records in a database table.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example of update statement without condition.</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name</span> <span class="tok-s">&quot;foo&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;update t1 set name = ?&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Example of update statement with one condition.</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name</span> <span class="tok-s">&quot;foo&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">[</span><span class="tok-s">&quot;id = ?&quot;</span> <span class="tok-mi">1</span><span class="tok-p">])</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;update t1 set name = ? where (id = ?)&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Example of update statement using subquery.</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:f1</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:f2</span><span class="tok-p">)</span>
+                     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:t2</span><span class="tok-p">)</span>
+                     <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">[</span><span class="tok-s">&quot;id = ?&quot;</span> <span class="tok-mi">2</span><span class="tok-p">])))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
+<span class="tok-c1">;; =&gt; &quot;update t1 set f1 = (select f2 from t2 where (id = ?))&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Example of multiple assignation un update statement using subquery.</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-p">(</span><span class="tok-nf">dsl/row</span> <span class="tok-p">(</span><span class="tok-nf">dsl/field</span> <span class="tok-ss">:f1</span><span class="tok-p">)</span>
+                      <span class="tok-p">(</span><span class="tok-nf">dsl/field</span> <span class="tok-ss">:f2</span><span class="tok-p">))</span>
+             <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:f3</span> <span class="tok-ss">:f4</span><span class="tok-p">)</span>
+                 <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:t2</span><span class="tok-p">)</span>
+                 <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">[</span><span class="tok-s">&quot;id = ?&quot;</span> <span class="tok-mi">2</span><span class="tok-p">])))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
+<span class="tok-c1">;; =&gt; &quot;update t1 set (f1, f2) = (select f3, f4 from t2 where (id = ?))&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Example of returning clause used in UPDATE statement.</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name</span> <span class="tok-s">&quot;foo&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/returning</span> <span class="tok-ss">:id</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
+<span class="tok-c1">;; =&gt; &quot;update t1 set name = ? returning id&quot;</span></code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_the_delete_statement">5.4. The DELETE statement</h3>
-<div class="paragraph">
-<p>TODO</p>
+<div class="listingblock">
+<div class="title">Simple example of delete statement with one condition</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/delete</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-s">&quot;id = 1&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;delete from t1 where (id = 1)&quot;</span></code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1520,7 +1579,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-10-12 23:34:20 CEST
+Last updated 2014-10-13 21:21:45 CEST
 </div>
 </div>
 </body>
