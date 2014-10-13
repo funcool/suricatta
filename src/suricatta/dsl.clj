@@ -353,13 +353,12 @@
 
 (defmacro row
   [& values]
-  `(DSL/row ~@(map (fn [x#] `(field* (val ~x#))) values)))
+  `(DSL/row ~@values))
 
 (defn values
   [& rows]
   (->> (into-array org.jooq.RowN rows)
        (DSL/values)))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Insert statement
