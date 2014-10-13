@@ -297,6 +297,13 @@
       (is (= (fmt/get-sql q {:dialect :pgsql})
              "update t1 set f1 = ? returning id")))))
 
+(deftest dsl-delete
+  (testing "Delete statement"
+    (let [q (-> (dsl/delete :t1)
+                (dsl/where "id = 1"))]
+      (is (= (fmt/get-sql q)
+             "delete from t1 where (id = 1)")))))
+
 (deftest dsl-common-table-expressions
   (testing "Common table expressions"
     (let [cte1 (-> (dsl/name :t1)

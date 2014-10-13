@@ -710,10 +710,18 @@ The UPDATE statement is used to modify one or several pre-existing records in a 
 ;; => "update t1 set name = ? returning id"
 ----
 
+
 The DELETE statement
 ~~~~~~~~~~~~~~~~~~~~
 
-TODO
+.Simple example of delete statement with one condition
+[source, clojure]
+----
+(-> (dsl/delete :t1)
+    (dsl/where "id = 1")
+    (fmt/get-sql))
+;; => "delete from t1 where (id = 1)"
+----
 
 
 SQL Statements (DDL)
