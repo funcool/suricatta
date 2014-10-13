@@ -278,7 +278,17 @@
                                  (dsl/from :t2)
                                  (dsl/where ["id = ?" 2]))))]
       (is (= (fmt/get-sql q {:dialect :pgsql})
-             "update t1 set f1 = (select f2 from t2 where (id = ?))")))))
+             "update t1 set f1 = (select f2 from t2 where (id = ?))"))))
+
+  (testing "Update statement with subquery with two fields"
+    (let [q (-> (dsl/update :t1)
+                (dsl/set (dsl/row (dsl/field :f1)
+                                  (dsl/field :f2))
+                         (-> (dsl/select :f3 :f4)
+                             (dsl/from :t2)
+                             (dsl/where ["id = ?" 2]))))]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "update t1 set (f1, f2) = (select f3, f4 from t2 where (id = ?))")))))
 
 (deftest dsl-common-table-expressions
   (testing "Common table expressions"
