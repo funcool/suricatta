@@ -666,7 +666,7 @@ The UPDATE statement is used to modify one or several pre-existing records in a 
 ;; => "update t1 set name = ?"
 ----
 
-.Example of update statement with condition.
+.Example of update statement with one condition.
 [source, clojure]
 ----
 (-> (dsl/update :t1)
@@ -675,6 +675,31 @@ The UPDATE statement is used to modify one or several pre-existing records in a 
     (fmt/get-sql))
 ;; => "update t1 set name = ? where (id = ?)"
 ----
+
+.Example of update statement using subquery.
+[source, clojure]
+----
+(-> (dsl/update :t1)
+    (dsl/set :f1 (-> (dsl/select :f2)
+                     (dsl/from :t2)
+                     (dsl/where ["id = ?" 2])))
+    (fmt/get-sql {:dialect :pgsql}))
+;; => "update t1 set f1 = (select f2 from t2 where (id = ?))"
+----
+
+.Example of multiple assignation un update statement using subquery.
+[source, clojure]
+----
+(-> (dsl/update :t1)
+    (dsl/set (dsl/row (dsl/field :f1)
+                      (dsl/field :f2))
+             (-> (dsl/select :f3 :f4)
+                 (dsl/from :t2)
+                 (dsl/where ["id = ?" 2])))
+    (fmt/get-sql {:dialect :pgsql}))
+;; => "update t1 set (f1, f2) = (select f3, f4 from t2 where (id = ?))"
+----
+
 
 The DELETE statement
 ~~~~~~~~~~~~~~~~~~~~
