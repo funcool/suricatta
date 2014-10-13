@@ -288,7 +288,14 @@
                              (dsl/from :t2)
                              (dsl/where ["id = ?" 2]))))]
       (is (= (fmt/get-sql q {:dialect :pgsql})
-             "update t1 set (f1, f2) = (select f3, f4 from t2 where (id = ?))")))))
+             "update t1 set (f1, f2) = (select f3, f4 from t2 where (id = ?))"))))
+
+  (testing "Update statement with returning clause"
+    (let [q (-> (dsl/update :t1)
+                (dsl/set :f1 2)
+                (dsl/returning :id))]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "update t1 set f1 = ? returning id")))))
 
 (deftest dsl-common-table-expressions
   (testing "Common table expressions"

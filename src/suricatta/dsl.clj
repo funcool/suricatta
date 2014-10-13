@@ -334,6 +334,13 @@
   [c]
   (DSL/not c))
 
+(defn returning
+  [t & fields]
+  (if (= (count fields) 0)
+    (.returning t)
+    (.returning t (->> (map field* fields)
+                       (into-array org.jooq.Field)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common Table Expresions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
