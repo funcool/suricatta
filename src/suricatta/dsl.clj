@@ -36,7 +36,7 @@
   (condition* [_] "Condition constructor"))
 
 (defprotocol IVal
-  (val [_] "Val constructor"))
+  (val* [_] "Val constructor"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol Implementations
@@ -133,7 +133,7 @@
 
 (extend-protocol IVal
   Object
-  (val [v] (DSL/val v)))
+  (val* [v] (DSL/val v)))
 
 (extend-protocol IFieldAlias
   org.jooq.FieldLike
@@ -174,6 +174,10 @@
     (if alias
       (.as f (clojure.core/name alias))
       f)))
+
+(defn val
+  [v]
+  (val* v))
 
 (defn table
   [data & {:keys [alias] :as opts}]
