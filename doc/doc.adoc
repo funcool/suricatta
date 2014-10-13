@@ -637,9 +637,9 @@ These operators combine two results into one. UNION removes all duplicate record
 The INSERT statement
 ~~~~~~~~~~~~~~~~~~~~
 
-The INSERT statement is used to insert new records into a database table. 
+The INSERT statement is used to insert new records into a database table.
 
-.INSERT statement example with multiple values
+.Example of insert two rows in one table.
 [source, clojure]
 ----
 (-> (dsl/insert-into :table1 :f1 :f2 :f3)
@@ -655,8 +655,26 @@ literals as parameters.
 The UPDATE statement
 ~~~~~~~~~~~~~~~~~~~~
 
-TODO
+The UPDATE statement is used to modify one or several pre-existing records in a database table.
 
+.Example of update statement without condition.
+[source, clojure]
+----
+(-> (dsl/update :t1)
+    (dsl/set :name "foo")
+    (fmt/get-sql))
+;; => "update t1 set name = ?"
+----
+
+.Example of update statement with condition.
+[source, clojure]
+----
+(-> (dsl/update :t1)
+    (dsl/set :name "foo")
+    (dsl/where ["id = ?" 1])
+    (fmt/get-sql))
+;; => "update t1 set name = ? where (id = ?)"
+----
 
 The DELETE statement
 ~~~~~~~~~~~~~~~~~~~~

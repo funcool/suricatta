@@ -1,6 +1,6 @@
 (ns suricatta.dsl
   "Sql building dsl"
-  (:refer-clojure :exclude [val group-by and or not name])
+  (:refer-clojure :exclude [val group-by and or not name set])
   (:require [suricatta.core :as core]
             [suricatta.proto :as proto])
   (:import org.jooq.impl.DSL
@@ -373,6 +373,19 @@
 (defmacro insert-values
   [t & values]
   `(.values ~t ~@values))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Update statement
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn update
+  [t]
+  (DSL/update (table* t)))
+
+(defn set
+  [t f v]
+  (.set t (field* f) (val v)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DDL

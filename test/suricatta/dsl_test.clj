@@ -257,6 +257,22 @@
       (is (= (fmt/get-sql q {:dialect :pgsql})
              "insert into t1 (f1, f2, f3) values (?, ?, ?), (?, ?, ?)")))))
 
+(deftest dsl-update
+  (testing "Update statement without condition"
+    (let [q (-> (dsl/update :t1)
+                (dsl/set :id 2)
+                (dsl/set :name "foo"))]
+      (is (= (fmt/get-sql q)
+             "update t1 set id = ?, name = ?"))))
+
+  (testing "Update statement with condition"
+    (let [q (-> (dsl/update :t1)
+                (dsl/set :name "foo")
+                (dsl/where ["id = ?" 2]))]
+      (is (= (fmt/get-sql q)
+             "update t1 set name = ? where (id = ?)")))))
+
+
 (deftest dsl-common-table-expressions
   (testing "Common table expressions"
     (let [cte1 (-> (dsl/name :t1)
