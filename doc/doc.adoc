@@ -229,9 +229,9 @@ The above technique can be quite useful when you want to reuse expensive databas
 
 [source, clojure]
 ----
-(with-open [q (query ctx ["select ?" 1])]
-  (fetch q)  ;; Creates a statement
-  (fetch q)) ;; Reuses the previous created statement
+(with-open [q (sc/query ctx ["select ?" 1])]
+  (sc/fetch q)  ;; Creates a statement
+  (sc/fetch q)) ;; Reuses the previous created statement
 ----
 
 
