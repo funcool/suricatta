@@ -16,25 +16,14 @@
   (testing "Specify concrete dialect"
     (let [q (dsl/select :id :name)]
       (is (= (fmt/get-sql q {:dialect :pgsql})
-             "select id, name"))))
-
-  (testing "Specify dialect with associated config"
-    (with-open [conn (jdbc/make-connection dbspec)]
-      (let [ctx (context conn)
-            q1   (dsl/select :id :name)
-            q2   (query ctx q1)]
-        (is (= (fmt/get-sql q2 {:dialect :pgsql})
-               "select id, name"))
-        (is (= (fmt/get-sql q2)
-               "select id, name from dual"))))))
-
+             "select id, name")))))
 
 (deftest dsl-fetch-and-execute
   (testing "Fetch using query builded with dsl"
-    (with-open [ctx (context dbspec)
-                q   (dsl/select-one)]
-      (is (= (fetch ctx q)
-             [{:one 1}]))))
+    (with-open [ctx (context dbspec)]
+      (let [q   (dsl/select-one)]
+        (is (= (fetch ctx q)
+               [{:one 1}])))))
 
   (testing "Execute using query builded with dsl"
     (with-open [ctx (context dbspec)]
@@ -224,12 +213,12 @@
       (is (= (fmt/get-sql q {:dialect :pgsql})
              "select f1, f2 from (values(?, ?), (?, ?)) as \"t1\"(\"f1\", \"f2\")"))))
 
-  (testing "Nested select in condition clause"
-    (let [q (-> (dsl/select)
-                (dsl/from :book)
-                (dsl/where (list "book.age = ({0})" (dsl/select-one))))]
-      (is (= (fmt/get-sql q {:dialect :pgsql})
-             "select * from book where (book.age = (select 1 as \"one\"))"))))
+  ;; (testing "Nested select in condition clause"
+  ;;   (let [q (-> (dsl/select)
+  ;;               (dsl/from :book)
+  ;;               (dsl/where (list "book.age = ({0})" (dsl/select-one))))]
+  ;;     (is (= (fmt/get-sql q {:dialect :pgsql})
+  ;;            "select * from book where (book.age = (select 1 as \"one\"))"))))
 
   (testing "Nested select in from clause"
     (let [q (-> (dsl/select)
@@ -295,7 +284,8 @@
                 (dsl/set :f1 2)
                 (dsl/returning :id))]
       (is (= (fmt/get-sql q {:dialect :pgsql})
-             "update t1 set f1 = ? returning id")))))
+             "update t1 set f1 = ? returning id"))))
+)
 
 (deftest dsl-delete
   (testing "Delete statement"
