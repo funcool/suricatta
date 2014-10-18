@@ -507,9 +507,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_executing_queries">4.2. Executing queries</a></li>
 <li><a href="#_fetching_results">4.3. Fetching results</a></li>
 <li><a href="#_parametrized_queries">4.4. Parametrized queries</a></li>
-<li><a href="#_transactions">4.5. Transactions</a></li>
-<li><a href="#_lazy_result_fetching">4.6. Lazy result fetching</a></li>
-<li><a href="#_batch_execution">4.7. Batch execution</a></li>
+<li><a href="#_reusing_query_statement">4.5. Reusing query statement</a></li>
+<li><a href="#_transactions">4.6. Transactions</a></li>
+<li><a href="#_reuse_statement">4.7. Reuse statement</a></li>
+<li><a href="#_lazy_result_fetching">4.8. Lazy result fetching</a></li>
+<li><a href="#_batch_execution">4.9. Batch execution</a></li>
 </ul>
 </li>
 <li><a href="#_sql_building_and_formatting">5. SQL Building and Formatting</a>
@@ -522,11 +524,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_table_expressions">5.6. Table Expressions</a></li>
 </ul>
 </li>
-<li><a href="#_how_to_contribute">6. How to Contribute?</a>
+<li><a href="#_async_interface">6. Async interface</a></li>
+<li><a href="#_how_to_contribute">7. How to Contribute?</a>
 <ul class="sectlevel2">
-<li><a href="#_philosophy">6.1. Philosophy</a></li>
-<li><a href="#_procedure">6.2. Procedure</a></li>
-<li><a href="#_license">6.3. License</a></li>
+<li><a href="#_philosophy">7.1. Philosophy</a></li>
+<li><a href="#_procedure">7.2. Procedure</a></li>
+<li><a href="#_license">7.3. License</a></li>
 </ul>
 </li>
 </ul>
@@ -749,48 +752,20 @@ transaction isolation flags and sql rendering dialect.</p>
 <div class="paragraph">
 <p><em>suricatta</em> has clear separation between queries that can return result, and queries that cannot.</p>
 </div>
-<div class="paragraph">
-<p>With <code>suricatta.core/query</code> function you can build queries that does not return results, like <em>ddl</em>
-operations or any other sql commands.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">sc</span><span class="tok-p">])</span>
-
-<span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">q</span> <span class="tok-p">(</span><span class="tok-nf">sc/query</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;CREATE TABLE foo&quot;</span><span class="tok-p">)]</span>
-  <span class="tok-p">(</span><span class="tok-nf">sc/execute</span> <span class="tok-nv">q</span><span class="tok-p">))</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The return value of <code>suricatta.core/execute</code> function depends on the query.</p>
-</div>
-<div class="paragraph">
-<p>Exists a convenience method that can avoid one step:</p>
-</div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">sc</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">sc/execute</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;CREATE TABLE foo&quot;</span><span class="tok-p">)</span></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>The return value of <code>suricatta.core/execute</code> function depends on the query.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_fetching_results">4.3. Fetching results</h3>
 <div class="paragraph">
-<p>With <code>suricatta.core/result-query</code> you can build <code>ResultQuery</code> instance, which has support for
-fetching results.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">sc</span><span class="tok-p">])</span>
-
-<span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">q</span> <span class="tok-p">(</span><span class="tok-nf">sc/result-query</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;select x from generate_series(1,3) as x&quot;</span><span class="tok-p">)]</span>
-  <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">q</span><span class="tok-p">))</span>
-<span class="tok-c1">;; =&gt; [{:x 1} {:x 2} {:x 3}]</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Exists a convenience method that can avoid one step:</p>
+<p>Let see an example of how execute a query and fetch results:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -836,7 +811,20 @@ queries in <strong>sqlvec</strong> format.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_transactions">4.5. Transactions</h3>
+<h3 id="_reusing_query_statement">4.5. Reusing query statement</h3>
+<div class="paragraph">
+<p>The above technique can be quite useful when you want to reuse expensive database resources.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">q</span> <span class="tok-p">(</span><span class="tok-nf">query</span> <span class="tok-nv">ctx</span> <span class="tok-p">[</span><span class="tok-s">&quot;select ?&quot;</span> <span class="tok-mi">1</span><span class="tok-p">])]</span>
+  <span class="tok-p">(</span><span class="tok-nf">fetch</span> <span class="tok-nv">q</span><span class="tok-p">)</span>  <span class="tok-c1">;; Creates a statement</span>
+  <span class="tok-p">(</span><span class="tok-nf">fetch</span> <span class="tok-nv">q</span><span class="tok-p">))</span> <span class="tok-c1">;; Reuses the previous created statement</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_transactions">4.6. Transactions</h3>
 <div class="paragraph">
 <p><em>suricatta</em> does not have support for low level usage of transactions, instead of it, offers
 lightweight abstraction: <code>atomic</code> high order function and <code>with-atomic</code> convenient macro.</p>
@@ -868,7 +856,7 @@ lightweight sugar sytax for atomic blocks:</p>
 <div class="title">Note</div>
 </td>
 <td class="content">
-You can neest as deeps as you want atomic usage, <em>suricatta</em> (thanks to jooq) has good support
+You can nest atomic usage as deep as you want, <em>suricatta</em> (thanks to jooq) has good support
 for subtransactions (savepoints).
 </td>
 </tr>
@@ -876,13 +864,19 @@ for subtransactions (savepoints).
 </div>
 </div>
 <div class="sect2">
-<h3 id="_lazy_result_fetching">4.6. Lazy result fetching</h3>
+<h3 id="_reuse_statement">4.7. Reuse statement</h3>
 <div class="paragraph">
 <p>Not implemented yet.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_batch_execution">4.7. Batch execution</h3>
+<h3 id="_lazy_result_fetching">4.8. Lazy result fetching</h3>
+<div class="paragraph">
+<p>Not implemented yet.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_batch_execution">4.9. Batch execution</h3>
 <div class="paragraph">
 <p>Not implemented yet.</p>
 </div>
@@ -1480,10 +1474,18 @@ literals as parameters.
 </div>
 </div>
 <div class="sect1">
-<h2 id="_how_to_contribute">6. How to Contribute?</h2>
+<h2 id="_async_interface">6. Async interface</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Not implemented yet.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_to_contribute">7. How to Contribute?</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_philosophy">6.1. Philosophy</h3>
+<h3 id="_philosophy">7.1. Philosophy</h3>
 <div class="paragraph">
 <p>Five most important rules:</p>
 </div>
@@ -1511,7 +1513,7 @@ literals as parameters.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_procedure">6.2. Procedure</h3>
+<h3 id="_procedure">7.2. Procedure</h3>
 <div class="paragraph">
 <p><strong>suricatta</strong> unlike Clojure and other Clojure contrib libs, does not have many
 restrictions for contributions. Just follow the following steps depending on the
@@ -1548,7 +1550,7 @@ situation:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_license">6.3. License</h3>
+<h3 id="_license">7.3. License</h3>
 <div class="paragraph">
 <p><em>suricatta</em> is writen from scratch and is licensed under Apache 2.0 license:</p>
 </div>
@@ -1579,7 +1581,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-10-13 21:21:45 CEST
+Last updated 2014-10-18 19:31:43 CEST
 </div>
 </div>
 </body>
