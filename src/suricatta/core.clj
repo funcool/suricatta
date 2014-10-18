@@ -20,14 +20,18 @@
 
 (defn execute
   "Execute a query and return a number of rows affected."
-  ([query] (proto/execute query nil))
-  ([ctx query] (proto/execute query ctx)))
+  ([q] (proto/execute q nil))
+  ([ctx q] (proto/execute q ctx)))
 
 (defn fetch
   "Fetch eagerly results executing a query."
   ([q] (proto/fetch q nil {}))
   ([ctx q] (proto/fetch q ctx {}))
   ([ctx q opts] (proto/fetch q ctx opts)))
+
+(defn query
+  [ctx querylike]
+  (proto/query querylike ctx))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Transactions

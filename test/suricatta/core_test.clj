@@ -29,7 +29,15 @@
     (testing "Fetch vector of rows"
       (let [sql    "select x, x+1 as i from system_range(1, 3)"
             result (fetch ctx sql {:rows true})]
-        (is (= result [[1 2] [2 3] [3 4]]))))))
+        (is (= result [[1 2] [2 3] [3 4]]))))
+
+    (testing "Reuse the statement"
+      (with-open [q (query ctx ["select ? \"x\" from dual" 1])]
+        (is (= (fetch q) [{:x 1}]))
+        (is (= (fetch q) [{:x 1}]))
+        (is (= (execute q) 1))
+        (is (= (execute q) 1))))
+))
 
 (deftest transactions
   (testing "Execute in a transaction"

@@ -222,6 +222,19 @@ queries in *sqlvec* format.
 ----
 
 
+Reusing query statement
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The above technique can be quite useful when you want to reuse expensive database resources.
+
+[source, clojure]
+----
+(with-open [q (query ctx ["select ?" 1])]
+  (fetch q)  ;; Creates a statement
+  (fetch q)) ;; Reuses the previous created statement
+----
+
+
 Transactions
 ~~~~~~~~~~~~
 

@@ -50,3 +50,19 @@
   `(let [func# (fn [] ~@body)]
      (->deferred func#)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(deftype Query [query conf]
+  java.io.Closeable
+  (close [_]
+    (.close query))
+
+  proto/IContext
+  (get-context [_] (DSL/using conf))
+  (get-configuration [_] conf))
+
+(defn ->query
+  [query conf]
+  (Query. query conf))

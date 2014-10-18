@@ -9,6 +9,7 @@
            org.jooq.tools.jdbc.JDBCUtils
            org.jooq.SQLDialect
            org.jooq.DSLContext
+           org.jooq.ResultQuery
            org.jooq.Configuration
            clojure.lang.PersistentVector
            clojure.lang.APersistentMap
@@ -87,7 +88,15 @@
 
   suricatta.types.Deferred
   (execute [deferred ctx]
-    (proto/execute @deferred ctx)))
+    (proto/execute @deferred ctx))
+
+  suricatta.types.Query
+  (execute [query ctx]
+    (let [^DSLContext context (if (nil? ctx)
+                                (proto/get-context query)
+                                (proto/get-context ctx))
+          ^ResultQuery query  (.-query query)]
+      (.execute context query))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IFetch Implementation
@@ -136,4 +145,36 @@
 
   suricatta.types.Deferred
   (fetch [deferred ctx opts]
-    (proto/fetch @deferred ctx opts)))
+    (proto/fetch @deferred ctx opts))
+
+  suricatta.types.Query
+  (fetch [query ctx opts]
+    (let [^DSLContext context (if (nil? ctx)
+                                (proto/get-context query)
+                                (proto/get-context ctx))
+          ^ResultQuery query  (.-query query)]
+      (-> (.fetch context query)
+          (result->vector opts)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; IQuery Implementation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(extend-protocol proto/IQuery
+  java.lang.String
+  (query [sql ctx]
+    (let [^DSLContext context (proto/get-context ctx)
+          ^Configuration conf (proto/get-configuration ctx)
+          ^ResultQuery query  (-> (.resultQuery context sql)
+                                  (.keepStatement true))]
+      (types/->query query conf)))
+
+  PersistentVector
+  (query [sqlvec ctx]
+    (let [^DSLContext context (proto/get-context ctx)
+          ^Configuration conf (proto/get-configuration ctx)
+          ^ResultQuery query  (->> (into-array Object (rest sqlvec))
+                                   (.resultQuery context (first sqlvec)))]
+      (-> (doto query
+            (.keepStatement true))
+          (types/->query conf)))))
