@@ -264,12 +264,6 @@ You can nest atomic usage as deep as you want, _suricatta_ (thanks to jooq) has 
 for subtransactions (savepoints).
 
 
-Reuse statement
-~~~~~~~~~~~~~~~
-
-Not implemented yet.
-
-
 Lazy result fetching
 ~~~~~~~~~~~~~~~~~~~~
 
