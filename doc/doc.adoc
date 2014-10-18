@@ -864,6 +864,15 @@ idiosyncrasies of jdbc under much simpler, cleaner and less error prone api, wit
 resource management.
 
 
+Can I store safely queries builded by DSL, they are immutable?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes. Unlike JOOQ DSL interface that has mutable api, _suricatta_ exposes immutable
+api for building queries.
+
+Queries builded by _suricatta_ can be safely shared through different threads.
+
+
 How to Contribute?
 ------------------
 
