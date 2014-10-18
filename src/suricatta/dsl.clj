@@ -123,10 +123,7 @@
   java.lang.String
   (condition* [s] (DSL/condition s))
 
-  org.jooq.impl.CombinedCondition
-  (condition* [c] c)
-
-  org.jooq.impl.SQLCondition
+  org.jooq.Condition
   (condition* [c] c)
 
   clojure.lang.PersistentList
