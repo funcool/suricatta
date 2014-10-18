@@ -20,17 +20,6 @@ It consists in two main modules:
 - sql formatter: utils for format in string or sqlvec queryes builded by `sql builder` module.
 
 
-Why I should use it?
-~~~~~~~~~~~~~~~~~~~~
-
-Unlike _clojure.jdbc_, this library/toolkit works in slightly higher level than
-jdbc libraries, and it hides a lot of idiosyncrasies of jdbc under much simpler, cleaner
-and less error prone api.
-
-It also, has clear diferentiation between queries that can return results and that cannot, and
-much better resource and memmory management with result sets and prepared statements.
-
-
 Use cases
 ~~~~~~~~~
 
@@ -833,6 +822,46 @@ Async interface
 ---------------
 
 Not implemented yet.
+
+
+FAQ
+---
+
+Why an other dsl? Is yet another?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In first instance _suricatta_ is not a dsl library, is a sql toolkit, and one part of the
+toolkit is a dsl.
+
+Secondly, _suricatta_'s dsl don't intends to be a sql abstraction. The real purpose of
+_suricatta_'s dsl is make SQL composable, allowing use all or almost all vendor specific
+sql constructions.
+
+
+Is a korma-clone?
+~~~~~~~~~~~~~~~~~
+
+Not, is not korma clone. Because it works very different, and it has different philosophy.
+
+_suricatta_ has cleanr differentiation between dsl and query execution/fetching. It not intends
+to be a replacement of Korma. It intends be a replacement to raw jdbc access to the database.
+
+
+Is required buy JOOQ comercial license?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Not, _suricatta_ works and tested with opensource (Apache 2.0 licensed) version of JOOQ.
+
+I have plans to make _suricatta_ work with enterprise version of JOOQ for users that want use
+"enterprise" databases in a future. In any case, that will not affect the open source version.
+
+
+Why I should use it instead clojure.jdbc or java.jdbc?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Unlike any jdbc library, _suricatta_ works in slightly higher level, and hides a lot of
+idiosyncrasies of jdbc under much simpler, cleaner and less error prone api, with better
+resource management.
 
 
 How to Contribute?
