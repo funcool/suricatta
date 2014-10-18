@@ -5,17 +5,14 @@
             [suricatta.types :as types]
             [suricatta.impl :as impl])
   (:import org.jooq.impl.DefaultConfiguration
-           org.jooq.impl.DSL
-           suricatta.types.Query
-           suricatta.types.ResultQuery))
+           org.jooq.impl.DSL))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (extend-protocol proto/IRenderer
-  org.jooq.impl.AbstractQueryPart
-
+  org.jooq.Query
   (get-sql [q type dialect]
     (let [conf (DefaultConfiguration.)
           ctx  (DSL/using conf)]
@@ -32,44 +29,12 @@
           ctx  (DSL/using conf)]
       (.extractBindValues ctx q)))
 
-  suricatta.types.Query
+  suricatta.types.Deferred
   (get-sql [self type dialect]
-    (let [conf (.derive (.-conf self))
-          q    (.-q self)
-          ctx  (DSL/using conf)]
-      (when dialect
-        (.set conf (impl/translate-dialect dialect)))
-    (condp = type
-      nil      (.renderInlined ctx q)
-      :named   (.renderNamedParams ctx q)
-      :indexed (.render ctx q)
-      :inlined (.renderInlined ctx q))))
+    (proto/get-sql @self type dialect))
 
   (get-bind-values [self]
-    (let [conf (.-conf self)
-          q    (.-q self)
-          ctx  (DSL/using conf)]
-      (.extractBindValues ctx q)))
-
-  suricatta.types.ResultQuery
-  (get-sql [self type dialect]
-    (let [conf (.derive (.-conf self))
-          q    (.-q self)
-          ctx  (DSL/using conf)]
-      (when dialect
-        (.set conf (impl/translate-dialect dialect)))
-    (condp = type
-      nil      (.render ctx q)
-      :named   (.renderNamedParams ctx q)
-      :indexed (.render ctx q)
-      :inlined (.renderInlined ctx q))))
-
-  (get-bind-values [self]
-    (let [conf (.-conf self)
-          q    (.-q self)
-          ctx  (DSL/using conf)]
-      (.extractBindValues ctx q))))
-
+    (proto/get-bind-values @self)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Api

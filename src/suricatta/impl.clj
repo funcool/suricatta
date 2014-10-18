@@ -2,7 +2,7 @@
   (:require [jdbc.core :as jdbc]
             [jdbc.types :as jdbctypes]
             [jdbc.proto :as jdbcproto]
-            [suricatta.types :as types]
+            [suricatta.types :as types :refer [defer]]
             [suricatta.proto :as proto])
   (:import org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
@@ -12,9 +12,7 @@
            org.jooq.Configuration
            clojure.lang.PersistentVector
            clojure.lang.APersistentMap
-           suricatta.types.Context
-           suricatta.types.Query
-           suricatta.types.ResultQuery))
+           suricatta.types.Context))
 
 (defn translate-dialect
   "Translate keyword dialect name to proper
@@ -66,53 +64,6 @@
     (proto/make-context (:connection connection))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Query Constructor Implementation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(extend-protocol proto/IQuery
-  String
-  (query [^String sql ^Context ctx]
-    (let [^DSLContext    context (proto/get-context ctx)
-          ^Configuration conf    (.-conf ctx)]
-      (-> (.query context sql)
-          (types/->query conf))))
-
-  PersistentVector
-  (query [^PersistentVector sqlvec ^Context ctx]
-    (let [^DSLContext context (proto/get-context ctx)
-          ^Configuration conf (.-conf ctx)]
-      (-> (->> (rest sqlvec)
-               (into-array Object)
-               (.query context (first sqlvec)))
-          (types/->query conf))))
-
-  org.jooq.impl.AbstractQueryPart
-  (query [^org.jooq.impl.AbstractQueryPart q ^Context ctx]
-    (let [^Configuration conf (.-conf ctx)]
-      (types/->query q conf))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Result Query Constructor Implementation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(extend-protocol proto/IResultQuery
-  String
-  (result-query [^String sql ^Context ctx _]
-    (let [^DSLContext context (proto/get-context ctx)
-          ^Configuration conf (.-conf ctx)]
-      (-> (.resultQuery context sql)
-          (types/->result-query conf))))
-
-  PersistentVector
-  (result-query [^PersistentVector sqlvec ^Context ctx _]
-    (let [^DSLContext context (proto/get-context ctx)
-          ^Configuration conf (.-conf ctx)]
-      (-> (->> (rest sqlvec)
-               (into-array Object)
-               (.resultQuery context (first sqlvec)))
-          (types/->result-query conf)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IExecute implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -122,22 +73,21 @@
     (let [^DSLContext context (proto/get-context ctx)]
       (.execute context sql)))
 
-  Query
-  (execute [^Query q ^Context ctx]
-    ;; In this case, incoming context is ignored
-    ;; and query embedded context will be used
-    (let [^DSLContext context (proto/get-context q)]
-      (.execute context (:q q))))
-
   org.jooq.Query
-  (execute [^org.jooq.Query q ^Context ctx]
+  (execute [^org.jooq.Query query ^Context ctx]
     (let [^DSLContext context (proto/get-context ctx)]
-      (.execute context q)))
+      (.execute context query)))
 
   PersistentVector
   (execute [^PersistentVector sqlvec ^Context ctx]
-    (let [query (proto/query sqlvec ctx)]
-      (proto/execute query ctx))))
+    (let [^DSLContext context   (proto/get-context ctx)
+          ^org.jooq.Query query (->> (into-array Object (rest sqlvec))
+                                     (.query context (first sqlvec)))]
+      (.execute context query)))
+
+  suricatta.types.Deferred
+  (execute [deferred ctx]
+    (proto/execute @deferred ctx)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IFetch Implementation
@@ -170,42 +120,20 @@
       (-> (.fetch context sql)
           (result->vector opts))))
 
-  ResultQuery
-  (fetch [^ResultQuery q ^Context ctx opts]
-    ;; In this case, incoming context is ignored
-    ;; and resultquery embedded context will be used
-    (let [^DSLContext context (proto/get-context q)]
-      (-> (.fetch context (:q q))
-          (result->vector opts))))
-
   org.jooq.ResultQuery
-  (fetch [^org.jooq.ResultQuery q ^Context ctx opts]
+  (fetch [^org.jooq.ResultQuery query ^Context ctx opts]
     (let [^DSLContext context (proto/get-context ctx)]
-      (-> (.fetch context q)
+      (-> (.fetch context query)
           (result->vector opts))))
 
   PersistentVector
   (fetch [^PersistentVector sqlvec ^Context ctx opts]
-    (let [q (proto/result-query sqlvec ctx opts)]
-      (proto/fetch q ctx opts))))
+    (let [^DSLContext context (proto/get-context ctx)
+          ^org.jooq.ResultQuery query (->> (into-array Object (rest sqlvec))
+                                           (.resultQuery context (first sqlvec)))]
+      (-> (.fetch context query)
+          (result->vector opts))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; clojure.jdbc interoperability
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(extend-protocol jdbcproto/ISQLStatement
-  Query
-  (normalize [q conn options]
-    (let [dialect (JDBCUtils/dialect (:connection conn))]
-      (-> (apply vector
-                 (proto/get-sql q :indexed dialect)
-                 (proto/get-bind-values q))
-          (jdbcproto/normalize conn options))))
-
-  ResultQuery
-  (normalize [q conn options]
-    (let [dialect (JDBCUtils/dialect (:connection conn))]
-      (-> (apply vector
-                 (proto/get-sql q :indexed dialect)
-                 (proto/get-bind-values q))
-          (jdbcproto/normalize conn options)))))
+  suricatta.types.Deferred
+  (fetch [deferred ctx opts]
+    (proto/fetch @deferred ctx opts)))

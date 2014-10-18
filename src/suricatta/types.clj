@@ -1,5 +1,4 @@
 (ns suricatta.types
-  "High level sql toolkit for Clojure"
   (:require [suricatta.proto :as proto])
   (:import java.sql.Connection
            org.jooq.impl.DSL
@@ -35,46 +34,19 @@
   (instance? Context ctx))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Query and QueryResult Types
+;; Deferred Computation (without caching the result unlike delay)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord Query [^org.jooq.Query q
-                  ^org.jooq.Configuration conf]
-  proto/IContext
-  (get-context [_] (DSL/using conf))
-  (get-configuration [_] conf)
+(deftype Deferred [^clojure.lang.IFn func]
+  clojure.lang.IDeref
+  (deref [_] (func)))
 
-  proto/IQuery
-  (query [self _] self))
+(defn ->deferred
+  [o]
+  (Deferred. o))
 
-(defrecord ResultQuery [^org.jooq.ResultQuery q
-                        ^org.jooq.Configuration conf]
-  proto/IContext
-  (get-context [_] (DSL/using conf))
-  (get-configuration [_] conf)
-
-  proto/IQuery
-  (query [_ _] (Query. q conf)))
-
-;; Constructors
-
-(defn ^Query ->query
-  "Default constructor for Query."
-  [q conf]
-  (Query. q conf))
-
-(defn ^ResultQuery ->result-query
-  "Default constructor for ResultQuery."
-  [q conf]
-  (ResultQuery. q conf))
-
-;; Predicates
-
-(defn query?
-  [q]
-  (instance? Query q))
-
-(defn result-query?
-  [q]
-  (instance? ResultQuery q))
+(defmacro defer
+  [& body]
+  `(let [func# (fn [] ~@body)]
+     (->deferred func#)))
 

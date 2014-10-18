@@ -13,12 +13,6 @@
 (defprotocol IFetch
   (fetch [query ctx opts] "Fetch eagerly results executing query."))
 
-(defprotocol IQuery
-  (query [obj ctx] "Query constructor."))
-
-(defprotocol IResultQuery
-  (result-query [obj ctx opts] "ResultQuery constructor."))
-
 (defprotocol IRenderer
   (get-sql [_ type dialect] "Render a query sql into a string.")
   (get-bind-values [_] "Get query bind values."))

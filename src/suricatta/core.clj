@@ -21,32 +21,13 @@
 (defn execute
   "Execute a query and return a number of rows affected."
   ([query] (proto/execute query nil))
-  ([^Context ctx query] (proto/execute query ctx)))
+  ([ctx query] (proto/execute query ctx)))
 
 (defn fetch
   "Fetch eagerly results executing a query."
   ([q] (proto/fetch q nil {}))
-  ([ctx q]
-     (cond
-      (types/context? ctx)
-      (proto/fetch q ctx {})
-
-      (types/result-query? ctx)
-      (proto/fetch ctx nil q)))
-  ([^Context ctx q opts]
-     (proto/fetch q ctx opts)))
-
-(defn query
-  "Creates a Query instance."
-  [^Context ctx q]
-  (proto/query q ctx))
-
-(defn result-query
-  "ResultQuery constructor"
-  ([^Context ctx q]
-    (proto/result-query q ctx {}))
-  ([^Context ctx q opts]
-    (proto/result-query q ctx opts)))
+  ([ctx q] (proto/fetch q ctx {}))
+  ([ctx q opts] (proto/fetch q ctx opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Transactions
