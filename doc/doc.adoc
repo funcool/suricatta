@@ -269,7 +269,7 @@ lightweight sugar sytax for atomic blocks:
 If something happens inside atomic wrapped function, the transaction will be aborted.
 
 [NOTE]
-You can neest as deeps as you want atomic usage, _suricatta_ (thanks to jooq) has good support
+You can nest atomic usage as deep as you want, _suricatta_ (thanks to jooq) has good support
 for subtransactions (savepoints).
 
 
