@@ -174,43 +174,19 @@ Executing queries
 
 _suricatta_ has clear separation between queries that can return result, and queries that cannot.
 
-With `suricatta.core/query` function you can build queries that does not return results, like _ddl_
-operations or any other sql commands.
-
-[source, clojure]
-----
-(require '[suricatta.core :as sc])
-
-(let [q (sc/query ctx "CREATE TABLE foo")]
-  (sc/execute q))
-----
-
-The return value of `suricatta.core/execute` function depends on the query.
-
-Exists a convenience method that can avoid one step:
-
 [source, clojure]
 ----
 (require '[suricatta.core :as sc])
 (sc/execute ctx "CREATE TABLE foo")
 ----
 
+The return value of `suricatta.core/execute` function depends on the query.
+
+
 Fetching results
 ~~~~~~~~~~~~~~~~
 
-With `suricatta.core/result-query` you can build `ResultQuery` instance, which has support for
-fetching results.
-
-[source, clojure]
-----
-(require '[suricatta.core :as sc])
-
-(let [q (sc/result-query ctx "select x from generate_series(1,3) as x")]
-  (sc/fetch q))
-;; => [{:x 1} {:x 2} {:x 3}]
-----
-
-Exists a convenience method that can avoid one step:
+Let see an example of how execute a query and fetch results:
 
 [source, clojure]
 ----
@@ -232,6 +208,7 @@ not have special syntax for queries with `RETURNING` clause:
 ----
 ====
 
+
 Parametrized queries
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -243,6 +220,7 @@ queries in *sqlvec* format.
 (sc/fetch ctx ["select id from books where age > ? limit 1" 100])
 ;; => [{:id 4232}]
 ----
+
 
 Transactions
 ~~~~~~~~~~~~
@@ -271,6 +249,12 @@ If something happens inside atomic wrapped function, the transaction will be abo
 [NOTE]
 You can nest atomic usage as deep as you want, _suricatta_ (thanks to jooq) has good support
 for subtransactions (savepoints).
+
+
+Reuse statement
+~~~~~~~~~~~~~~~
+
+Not implemented yet.
 
 
 Lazy result fetching
@@ -837,6 +821,12 @@ Nested SELECTs
     (fmt/get-sql))
 ;; => "select fullname, (select count(*) from book where (book.authorid = author.id)) "books" from author"
 ----
+
+Async interface
+---------------
+
+Not implemented yet.
+
 
 How to Contribute?
 ------------------
