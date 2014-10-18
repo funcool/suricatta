@@ -213,12 +213,12 @@
       (is (= (fmt/get-sql q {:dialect :pgsql})
              "select f1, f2 from (values(?, ?), (?, ?)) as \"t1\"(\"f1\", \"f2\")"))))
 
-  ;; (testing "Nested select in condition clause"
-  ;;   (let [q (-> (dsl/select)
-  ;;               (dsl/from :book)
-  ;;               (dsl/where (list "book.age = ({0})" (dsl/select-one))))]
-  ;;     (is (= (fmt/get-sql q {:dialect :pgsql})
-  ;;            "select * from book where (book.age = (select 1 as \"one\"))"))))
+  (testing "Nested select in condition clause"
+    (let [q (-> (dsl/select)
+                (dsl/from :book)
+                (dsl/where ["book.age = ({0})" (dsl/select-one)]))]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "select * from book where (book.age = (select 1 as \"one\"))"))))
 
   (testing "Nested select in from clause"
     (let [q (-> (dsl/select)

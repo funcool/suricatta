@@ -126,18 +126,12 @@
   org.jooq.Condition
   (condition* [c] c)
 
-  clojure.lang.PersistentList
-  (condition* [v]
-    (let [sql   (first v)
-          parts (rest v)]
-      (->> (into-array org.jooq.QueryPart parts)
-           (DSL/condition sql))))
-
   clojure.lang.PersistentVector
   (condition* [v]
     (let [sql    (first v)
           params (rest v)]
-      (->> (into-array Object params)
+      (->> (map unwrap* params)
+           (into-array Object)
            (DSL/condition sql)))))
 
 (extend-protocol IVal
