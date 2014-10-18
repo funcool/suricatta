@@ -817,9 +817,9 @@ queries in <strong>sqlvec</strong> format.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">q</span> <span class="tok-p">(</span><span class="tok-nf">query</span> <span class="tok-nv">ctx</span> <span class="tok-p">[</span><span class="tok-s">&quot;select ?&quot;</span> <span class="tok-mi">1</span><span class="tok-p">])]</span>
-  <span class="tok-p">(</span><span class="tok-nf">fetch</span> <span class="tok-nv">q</span><span class="tok-p">)</span>  <span class="tok-c1">;; Creates a statement</span>
-  <span class="tok-p">(</span><span class="tok-nf">fetch</span> <span class="tok-nv">q</span><span class="tok-p">))</span> <span class="tok-c1">;; Reuses the previous created statement</span></code></pre>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">q</span> <span class="tok-p">(</span><span class="tok-nf">sc/query</span> <span class="tok-nv">ctx</span> <span class="tok-p">[</span><span class="tok-s">&quot;select ?&quot;</span> <span class="tok-mi">1</span><span class="tok-p">])]</span>
+  <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">q</span><span class="tok-p">)</span>  <span class="tok-c1">;; Creates a statement</span>
+  <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">q</span><span class="tok-p">))</span> <span class="tok-c1">;; Reuses the previous created statement</span></code></pre>
 </div>
 </div>
 </div>
@@ -1581,7 +1581,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-10-18 19:31:43 CEST
+Last updated 2014-10-18 19:32:54 CEST
 </div>
 </div>
 </body>
