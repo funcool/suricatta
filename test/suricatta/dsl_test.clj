@@ -239,12 +239,12 @@
 )
 
 (deftest dsl-insert
-  (testing "Insert statement"
-    (let [q (-> (dsl/insert-into :t1 :f1 :f2 :f3)
-                (dsl/insert-values 1 2 0)
-                (dsl/insert-values 3 4 0))]
+  (testing "Insert statement from values"
+    (let [q (-> (dsl/insert-into :t1)
+                (dsl/insert-values {:f1 1 :f2 3})
+                (dsl/insert-values {:f1 2 :f2 4}))]
       (is (= (fmt/get-sql q {:dialect :pgsql})
-             "insert into t1 (f1, f2, f3) values (?, ?, ?), (?, ?, ?)")))))
+             "insert into t1 (f1, f2) values (?, ?), (?, ?)")))))
 
 (deftest dsl-update
   (testing "Update statement without condition using map"

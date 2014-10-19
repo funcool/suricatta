@@ -424,14 +424,17 @@
 ;; Insert statement
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmacro insert-into
-  [t & fields]
-  `(DSL/insertInto (table* ~t)
-                   ~@(map (fn [x#] `(field* ~x#)) fields)))
+(defn insert-into
+  [t]
+  (defer
+    (DSL/insertInto (table* t))))
 
-(defmacro insert-values
-  [t & values]
-  `(.values ~t ~@values))
+(defn insert-values
+  [t values]
+  (defer
+    (-> (fn [acc [k v]] (.set acc (field* k) (unwrap* v)))
+        (reduce (unwrap* t) values)
+        (.newRecord))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Update statement
