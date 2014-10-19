@@ -69,6 +69,24 @@
       (is (= (fmt/get-sql q)
              "select 1 \"one\" from book join author on (book.authorid = book.id)"))))
 
+  ;; TODO: I should research about more compact way to add join clauses.
+  ;; (testing "Select clause with join experiment"
+  ;;   (let [q (-> (dsl/select-one)
+  ;;               (dsl/from (dsl/table "book"))
+  ;;               (dsl/join :author [:book.authorid :book.id]))
+  ;;     (is (= (fmt/get-sql q)
+  ;;            "select 1 \"one\" from book join author on (book.authorid = book.id)"))))
+
+  ;; (testing "Select clause with where experiment."
+  ;;   (let [q (-> (dsl/select-one)
+  ;;               (dsl/from "book")
+  ;;               (dsl/where {:age [dsl/> 200]
+  ;;                           :id  [dsl/in [1 2 3]]
+  ;;                           :in_store ['= true]}))]
+  ;;     (is (= (fmt/get-sql q)
+  ;;            "select 1 \"one\" from book where ((book.age > ?) and (book.in_store is ?))"))))
+
+
   (testing "Select clause with join on table"
     (let [q (-> (dsl/select-one)
                 (dsl/from (-> (dsl/table "book")

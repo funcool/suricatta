@@ -265,9 +265,9 @@
   (defer
     (.join @q t)))
 
-(defn left-outer-join
-  [q t]
-  (.leftOuterJoin q t))
+;; (defn left-outer-join
+;;   [q t]
+;;   (.leftOuterJoin q t))
 
 (defn on
   [q & clauses]
