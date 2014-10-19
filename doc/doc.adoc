@@ -622,15 +622,13 @@ The INSERT statement is used to insert new records into a database table.
 .Example of insert two rows in one table.
 [source, clojure]
 ----
-(-> (dsl/insert-into :table1 :f1 :f2 :f3)
-    (dsl/insert-values 1 2 0)
-    (dsl/insert-values 3 4 0)
+(-> (dsl/insert-into :table1)
+    (dsl/insert-values {:f1 1 :f2 2 :f3 3})
+    (dsl/insert-values {:f1 4 :f2 5 :f3 6})
     (fmt/sqlvec))
-;; => ["insert into t1 (f1, f2, f3) values (?, ?, ?), (?, ?, ?)" 1 2 0 3 4 0]
+;; => ["insert into t1 (f1, f2, f3) values (?, ?, ?), (?, ?, ?)" 1 2 3 4 5 6]
 ----
 
-WARNING: both `insert-into` and `insert-values` functions are macros and they only accept
-literals as parameters.
 
 The UPDATE statement
 ~~~~~~~~~~~~~~~~~~~~
@@ -644,6 +642,15 @@ The UPDATE statement is used to modify one or several pre-existing records in a 
     (dsl/set :name "foo")
     (fmt/get-sql))
 ;; => "update t1 set name = ?"
+----
+
+.Example of update statement without condition using a map
+[source, clojure]
+----
+(-> (dsl/update :t1)
+    (dsl/set {:name "foo" :bar "baz"})
+    (fmt/get-sql))
+;; => "update t1 set name = ?, bar = ?"
 ----
 
 .Example of update statement with one condition.
