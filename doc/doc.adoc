@@ -11,25 +11,26 @@ Andrey Antukh, <niwi@niwi.be>
 Introduction
 ------------
 
-_suricatta_ is a high level sql toolkit for clojure (backed by fantastic link:http://www.jooq.org/[jooq library])
+_suricatta_ is a high level sql toolkit for clojure (backed by fantastic
+link:http://www.jooq.org/[jooq library])
 
-It consists in two main modules:
+It consists in three modules:
 
 - sql executor: jdbc abstraction layer for executing queries.
-- sql builder: small dsl for idiomatic sql building using clojure code.
-- sql formatter: utils for format in string or sqlvec queryes builded by `sql builder` module.
+- sql builder: lightweight dsl for idiomatic sql building.
+- sql formatter: sql rendering utils.
 
 
 Use cases
 ~~~~~~~~~
 
-_suricatta_ library is very flexible and it can be used in very different ways:
+The _suricatta_ library is very flexible and it can be used in very different ways:
 
-- Build queries with _suricatta_ and execute them with _clojure.jdbc_ (it has good interoperability)
-- Execute queries with _suricatta_ and use raw string queries or any other sql building library.
-- Combine usage of _clojure.jdbc_ and _suricatta_ in one code base (you can create suricatta context
-  from existing jdbc connection).
-
+- You can build queries with _suricatta_ and execute them with _clojure.jdbc_.
+- You can use _suricatta_ for executing queries with string-based sql.
+- You can combine the _suricatta_ library with _clojure.jdbc_.
+- And obviously, you can forget jdbc and use _suricatta_ for both purposes, building and
+  executing queries.
 
 Project Maturity
 ----------------
@@ -39,7 +40,7 @@ Since _suricatta_ is a young project there may be some API breakage.
 Install
 -------
 
-This section covers a installing _suricatta_ and its requirements.
+This section covers the _suricatta_ library installing process and its requirements.
 
 Requirements
 ~~~~~~~~~~~~
