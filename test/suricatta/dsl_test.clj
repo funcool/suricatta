@@ -247,6 +247,12 @@
              "insert into t1 (f1, f2, f3) values (?, ?, ?), (?, ?, ?)")))))
 
 (deftest dsl-update
+  (testing "Update statement without condition using map"
+    (let [q (-> (dsl/update :t1)
+                (dsl/set {:id 2 :name "foo"}))]
+      (is (= (fmt/get-sql q)
+             "update t1 set name = ?, id = ?"))))
+
   (testing "Update statement without condition"
     (let [q (-> (dsl/update :t1)
                 (dsl/set :id 2)

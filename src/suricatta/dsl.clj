@@ -438,18 +438,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn update
+  "Returns empty UPDATE statement."
   [t]
   (defer
     (DSL/update (table* t))))
 
 (defn set
-  [t f v]
-  (defer
-    (let [v (unwrap* v)
-          t (unwrap* t)]
-      (if (instance? org.jooq.Row f)
-        (.set t f v)
-        (.set t (field* f) v)))))
+  "Attach values to the UPDATE statement"
+  ([t f]
+     (defer
+       (let [t (unwrap* t)]
+         (reduce (fn [acc [k v]]
+                   (.set t (field* k) v))
+                 t f))))
+  ([t f v]
+     (defer
+       (let [v (unwrap* v)
+             t (unwrap* t)]
+         (if (instance? org.jooq.Row f)
+           (.set t f v)
+           (.set t (field* f) v))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Delete statement
