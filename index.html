@@ -529,6 +529,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_is_a_korma_clone">7.2. Is a korma-clone?</a></li>
 <li><a href="#_is_required_buy_jooq_comercial_license">7.3. Is required buy JOOQ comercial license?</a></li>
 <li><a href="#_why_i_should_use_it_instead_clojure_jdbc_or_java_jdbc">7.4. Why I should use it instead clojure.jdbc or java.jdbc?</a></li>
+<li><a href="#_can_i_store_safely_queries_builded_by_dsl_they_are_immutable">7.5. Can I store safely queries builded by DSL, they are immutable?</a></li>
 </ul>
 </li>
 <li><a href="#_how_to_contribute">8. How to Contribute?</a>
@@ -1241,25 +1242,12 @@ given transaction for subsequent updates. Let see an example of how use it with 
 <div class="listingblock">
 <div class="title">Example of insert two rows in one table.</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/insert-into</span> <span class="tok-ss">:table1</span> <span class="tok-ss">:f1</span> <span class="tok-ss">:f2</span> <span class="tok-ss">:f3</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">dsl/insert-values</span> <span class="tok-mi">1</span> <span class="tok-mi">2</span> <span class="tok-mi">0</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">dsl/insert-values</span> <span class="tok-mi">3</span> <span class="tok-mi">4</span> <span class="tok-mi">0</span><span class="tok-p">)</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/insert-into</span> <span class="tok-ss">:table1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/insert-values</span> <span class="tok-p">{</span><span class="tok-ss">:f1</span> <span class="tok-mi">1</span> <span class="tok-ss">:f2</span> <span class="tok-mi">2</span> <span class="tok-ss">:f3</span> <span class="tok-mi">3</span><span class="tok-p">})</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/insert-values</span> <span class="tok-p">{</span><span class="tok-ss">:f1</span> <span class="tok-mi">4</span> <span class="tok-ss">:f2</span> <span class="tok-mi">5</span> <span class="tok-ss">:f3</span> <span class="tok-mi">6</span><span class="tok-p">})</span>
     <span class="tok-p">(</span><span class="tok-nf">fmt/sqlvec</span><span class="tok-p">))</span>
-<span class="tok-c1">;; =&gt; [&quot;insert into t1 (f1, f2, f3) values (?, ?, ?), (?, ?, ?)&quot; 1 2 0 3 4 0]</span></code></pre>
+<span class="tok-c1">;; =&gt; [&quot;insert into t1 (f1, f2, f3) values (?, ?, ?), (?, ?, ?)&quot; 1 2 3 4 5 6]</span></code></pre>
 </div>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Warning</div>
-</td>
-<td class="content">
-both <code>insert-into</code> and <code>insert-values</code> functions are macros and they only accept
-literals as parameters.
-</td>
-</tr>
-</table>
 </div>
 </div>
 <div class="sect2">
@@ -1274,6 +1262,15 @@ literals as parameters.
     <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name</span> <span class="tok-s">&quot;foo&quot;</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;update t1 set name = ?&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Example of update statement without condition using a map</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-p">{</span><span class="tok-ss">:name</span> <span class="tok-s">&quot;foo&quot;</span> <span class="tok-ss">:bar</span> <span class="tok-s">&quot;baz&quot;</span><span class="tok-p">})</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;update t1 set name = ?, bar = ?&quot;</span></code></pre>
 </div>
 </div>
 <div class="listingblock">
@@ -1512,6 +1509,16 @@ idiosyncrasies of jdbc under much simpler, cleaner and less error prone api, wit
 resource management.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_can_i_store_safely_queries_builded_by_dsl_they_are_immutable">7.5. Can I store safely queries builded by DSL, they are immutable?</h3>
+<div class="paragraph">
+<p>Yes. Unlike JOOQ DSL interface that has mutable api, <em>suricatta</em> exposes immutable
+api for building queries.</p>
+</div>
+<div class="paragraph">
+<p>Queries builded by <em>suricatta</em> can be safely shared through different threads.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1614,7 +1621,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-10-18 20:15:11 CEST
+Last updated 2014-10-20 00:54:25 CEST
 </div>
 </div>
 </body>
