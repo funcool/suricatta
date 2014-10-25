@@ -547,10 +547,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_introduction">1. Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><em>suricatta</em> is a high level sql toolkit for clojure (backed by fantastic <a href="http://www.jooq.org/">jooq library</a>)</p>
+<p><em>suricatta</em> is a high level sql toolkit for clojure (backed by fantastic
+<a href="http://www.jooq.org/">jooq library</a>)</p>
 </div>
 <div class="paragraph">
-<p>It consists in two main modules:</p>
+<p>It consists in three modules:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -558,29 +559,32 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>sql executor: jdbc abstraction layer for executing queries.</p>
 </li>
 <li>
-<p>sql builder: small dsl for idiomatic sql building using clojure code.</p>
+<p>sql builder: lightweight dsl for idiomatic sql building.</p>
 </li>
 <li>
-<p>sql formatter: utils for format in string or sqlvec queryes builded by <code>sql builder</code> module.</p>
+<p>sql formatter: sql rendering utils.</p>
 </li>
 </ul>
 </div>
 <div class="sect2">
 <h3 id="_use_cases">1.1. Use cases</h3>
 <div class="paragraph">
-<p><em>suricatta</em> library is very flexible and it can be used in very different ways:</p>
+<p>The <em>suricatta</em> library is very flexible and it can be used in very different ways:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Build queries with <em>suricatta</em> and execute them with <em>clojure.jdbc</em> (it has good interoperability)</p>
+<p>You can build queries with <em>suricatta</em> and execute them with <em>clojure.jdbc</em>.</p>
 </li>
 <li>
-<p>Execute queries with <em>suricatta</em> and use raw string queries or any other sql building library.</p>
+<p>You can use <em>suricatta</em> for executing queries with string-based sql.</p>
 </li>
 <li>
-<p>Combine usage of <em>clojure.jdbc</em> and <em>suricatta</em> in one code base (you can create suricatta context
-from existing jdbc connection).</p>
+<p>You can combine the <em>suricatta</em> library with <em>clojure.jdbc</em>.</p>
+</li>
+<li>
+<p>And obviously, you can forget jdbc and use <em>suricatta</em> for both purposes, building and
+executing queries.</p>
 </li>
 </ul>
 </div>
@@ -599,7 +603,7 @@ from existing jdbc connection).</p>
 <h2 id="_install">3. Install</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section covers a installing <em>suricatta</em> and its requirements.</p>
+<p>This section covers the <em>suricatta</em> library installing process and its requirements.</p>
 </div>
 <div class="sect2">
 <h3 id="_requirements">3.1. Requirements</h3>
@@ -688,17 +692,17 @@ this is a XML block that you should put in a dependency section of a maven confi
 <h2 id="_sql_execution">4. SQL Execution</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section intends to explain the usage of sql execution part of the library.</p>
+<p>This section intends to explain the usage of a sql execution part of the library.</p>
 </div>
 <div class="sect2">
 <h3 id="_connecting_to_database">4.1. Connecting to database</h3>
 <div class="paragraph">
-<p><em>surricata</em> uses the concept of <strong>context</strong> instead of <strong>connection</strong> unlike any other database
-libraries. The <strong>context</strong> has the resposibility of connection resource management,
-transaction isolation flags and sql rendering dialect.</p>
+<p><em>suricatta</em>, unlike other database libraries, uses a concept of <strong>context instead of *connection</strong>.
+A <strong>context</strong> has the resposibility of jdbc connection resource management, transaction isolation
+flags and sql rendering dialect.</p>
 </div>
 <div class="paragraph">
-<p>You can create one <strong>context</strong> from:</p>
+<p>You can create it <strong>context</strong> from:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -778,7 +782,7 @@ transaction isolation flags and sql rendering dialect.</p>
 <td class="content">
 <div class="paragraph">
 <p><em>suricatta</em> gives you the power of use the raw sql queries without
-any restrictions (unlike jdbs). As great example, <em>suricatta</em> does
+any restrictions (unlike jdbc). As great example, <em>suricatta</em> does
 not have special syntax for queries with <code>RETURNING</code> clause:</p>
 </div>
 <div class="listingblock">
@@ -821,8 +825,11 @@ queries in <strong>sqlvec</strong> format.</p>
 <div class="sect2">
 <h3 id="_transactions">4.6. Transactions</h3>
 <div class="paragraph">
-<p><em>suricatta</em> does not have support for low level usage of transactions, instead of it, offers
-lightweight abstraction: <code>atomic</code> high order function and <code>with-atomic</code> convenient macro.</p>
+<p>The <em>suricatta</em> library does not have support for low level transactions api, instead of it, offers a
+lightweight abstraction over complex transaction api.</p>
+</div>
+<div class="paragraph">
+<p>Let see an example:</p>
 </div>
 <div class="listingblock">
 <div class="title">Execute some query in a transaction block</div>
@@ -842,20 +849,25 @@ lightweight sugar sytax for atomic blocks:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>If something happens inside atomic wrapped function, the transaction will be aborted.</p>
+<p>You can nest atomic usage as deep as you want, subtransactions are fully supported.</p>
 </div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-You can nest atomic usage as deep as you want, <em>suricatta</em> (thanks to jooq) has good support
-for subtransactions (savepoints).
-</td>
-</tr>
-</table>
+<div class="paragraph">
+<p>If a exception is raised inside atomic context the transaction will be aborted. Also, in
+some circumstances, you probable want an explicit rollback, for it, the <em>suricatta</em> library
+exposes a <code>suricatta.core/set-rollback!</code> function.</p>
+</div>
+<div class="listingblock">
+<div class="title">Explicit rollback example</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">cs/with-atomic</span> <span class="tok-nv">ctx</span>
+  <span class="tok-p">(</span><span class="tok-nf">sc/execute</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;update table1 set f1 = 1&quot;</span><span class="tok-p">)</span>
+  <span class="tok-p">(</span><span class="tok-nf">sc/set-rollback!</span> <span class="tok-nv">ctx</span><span class="tok-p">))</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>set-rollback!</code> function only marks the current transaction for rollback. It not aborts
+the execution. And it is aware of subtransactions, if it is used in a subtransaction, only
+the subtransaction will be marked for rollback, not the entire transaction.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1621,7 +1633,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-10-20 00:54:25 CEST
+Last updated 2014-10-25 14:25:17 CEST
 </div>
 </div>
 </body>
