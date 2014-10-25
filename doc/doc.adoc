@@ -32,15 +32,18 @@ The _suricatta_ library is very flexible and it can be used in very different wa
 - And obviously, you can forget jdbc and use _suricatta_ for both purposes, building and
   executing queries.
 
+
 Project Maturity
 ----------------
 
 Since _suricatta_ is a young project there may be some API breakage.
 
+
 Install
 -------
 
 This section covers the _suricatta_ library installing process and its requirements.
+
 
 Requirements
 ~~~~~~~~~~~~
@@ -63,6 +66,7 @@ vector on your *_project.clj_* file:
 [suricatta "0.1.0-SNAPSHOT"]
 ----
 
+
 Gradle
 ~~~~~~
 
@@ -72,6 +76,7 @@ If you are using gradle, this is a dependency line for gradle dsl:
 ----
 compile "suricatta:suricatta:0.1.0-SNAPSHOT"
 ----
+
 
 Maven
 ~~~~~
@@ -116,21 +121,22 @@ git clone https://github.com/niwibe/suricatta
 SQL Execution
 -------------
 
-This section intends to explain the usage of sql execution part of the library.
+This section intends to explain the usage of a sql execution part of the library.
 
 
 Connecting to database
 ~~~~~~~~~~~~~~~~~~~~~~
 
-_surricata_ uses the concept of **context** instead of **connection** unlike any other database
-libraries. The **context** has the resposibility of connection resource management,
-transaction isolation flags and sql rendering dialect.
+_suricatta_, unlike other database libraries, uses a concept of *context instead of *connection*.
+A **context** has the resposibility of jdbc connection resource management, transaction isolation
+flags and sql rendering dialect.
 
-You can create one **context** from:
+You can create it **context** from:
 
 - Plain jdbc connection.
 - link:http://niwibe.github.io/clojure.jdbc[clojure.jdbc] connection object
 - `dbspec` hash-map (same format that link:http://niwibe.github.io/clojure.jdbc/#_connecting_to_database[clojure.jdbc] accepts, including with datasource)
+
 
 Let see some examples:
 
@@ -158,6 +164,7 @@ Let see some examples:
         res (do-something ctx)]
     res))
 ----
+
 
 Executing queries
 ~~~~~~~~~~~~~~~~~
@@ -188,7 +195,7 @@ Let see an example of how execute a query and fetch results:
 [NOTE]
 ====
 _suricatta_ gives you the power of use the raw sql queries without
-any restrictions (unlike jdbs). As great example, _suricatta_ does
+any restrictions (unlike jdbc). As great example, _suricatta_ does
 not have special syntax for queries with `RETURNING` clause:
 
 [source, clojure]
@@ -228,8 +235,10 @@ The above technique can be quite useful when you want to reuse expensive databas
 Transactions
 ~~~~~~~~~~~~
 
-_suricatta_ does not have support for low level usage of transactions, instead of it, offers
-lightweight abstraction: `atomic` high order function and `with-atomic` convenient macro.
+The _suricatta_ library does not have support for low level transactions api, instead of it, offers a
+lightweight abstraction over complex transaction api.
+
+Let see an example:
 
 .Execute some query in a transaction block
 [source, clojure]
@@ -247,11 +256,23 @@ lightweight sugar sytax for atomic blocks:
   (sc/fetch ctx "select id, name from book for update"))
 ----
 
-If something happens inside atomic wrapped function, the transaction will be aborted.
+You can nest atomic usage as deep as you want, subtransactions are fully supported.
 
-[NOTE]
-You can nest atomic usage as deep as you want, _suricatta_ (thanks to jooq) has good support
-for subtransactions (savepoints).
+If a exception is raised inside atomic context the transaction will be aborted. Also, in
+some circumstances, you probable want an explicit rollback, for it, the _suricatta_ library
+exposes a `suricatta.core/set-rollback!` function.
+
+.Explicit rollback example
+[source, clojure]
+----
+(cs/with-atomic ctx
+  (sc/execute ctx "update table1 set f1 = 1")
+  (sc/set-rollback! ctx))
+----
+
+The `set-rollback!` function only marks the current transaction for rollback. It not aborts
+the execution. And it is aware of subtransactions, if it is used in a subtransaction, only
+the subtransaction will be marked for rollback, not the entire transaction.
 
 
 Lazy result fetching
