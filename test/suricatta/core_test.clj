@@ -53,4 +53,31 @@
             (throw (RuntimeException. "test")))
           (catch RuntimeException e
             (let [result (fetch ctx "select * from foo")]
-              (is (= 2 (count result))))))))))
+              (is (= 2 (count result)))))))))
+
+  (testing "Execute in a transaction with explicit rollback"
+    (with-open [ctx (context dbspec)]
+      (execute ctx "create table foo (id int)")
+      (with-atomic ctx
+        (execute ctx ["insert into foo (id) values (?), (?)" 1 2])
+        (with-atomic ctx
+          (execute ctx ["insert into foo (id) values (?), (?)" 3 4])
+          (let [result (fetch ctx "select * from foo")]
+            (is (= 4 (count result))))
+          (set-rollback! ctx))
+        (let [result (fetch ctx "select * from foo")]
+          (is (= 2 (count result)))))))
+
+  (testing "Execute in a transaction with explicit rollback"
+    (with-open [ctx (context dbspec)]
+      (execute ctx "create table foo (id int)")
+      (with-atomic ctx
+        (execute ctx ["insert into foo (id) values (?), (?)" 1 2])
+        (with-atomic ctx
+          (execute ctx ["insert into foo (id) values (?), (?)" 3 4])
+          (let [result (fetch ctx "select * from foo")]
+            (is (= 4 (count result)))))
+        (set-rollback! ctx))
+      (let [result (fetch ctx "select * from foo")]
+        (is (= 0 (count result))))))
+)
