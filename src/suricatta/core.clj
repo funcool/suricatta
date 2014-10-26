@@ -6,9 +6,9 @@
   (:import org.jooq.DSLContext
            org.jooq.SQLDialect
            org.jooq.TransactionContext
+           org.jooq.TransactionProvider
            org.jooq.exception.DataAccessException;
            org.jooq.impl.DefaultTransactionContext
-           org.jooq.TransactionProvider
            org.jooq.Configuration
            suricatta.types.Context))
 

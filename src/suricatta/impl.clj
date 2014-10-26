@@ -10,6 +10,7 @@
            org.jooq.SQLDialect
            org.jooq.DSLContext
            org.jooq.ResultQuery
+           org.jooq.Query
            org.jooq.Configuration
            clojure.lang.PersistentVector
            clojure.lang.APersistentMap
@@ -69,20 +70,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (extend-protocol proto/IExecute
-  String
+  java.lang.String
   (execute [^String sql ^Context ctx]
     (let [^DSLContext context (proto/get-context ctx)]
       (.execute context sql)))
 
   org.jooq.Query
-  (execute [^org.jooq.Query query ^Context ctx]
+  (execute [^Query query ^Context ctx]
     (let [^DSLContext context (proto/get-context ctx)]
       (.execute context query)))
 
-  PersistentVector
+  clojure.lang.PersistentVector
   (execute [^PersistentVector sqlvec ^Context ctx]
     (let [^DSLContext context   (proto/get-context ctx)
-          ^org.jooq.Query query (->> (into-array Object (rest sqlvec))
+          ^Query query (->> (into-array Object (rest sqlvec))
                                      (.query context (first sqlvec)))]
       (.execute context query)))
 
@@ -130,7 +131,7 @@
           (result->vector opts))))
 
   org.jooq.ResultQuery
-  (fetch [^org.jooq.ResultQuery query ^Context ctx opts]
+  (fetch [^ResultQuery query ^Context ctx opts]
     (let [^DSLContext context (proto/get-context ctx)]
       (-> (.fetch context query)
           (result->vector opts))))
@@ -138,7 +139,7 @@
   PersistentVector
   (fetch [^PersistentVector sqlvec ^Context ctx opts]
     (let [^DSLContext context (proto/get-context ctx)
-          ^org.jooq.ResultQuery query (->> (into-array Object (rest sqlvec))
+          ^ResultQuery query (->> (into-array Object (rest sqlvec))
                                            (.resultQuery context (first sqlvec)))]
       (-> (.fetch context query)
           (result->vector opts))))
