@@ -1,8 +1,10 @@
 (defproject suricatta "0.1.0-SNAPSHOT"
   :description "High level sql toolkit for clojure (backed by jooq library)"
-  :url "http://example.com/FIXME"
-  :license {:name "Apache 2.0"
-            :url "http://www.apache.org/licenses/LICENSE-2.0.txt"}
+  :url "https://github.com/niwibe/suricatta"
+
+  :license {:name "BSD (2-Clause)"
+            :url "http://opensource.org/licenses/BSD-2-Clause"}
+
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.jooq/jooq "3.4.4"]
                  [clojure.jdbc "0.3.0"]
