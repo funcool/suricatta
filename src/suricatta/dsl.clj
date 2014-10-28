@@ -31,6 +31,8 @@
   (:import org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
            org.jooq.util.postgres.PostgresDataType
+           org.jooq.util.mariadb.MariaDBDataType
+           org.jooq.util.mysql.MySQLDataType
            suricatta.types.Context))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -501,7 +503,80 @@
 
 (def ^{:doc "Datatypes translation map" :dynamic true}
   *datatypes*
-  {:pg/varchar PostgresDataType/VARCHAR})
+  {:pg/varchar PostgresDataType/VARCHAR
+   :pg/any PostgresDataType/ANY
+   :pg/bigint PostgresDataType/BIGINT
+   :pg/bigserial PostgresDataType/BIGSERIAL
+   :pg/boolean PostgresDataType/BOOLEAN
+   :pg/date PostgresDataType/DATE
+   :pg/decimal PostgresDataType/DECIMAL
+   :pg/real PostgresDataType/REAL
+   :pg/double PostgresDataType/DOUBLEPRECISION
+   :pg/int4 PostgresDataType/INT4
+   :pg/int2 PostgresDataType/INT2
+   :pg/int8 PostgresDataType/INT8
+   :pg/integer PostgresDataType/INTEGER
+   :pg/serial PostgresDataType/SERIAL
+   :pg/serial4 PostgresDataType/SERIAL4
+   :pg/serial8 PostgresDataType/SERIAL8
+   :pg/smallint PostgresDataType/SMALLINT
+   :pg/text PostgresDataType/TEXT
+   :pg/time PostgresDataType/TIME
+   :pg/timetz PostgresDataType/TIMETZ
+   :pg/timestamp PostgresDataType/TIMESTAMP
+   :pg/timestamptz PostgresDataType/TIMESTAMPTZ
+   :pg/uuid PostgresDataType/UUID
+   :pg/char PostgresDataType/CHAR
+   :pg/bytea PostgresDataType/BYTEA
+   :pg/numeric PostgresDataType/NUMERIC
+   :maria/bigint MariaDBDataType/BIGINT
+   :maria/ubigint MariaDBDataType/BIGINTUNSIGNED
+   :maria/binary MariaDBDataType/BINARY
+   :maria/blob MariaDBDataType/BLOB
+   :maria/bool MariaDBDataType/BOOL
+   :maria/boolean MariaDBDataType/BOOLEAN
+   :maria/char MariaDBDataType/CHAR
+   :maria/date MariaDBDataType/DATE
+   :maria/datetime MariaDBDataType/DATETIME
+   :maria/decimal MariaDBDataType/DECIMAL
+   :maria/double MariaDBDataType/DOUBLE
+   :maria/enum MariaDBDataType/ENUM
+   :maria/float MariaDBDataType/FLOAT
+   :maria/int MariaDBDataType/INT
+   :maria/integer MariaDBDataType/INTEGER
+   :maria/uint MariaDBDataType/INTEGERUNSIGNED
+   :maria/longtext MariaDBDataType/LONGTEXT
+   :maria/mediumint MariaDBDataType/MEDIUMINT
+   :maria/real MariaDBDataType/REAL
+   :maria/smallint MariaDBDataType/SMALLINT
+   :maria/time MariaDBDataType/TIME
+   :maria/timestamp MariaDBDataType/TIMESTAMP
+   :maria/varchar MariaDBDataType/VARCHAR
+   :mysql/bigint MySQLDataType/BIGINT
+   :mysql/ubigint MySQLDataType/BIGINTUNSIGNED
+   :mysql/binary MySQLDataType/BINARY
+   :mysql/blob MySQLDataType/BLOB
+   :mysql/bool MySQLDataType/BOOL
+   :mysql/boolean MySQLDataType/BOOLEAN
+   :mysql/char MySQLDataType/CHAR
+   :mysql/date MySQLDataType/DATE
+   :mysql/datetime MySQLDataType/DATETIME
+   :mysql/decimal MySQLDataType/DECIMAL
+   :mysql/double MySQLDataType/DOUBLE
+   :mysql/enum MySQLDataType/ENUM
+   :mysql/float MySQLDataType/FLOAT
+   :mysql/int MySQLDataType/INT
+   :mysql/integer MySQLDataType/INTEGER
+   :mysql/uint MySQLDataType/INTEGERUNSIGNED
+   :mysql/longtext MySQLDataType/LONGTEXT
+   :mysql/mediumint MySQLDataType/MEDIUMINT
+   :mysql/real MySQLDataType/REAL
+   :mysql/smallint MySQLDataType/SMALLINT
+   :mysql/time MySQLDataType/TIME
+   :mysql/timestamp MySQLDataType/TIMESTAMP
+   :mysql/varchar MySQLDataType/VARCHAR})
+
+
 
 (defn truncate
   [t]
