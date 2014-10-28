@@ -29,7 +29,7 @@ The _suricatta_ library is very flexible and it can be used in very different wa
 - You can build queries with _suricatta_ and execute them with _clojure.jdbc_.
 - You can use _suricatta_ for executing queries with string-based sql.
 - You can combine the _suricatta_ library with _clojure.jdbc_.
-- And obviously, you can forget jdbc and use _suricatta_ for both purposes, building and
+- And obviously, you can forget jdbc and use _suricatta_ for both purposes, building and/or
   executing queries.
 
 
@@ -81,8 +81,7 @@ compile "suricatta:suricatta:0.1.0-SNAPSHOT"
 Maven
 ~~~~~
 
-And for old school people, who are using a ugly XML files to configure everything,
-this is a XML block that you should put in a dependency section of a maven config file:
+If you are using maven:
 
 .Repository entry.
 [source,xml]
@@ -135,8 +134,10 @@ You can create it **context** from:
 
 - Plain jdbc connection.
 - link:http://niwibe.github.io/clojure.jdbc[clojure.jdbc] connection object
-- `dbspec` hash-map (same format that link:http://niwibe.github.io/clojure.jdbc/#_connecting_to_database[clojure.jdbc] accepts, including with datasource)
+- hash-map dbspec format (same format as in _clojure.jdbc_)
 
+The use of link:http://niwibe.github.io/clojure.jdbc[clojure.jdbc] allows to _suricatta_ have good
+support for datasource (link:http://niwibe.github.io/clojure.jdbc/#connection-pool[connection pool]) dbspec's.
 
 Let see some examples:
 
@@ -165,12 +166,27 @@ Let see some examples:
     res))
 ----
 
+.Create context from dbspec with datasource (connection pool).
+[source, clojure]
+----
+;; Import the desired implementation
+(require '[jdbc.pool.dbcp :as pool])
+
+(def dbspec (pool/make-datasource-spec {:classname "org.postgresql.Driver"
+                                        :subprotocol "postgresql"
+                                        :subname "//localhost:5432/dbname"}))
+
+(with-open [ctx (sc/context dbspec)]
+  (do-something-with ctx))
+----
+
 
 Executing queries
 ~~~~~~~~~~~~~~~~~
 
 _suricatta_ has clear separation between queries that can return result, and queries that cannot.
 
+.Example using `suricatta.core/execute` function.
 [source, clojure]
 ----
 (require '[suricatta.core :as sc])
@@ -238,9 +254,7 @@ Transactions
 The _suricatta_ library does not have support for low level transactions api, instead of it, offers a
 lightweight abstraction over complex transaction api.
 
-Let see an example:
-
-.Execute some query in a transaction block
+.Execute a query in a transaction block.
 [source, clojure]
 ----
 (sc/atomic ctx (fn [ctx]
@@ -250,6 +264,7 @@ Let see an example:
 Additionally to `atomic` high order functiom, _suricatta_ comes with convenient macro offering
 lightweight sugar sytax for atomic blocks:
 
+.Execute a query in a transaction block using sugar syntax macro.
 [source, clojure]
 ----
 (cs/with-atomic ctx
@@ -846,6 +861,29 @@ Nested SELECTs
     (fmt/get-sql))
 ;; => "select fullname, (select count(*) from book where (book.authorid = author.id)) "books" from author"
 ----
+
+Executing queries
+~~~~~~~~~~~~~~~~~
+
+Almost all method in *dsl* always returns some kind of *deferred* object. That object implements
+needed protocos for make them compatible with `suricatta.core/execute` and `suricatta.core/fetch`
+functions.
+
+Let see an example:
+
+[source, clojure]
+----
+(def my-query
+  (-> (dsl/select :id)
+      (dsl/from :books)
+      (dsl/where ["age > ?", 100])
+      (dsl/limit 1)))
+
+(with-open [ctx (sc/context dbspec)]
+  (sc/fetch ctx my-query))
+;; => [{:id 4232}]
+----
+
 
 Async interface
 ---------------
