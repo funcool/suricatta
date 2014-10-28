@@ -21,31 +21,55 @@
 
 (use-fixtures :each my-fixture)
 
-(defn jsonfield
+(defn json
   [data]
   (proxy [org.jooq.impl.CustomField] [nil, org.jooq.util.postgres.PostgresDataType/JSON]
-    (toSQL [^org.jooq.RenderContext rctx]
-      (doto rctx
-        (.sql "'")
-        (.sql (generate-string data))
-        (.sql "'::json")))
+    (accept [ctx]
+      (cond
+       (instance? org.jooq.RenderContext ctx)
+       (doto ctx
+         (.sql "'")
+         (.sql (generate-string data))
+         (.sql "'::json"))
 
-    (bind [^org.jooq.BindContext bctx]
-      (let [obj (doto (PGobject.)
-                  (.setType "json")
-                  (.setValue (generate-string data)))
-            statement (.statement bctx)]
-        (.setObject statement
-                    (.nextIndex bctx)
-                    obj)))))
+       (instance? org.jooq.BindContext ctx)
+       (let [obj        (doto (PGobject.)
+                          (.setType "json")
+                          (.setValue (generate-string data)))
+             statement  (.statement ctx)
+             _          (println 454545 (class (.getDelegate statement)))
+             paramcount (.getParameterCount (.getParameterMetaData statement))]
+        (when (<= (.peekIndex ctx) paramcount)
+          (.setObject statement
+                      (.nextIndex ctx)
+                      obj)))))))
 
-(deftest inserting-json-fields
-  (sc/execute *ctx* "create table t1 (data json)")
-  (sc/execute *ctx* ["insert into t1 (data) values (?)" (jsonfield {:foo "bar"})])
+
+(deftest inserting-json
+  (sc/execute *ctx* "create table t1 (data json, k int)")
+  (sc/execute *ctx* ["insert into t1 (data, k) values (?, ?)" (json {:foo "bar"}) 2])
   (-> (sc/fetch *ctx* "select * from t1")
       (println)))
 
-(deftest json-fields-in-dsl
-  (let [q (-> (dsl/select (jsonfield {:a 1}))
-              (dsl/from "dual"))]
-    (println (get-sql q))))
+
+(deftest inserting-json-dsl
+  (sc/execute *ctx* "create table t1 (data json)")
+  (let [q (-> (dsl/insert-into :t1)
+              (dsl/insert-values {:data (json {:foo 1})})
+              (dsl/insert-values {:data (json {:bar 2})}))]
+    (sc/execute *ctx* q))
+  (-> (sc/fetch *ctx* "select * from t1")
+      (println)))
+
+
+(deftest inserting-arrays
+  (sc/execute *ctx* "create table t1 (data int[])")
+  (let [data [1 2 3]]
+    (sc/execute *ctx* ["insert into t1 (data) values (?)" data])
+    (-> (sc/fetch *ctx* "select * from t1")
+        (println))))
+
+(deftest json-select
+  (let [q (dsl/select (.as (json {:a 1}) "dd"))]
+    (-> (sc/fetch *ctx* q)
+        (println))))
