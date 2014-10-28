@@ -26,6 +26,7 @@
   (:require [suricatta.proto :as proto])
   (:import java.sql.Connection
            org.jooq.impl.DSL
+           org.jooq.ResultQuery
            org.jooq.Configuration
            org.jooq.SQLDialect))
 
@@ -78,7 +79,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftype Query [query conf]
+(deftype Query [^ResultQuery query ^Configuration conf]
   java.io.Closeable
   (close [_]
     (.close query))

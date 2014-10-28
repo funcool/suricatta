@@ -40,7 +40,7 @@
            clojure.lang.APersistentMap
            suricatta.types.Context))
 
-(defn translate-dialect
+(defn ^SQLDialect translate-dialect
   "Translate keyword dialect name to proper
   jooq SQLDialect enum value."
   [dialect]
@@ -64,14 +64,14 @@
 (extend-protocol proto/IContextBuilder
   APersistentMap
   (make-context [^clojure.lang.APersistentMap dbspec]
-    (let [datasource (:datasource dbspec)
-          connection (if datasource
-                       (.getConnection datasource)
-                       (-> (jdbc/make-connection dbspec)
-                           (:connection)))
-          dialect (if (:dialect dbspec)
-                    (translate-dialect (:dialect dbspec))
-                    (JDBCUtils/dialect connection))]
+    (let [^javax.sql.DataSource datasource (:datasource dbspec)
+          ^java.sql.Connection connection (if datasource
+                                            (.getConnection datasource)
+                                            (-> (jdbc/make-connection dbspec)
+                                                (:connection)))
+          ^org.jooq.SQLDialect dialect (if (:dialect dbspec)
+                                         (translate-dialect (:dialect dbspec))
+                                         (JDBCUtils/dialect connection))]
       (->> (doto (DefaultConfiguration.)
              (.set dialect)
              (.set connection))
@@ -107,8 +107,9 @@
   clojure.lang.PersistentVector
   (execute [^PersistentVector sqlvec ^Context ctx]
     (let [^DSLContext context   (proto/get-context ctx)
-          ^Query query (->> (into-array Object (rest sqlvec))
-                                     (.query context (first sqlvec)))]
+          ^Query query (.query context
+                               (first sqlvec)
+                               (into-array Object (rest sqlvec)))]
       (.execute context query)))
 
   suricatta.types.Deferred
@@ -130,7 +131,7 @@
 (defn- keywordize-keys
   "Recursively transforms all map keys from strings to keywords."
   [m]
-  (into {} (map (fn [[k v]] [(keyword (.toLowerCase k)) v]) m)))
+  (into {} (map (fn [[k v]] [(keyword (.toLowerCase ^String k)) v]) m)))
 
 (defn- result-record->record
   [^org.jooq.Record record]
@@ -164,7 +165,7 @@
   (fetch [^PersistentVector sqlvec ^Context ctx opts]
     (let [^DSLContext context (proto/get-context ctx)
           ^ResultQuery query (->> (into-array Object (rest sqlvec))
-                                           (.resultQuery context (first sqlvec)))]
+                                  (.resultQuery context (first sqlvec)))]
       (-> (.fetch context query)
           (result->vector opts))))
 

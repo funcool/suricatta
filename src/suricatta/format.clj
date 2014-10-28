@@ -28,7 +28,9 @@
             [suricatta.proto :as proto]
             [suricatta.types :as types]
             [suricatta.impl :as impl])
-  (:import org.jooq.impl.DefaultConfiguration
+  (:import org.jooq.Configuration
+           org.jooq.DSLContext
+           org.jooq.impl.DefaultConfiguration
            org.jooq.impl.DSL))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -38,20 +40,20 @@
 (extend-protocol proto/IRenderer
   org.jooq.Query
   (get-sql [q type dialect]
-    (let [conf (DefaultConfiguration.)
-          ctx  (DSL/using conf)]
+    (let [^Configuration conf (DefaultConfiguration.)
+          ^DSLContext context (DSL/using conf)]
       (when dialect
         (.set conf (impl/translate-dialect dialect)))
       (condp = type
-        nil      (.render ctx q)
-        :named   (.renderNamedParams ctx q)
-        :indexed (.render ctx q)
-        :inlined (.renderInlined ctx q))))
+        nil      (.render context q)
+        :named   (.renderNamedParams context q)
+        :indexed (.render context q)
+        :inlined (.renderInlined context q))))
 
   (get-bind-values [q]
-    (let [conf (DefaultConfiguration.)
-          ctx  (DSL/using conf)]
-      (.extractBindValues ctx q)))
+    (let [^Configuration conf (DefaultConfiguration.)
+          ^DSLContext context (DSL/using conf)]
+      (.extractBindValues context q)))
 
   suricatta.types.Deferred
   (get-sql [self type dialect]

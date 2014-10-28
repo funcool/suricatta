@@ -108,10 +108,10 @@
 
   clojure.lang.PersistentVector
   (sort-field* ^org.jooq.SortField [v]
-    (let [field (field* (first v))
-          field (case (second v)
-                  :asc (.asc field)
-                  :desc (.desc field))]
+    (let [^org.jooq.Field field (field* (first v))
+          ^org.jooq.SortField field (case (second v)
+                                      :asc (.asc field)
+                                      :desc (.desc field))]
       (if (= (count v) 3)
         (case (first (drop 2 v))
           :nulls-last (.nullsLast field)
@@ -173,8 +173,8 @@
 
 (extend-protocol ITableAlias
   org.jooq.Name
-  (as* [n args]
-    (.as n (first args)))
+  (as* [^org.jooq.Name n args]
+    (.as n ^String (first args)))
 
   org.jooq.DerivedColumnList
   (as* [n args]
@@ -553,5 +553,4 @@
   "Drop table statement constructor."
   [t]
   (defer
-    (-> (table* t)
-        (DSL/dropTable))))
+    (DSL/dropTable ^org.jooq.Table (table* t))))
