@@ -38,6 +38,8 @@
            org.jooq.Configuration
            clojure.lang.PersistentVector
            clojure.lang.APersistentMap
+           java.sql.Connection
+           javax.sql.DataSource
            suricatta.types.Context))
 
 (defn ^SQLDialect translate-dialect
@@ -64,26 +66,26 @@
 (extend-protocol proto/IContextBuilder
   APersistentMap
   (make-context [^clojure.lang.APersistentMap dbspec]
-    (let [^javax.sql.DataSource datasource (:datasource dbspec)
-          ^java.sql.Connection connection (if datasource
-                                            (.getConnection datasource)
-                                            (-> (jdbc/make-connection dbspec)
-                                                (:connection)))
-          ^org.jooq.SQLDialect dialect (if (:dialect dbspec)
-                                         (translate-dialect (:dialect dbspec))
-                                         (JDBCUtils/dialect connection))]
-      (->> (doto (DefaultConfiguration.)
-             (.set dialect)
-             (.set connection))
-           (types/->context connection))))
+    (let [^DataSource datasource (:datasource dbspec)
+          ^Connection connection (if datasource
+                                   (.getConnection datasource)
+                                   (-> (jdbc/make-connection dbspec)
+                                       (:connection)))
+          ^SQLDialect dialect (if (:dialect dbspec)
+                                (translate-dialect (:dialect dbspec))
+                                (JDBCUtils/dialect connection))
+          ^Configuration conf (doto (DefaultConfiguration.)
+                                (.set dialect)
+                                (.set connection))]
+      (types/->context conf)))
 
   java.sql.Connection
-  (make-context [^java.sql.Connection connection]
-    (let [^SQLDialect dialect (JDBCUtils/dialect connection)]
-      (->> (doto (DefaultConfiguration.)
-             (.set dialect)
-             (.set connection))
-           (types/->context connection))))
+  (make-context [^Connection connection]
+    (let [^SQLDialect dialect (JDBCUtils/dialect connection)
+          ^Configuration conf (doto (DefaultConfiguration.)
+                                (.set dialect)
+                                (.set connection))]
+      (types/->context conf)))
 
   jdbc.types.Connection
   (make-context [^jdbc.types.Connection connection]

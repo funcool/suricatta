@@ -24,8 +24,7 @@
 
 (ns suricatta.types
   (:require [suricatta.proto :as proto])
-  (:import java.sql.Connection
-           org.jooq.impl.DSL
+  (:import org.jooq.impl.DSL
            org.jooq.ResultQuery
            org.jooq.Configuration
            org.jooq.SQLDialect))
@@ -34,25 +33,22 @@
 ;; Context
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftype Context [^Connection conn
-                  ^Configuration conf
-                  ^Boolean closeable]
+(deftype Context [^Configuration conf]
   proto/IContext
   (get-context [_] (DSL/using conf))
   (get-configuration [_] conf)
 
   java.io.Closeable
   (close [_]
-    (when closeable
-      (.set conf (org.jooq.impl.NoConnectionProvider.))
-      (.close conn))))
+    (let [^org.jooq.ConnectionProvider provider (.connectionProvider conf)
+          ^java.sql.Connection connection (.acquire provider)]
+      (.close connection)
+      (.set conf (org.jooq.impl.NoConnectionProvider.)))))
 
 (defn ->context
   "Context instance constructor."
-  ([^Connection conn ^Configuration conf]
-     (Context. conn conf true))
-  ([^Connection conn ^Configuration conf ^Boolean closeable]
-     (Context. conn conf closeable)))
+  [^Configuration conf]
+  (Context. conf))
 
 (defn context?
   [ctx]

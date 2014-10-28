@@ -89,8 +89,7 @@
     (.data conf "suricatta.rollback" false)
     (try
       (.begin provider txctx)
-      (let [result    (-> (types/->context (.-conn ctx) conf)
-                          (func))
+      (let [result (func (types/->context conf))
             rollback? (.data conf "suricatta.rollback")]
         (if rollback?
           (.rollback provider txctx)
