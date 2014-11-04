@@ -33,7 +33,7 @@
 ;; Context
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftype Context [^Configuration conf]
+(deftype Context [^Configuration conf ^clojure.lang.Agent act]
   proto/IContext
   (get-context [_] (DSL/using conf))
   (get-configuration [_] conf)
