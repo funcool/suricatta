@@ -36,6 +36,8 @@ The _suricatta_ library is very flexible and it can be used in very different wa
 Project Maturity
 ----------------
 
+_suricatta_ is considered in alpha state.
+
 Since _suricatta_ is a young project there may be some API breakage.
 
 
