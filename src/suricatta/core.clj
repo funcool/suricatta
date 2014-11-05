@@ -51,12 +51,22 @@
   ([ctx q] (proto/execute q ctx)))
 
 (defn fetch
-  "Fetch eagerly results executing a query."
+  "Fetch eagerly results executing a query.
+
+  This function returns a vector of records (default) or
+  rows (depending on specified opts). Resources are relased
+  inmediatelly without specific explicit action for it."
   ([q] (proto/fetch q nil {}))
   ([ctx q] (proto/fetch q ctx {}))
   ([ctx q opts] (proto/fetch q ctx opts)))
 
 (defn query
+  "Mark a query for reuse the prepared statement.
+
+  This function should be used with precaution and
+  close method should be called when query is not
+  longer needed. In almost all cases you should not
+  need use this function."
   [ctx querylike]
   (proto/query querylike ctx))
 
