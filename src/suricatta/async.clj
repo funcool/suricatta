@@ -53,7 +53,7 @@
            opts (dissoc opts :chan)]
        (send-off act (fn [counter]
                        (try
-                         (sc/with-atomic ctx
+                         (sc/atomic ctx
                            (with-open [cursor (sc/fetch-lazy ctx q opts)]
                              (reduce (fn [acc v]
                                        (if-not (put! c (exc/success v))
