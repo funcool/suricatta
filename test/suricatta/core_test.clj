@@ -106,7 +106,8 @@
     (execute ctx "create table foo (n int)")
     (testing "Execute query asynchronously"
       (let [result (<!! (sca/execute ctx "insert into foo (n) values (1), (2)"))]
-        (is (= result (exc/success 2)))))
+        (is (= result (exc/success 2)))
+        (is (= 1 (deref (.-act ctx))))))
 
     (testing "Fetching query asynchronously"
       (let [ch      (sca/fetch ctx "select * from foo order by n")
