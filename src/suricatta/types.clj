@@ -48,7 +48,7 @@
 (defn ->context
   "Context instance constructor."
   [^Configuration conf]
-  (Context. conf))
+  (Context. conf (agent 0)))
 
 (defn context?
   [ctx]
