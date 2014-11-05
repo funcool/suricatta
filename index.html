@@ -510,6 +510,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_transactions">4.6. Transactions</a></li>
 <li><a href="#_lazy_result_fetching">4.7. Lazy result fetching</a></li>
 <li><a href="#_batch_execution">4.8. Batch execution</a></li>
+<li><a href="#_async_interface">4.9. Async interface</a></li>
 </ul>
 </li>
 <li><a href="#_sql_building_and_formatting">5. SQL Building and Formatting</a>
@@ -523,21 +524,20 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_executing_queries_2">5.7. Executing queries</a></li>
 </ul>
 </li>
-<li><a href="#_async_interface">6. Async interface</a></li>
-<li><a href="#_faq">7. FAQ</a>
+<li><a href="#_faq">6. FAQ</a>
 <ul class="sectlevel2">
-<li><a href="#_why_an_other_dsl_is_yet_another">7.1. Why an other dsl? Is yet another?</a></li>
-<li><a href="#_is_a_korma_clone">7.2. Is a korma-clone?</a></li>
-<li><a href="#_is_required_buy_jooq_comercial_license">7.3. Is required buy JOOQ comercial license?</a></li>
-<li><a href="#_why_i_should_use_it_instead_clojure_jdbc_or_java_jdbc">7.4. Why I should use it instead clojure.jdbc or java.jdbc?</a></li>
-<li><a href="#_can_i_store_safely_queries_builded_by_dsl_they_are_immutable">7.5. Can I store safely queries builded by DSL, they are immutable?</a></li>
+<li><a href="#_why_an_other_dsl_is_yet_another">6.1. Why an other dsl? Is yet another?</a></li>
+<li><a href="#_is_a_korma_clone">6.2. Is a korma-clone?</a></li>
+<li><a href="#_is_required_buy_jooq_comercial_license">6.3. Is required buy JOOQ comercial license?</a></li>
+<li><a href="#_why_i_should_use_it_instead_clojure_jdbc_or_java_jdbc">6.4. Why I should use it instead clojure.jdbc or java.jdbc?</a></li>
+<li><a href="#_can_i_store_safely_queries_builded_by_dsl_they_are_immutable">6.5. Can I store safely queries builded by DSL, they are immutable?</a></li>
 </ul>
 </li>
-<li><a href="#_how_to_contribute">8. How to Contribute?</a>
+<li><a href="#_how_to_contribute">7. How to Contribute?</a>
 <ul class="sectlevel2">
-<li><a href="#_philosophy">8.1. Philosophy</a></li>
-<li><a href="#_procedure">8.2. Procedure</a></li>
-<li><a href="#_license">8.3. License</a></li>
+<li><a href="#_philosophy">7.1. Philosophy</a></li>
+<li><a href="#_procedure">7.2. Procedure</a></li>
+<li><a href="#_license">7.3. License</a></li>
 </ul>
 </li>
 </ul>
@@ -940,6 +940,58 @@ currently has value of 100.</p>
 <h3 id="_batch_execution">4.8. Batch execution</h3>
 <div class="paragraph">
 <p>Not implemented yet.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_async_interface">4.9. Async interface</h3>
+<div class="paragraph">
+<p>It is well known that jdbc does not support proper way handle queries in asynchronous manner. But
+exists also a well known way to handle with it: using a shared thread pool for execute queries
+asynchronously.</p>
+</div>
+<div class="paragraph">
+<p>Also, clojure comes with good abstractions for execute things asynchronously: agents. Agents
+in clojure uses a shared execution pool and guarantes that things are executed serially.</p>
+</div>
+<div class="paragraph">
+<p>The <em>suricatta</em> library takes advantage of that, and exposes a simple async api using
+<em>core.async</em> channels abstraction and <a href="https://github.com/niwibe/cats">cats library</a> for
+error handling (error as value).</p>
+</div>
+<div class="paragraph">
+<p>Let start importing necessary namespaces:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">clojure.core.async</span> <span class="tok-ss">:refer</span> <span class="tok-p">[</span><span class="tok-nv">go</span> <span class="tok-nv">&lt;!</span> <span class="tok-nv">into</span><span class="tok-p">]])</span>
+<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.async</span> <span class="tok-ss">:as</span> <span class="tok-nv">sca</span><span class="tok-p">])</span>
+<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">cats.monad.exception</span> <span class="tok-ss">:as</span> <span class="tok-nv">exc</span><span class="tok-p">])</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can found that the functions found on async namespace (<code>execute</code> and <code>fetch</code>)
+are almost identical that ones form <code>suricatta.core</code> (previously explained). The
+main difference is that them returns <em>core.async</em> channels.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example executing a query using async interface.</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">go</span>
+  <span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-nf">sc/context</span> <span class="tok-nv">dbspec</span><span class="tok-p">)]</span>
+    <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">sql</span>    <span class="tok-s">&quot;insert into foo (n) values (1), (2)&quot;</span>
+          <span class="tok-nv">result</span> <span class="tok-p">(</span><span class="tok-nf">&lt;!</span> <span class="tok-p">(</span><span class="tok-nf">sca/execute</span> <span class="tok-nv">ctx</span> <span class="tok-nv">sql</span><span class="tok-p">))]</span>
+      <span class="tok-nv">result</span><span class="tok-p">)))</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Example fetching results from query using async interface.</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">go</span>
+  <span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-nf">sc/context</span> <span class="tok-nv">dbspec</span><span class="tok-p">)]</span>
+    <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">sql</span>    <span class="tok-s">&quot;select * from foo order by n&quot;</span>
+          <span class="tok-nv">ch</span>     <span class="tok-p">(</span><span class="tok-nf">sca/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-nv">sql</span><span class="tok-p">)]</span>
+      <span class="tok-p">(</span><span class="tok-nf">&lt;!</span> <span class="tok-p">(</span><span class="tok-nb">into </span><span class="tok-p">[]</span> <span class="tok-nv">ch</span><span class="tok-p">)))))</span></code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -1555,18 +1607,10 @@ functions.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_async_interface">6. Async interface</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Not implemented yet.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_faq">7. FAQ</h2>
+<h2 id="_faq">6. FAQ</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_why_an_other_dsl_is_yet_another">7.1. Why an other dsl? Is yet another?</h3>
+<h3 id="_why_an_other_dsl_is_yet_another">6.1. Why an other dsl? Is yet another?</h3>
 <div class="paragraph">
 <p>In first instance <em>suricatta</em> is not a dsl library, is a sql toolkit, and one part of the
 toolkit is a dsl.</p>
@@ -1578,7 +1622,7 @@ sql constructions.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_is_a_korma_clone">7.2. Is a korma-clone?</h3>
+<h3 id="_is_a_korma_clone">6.2. Is a korma-clone?</h3>
 <div class="paragraph">
 <p>Not, is not korma clone. Because it works very different, and it has different philosophy.</p>
 </div>
@@ -1588,7 +1632,7 @@ to be a replacement of Korma. It intends be a replacement to raw jdbc access to 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_is_required_buy_jooq_comercial_license">7.3. Is required buy JOOQ comercial license?</h3>
+<h3 id="_is_required_buy_jooq_comercial_license">6.3. Is required buy JOOQ comercial license?</h3>
 <div class="paragraph">
 <p>Not, <em>suricatta</em> works and tested with opensource (Apache 2.0 licensed) version of JOOQ.</p>
 </div>
@@ -1598,7 +1642,7 @@ to be a replacement of Korma. It intends be a replacement to raw jdbc access to 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_why_i_should_use_it_instead_clojure_jdbc_or_java_jdbc">7.4. Why I should use it instead clojure.jdbc or java.jdbc?</h3>
+<h3 id="_why_i_should_use_it_instead_clojure_jdbc_or_java_jdbc">6.4. Why I should use it instead clojure.jdbc or java.jdbc?</h3>
 <div class="paragraph">
 <p>Unlike any jdbc library, <em>suricatta</em> works in slightly higher level, and hides a lot of
 idiosyncrasies of jdbc under much simpler, cleaner and less error prone api, with better
@@ -1606,7 +1650,7 @@ resource management.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_can_i_store_safely_queries_builded_by_dsl_they_are_immutable">7.5. Can I store safely queries builded by DSL, they are immutable?</h3>
+<h3 id="_can_i_store_safely_queries_builded_by_dsl_they_are_immutable">6.5. Can I store safely queries builded by DSL, they are immutable?</h3>
 <div class="paragraph">
 <p>Yes. Unlike JOOQ DSL interface that has mutable api, <em>suricatta</em> exposes immutable
 api for building queries.</p>
@@ -1618,10 +1662,10 @@ api for building queries.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_how_to_contribute">8. How to Contribute?</h2>
+<h2 id="_how_to_contribute">7. How to Contribute?</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_philosophy">8.1. Philosophy</h3>
+<h3 id="_philosophy">7.1. Philosophy</h3>
 <div class="paragraph">
 <p>Five most important rules:</p>
 </div>
@@ -1649,7 +1693,7 @@ api for building queries.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_procedure">8.2. Procedure</h3>
+<h3 id="_procedure">7.2. Procedure</h3>
 <div class="paragraph">
 <p><strong>suricatta</strong> unlike Clojure and other Clojure contrib libs, does not have many
 restrictions for contributions. Just follow the following steps depending on the
@@ -1686,7 +1730,7 @@ situation:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_license">8.3. License</h3>
+<h3 id="_license">7.3. License</h3>
 <div class="paragraph">
 <p><em>suricatta</em> is writen from scratch and is licensed under Apache 2.0 license:</p>
 </div>
@@ -1728,7 +1772,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-11-06 00:09:15 CET
+Last updated 2014-11-06 00:51:46 CET
 </div>
 </div>
 </body>
