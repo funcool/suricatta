@@ -14,7 +14,7 @@
 (defn my-fixture
   [end]
   (with-open [ctx (sc/context dbspec)]
-    (sc/with-atomic ctx
+    (sc/atomic ctx
       (binding [*ctx* ctx]
         (end)
         (sc/set-rollback! ctx)))))

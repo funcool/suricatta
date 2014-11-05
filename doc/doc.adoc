@@ -259,17 +259,17 @@ lightweight abstraction over complex transaction api.
 .Execute a query in a transaction block.
 [source, clojure]
 ----
-(sc/atomic ctx (fn [ctx]
-                 (sc/fetch ctx "select id, name from book for update")))
+(sc/atomic-apply ctx (fn [ctx]
+                       (sc/fetch ctx "select id, name from book for update")))
 ----
 
-Additionally to `atomic` high order functiom, _suricatta_ comes with convenient macro offering
+Additionally to `atomic-apply` high order functiom, _suricatta_ comes with convenient macro offering
 lightweight sugar sytax for atomic blocks:
 
 .Execute a query in a transaction block using sugar syntax macro.
 [source, clojure]
 ----
-(cs/with-atomic ctx
+(cs/atomic ctx
   (sc/fetch ctx "select id, name from book for update"))
 ----
 
@@ -282,7 +282,7 @@ exposes a `suricatta.core/set-rollback!` function.
 .Explicit rollback example
 [source, clojure]
 ----
-(cs/with-atomic ctx
+(cs/atomic ctx
   (sc/execute ctx "update table1 set f1 = 1")
   (sc/set-rollback! ctx))
 ----

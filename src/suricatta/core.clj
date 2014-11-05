@@ -106,10 +106,10 @@
       (cause [_] @cause)
       (cause [self c] (reset! cause c) self))))
 
-(defn atomic
+(defn atomic-apply
   "Execute a function in one transaction
   or subtransaction."
-  [^Context ctx func]
+  [^Context ctx func & args]
   (let [^Configuration conf (.derive (proto/get-configuration ctx))
         ^TransactionContext txctx (transaction-context conf)
         ^TransactionProvider provider (.transactionProvider conf)]
@@ -118,7 +118,7 @@
       (.data "suricatta.transaction" true))
     (try
       (.begin provider txctx)
-      (let [result (func (types/->context conf))
+      (let [result (apply func (types/->context conf) args)
             rollback? (.data conf "suricatta.rollback")]
         (if rollback?
           (.rollback provider txctx)
@@ -130,11 +130,11 @@
           (throw cause)
           (throw (DataAccessException. "Rollback caused" cause)))))))
 
-(defmacro with-atomic
+(defmacro atomic
   "Convenience macro for execute a computation
   in a transaction or subtransaction."
   [ctx & body]
-  `(atomic ~ctx (fn [~ctx] ~@body)))
+  `(atomic-apply ~ctx (fn [~ctx] ~@body)))
 
 (defn set-rollback!
   "Mark current transaction for rollback.
