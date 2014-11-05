@@ -86,7 +86,9 @@
   (let [^Configuration conf (.derive (proto/get-configuration ctx))
         ^TransactionContext txctx (transaction-context conf)
         ^TransactionProvider provider (.transactionProvider conf)]
-    (.data conf "suricatta.rollback" false)
+    (doto conf
+      (.data "suricatta.rollback" false)
+      (.data "suricatta.transaction" true))
     (try
       (.begin provider txctx)
       (let [result (func (types/->context conf))
