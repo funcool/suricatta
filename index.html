@@ -520,6 +520,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_the_delete_statement">5.4. The DELETE statement</a></li>
 <li><a href="#_sql_statements_ddl">5.5. SQL Statements (DDL)</a></li>
 <li><a href="#_table_expressions">5.6. Table Expressions</a></li>
+<li><a href="#_executing_queries_2">5.7. Executing queries</a></li>
 </ul>
 </li>
 <li><a href="#_async_interface">6. Async interface</a></li>
@@ -583,7 +584,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>You can combine the <em>suricatta</em> library with <em>clojure.jdbc</em>.</p>
 </li>
 <li>
-<p>And obviously, you can forget jdbc and use <em>suricatta</em> for both purposes, building and
+<p>And obviously, you can forget jdbc and use <em>suricatta</em> for both purposes, building and/or
 executing queries.</p>
 </li>
 </ul>
@@ -594,6 +595,9 @@ executing queries.</p>
 <div class="sect1">
 <h2 id="_project_maturity">2. Project Maturity</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p><em>suricatta</em> is considered in alpha state.</p>
+</div>
 <div class="paragraph">
 <p>Since <em>suricatta</em> is a young project there may be some API breakage.</p>
 </div>
@@ -648,8 +652,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 <div class="sect2">
 <h3 id="_maven">3.4. Maven</h3>
 <div class="paragraph">
-<p>And for old school people, who are using a ugly XML files to configure everything,
-this is a XML block that you should put in a dependency section of a maven config file:</p>
+<p>If you are using maven:</p>
 </div>
 <div class="listingblock">
 <div class="title">Repository entry.</div>
@@ -713,9 +716,13 @@ flags and sql rendering dialect.</p>
 <p><a href="http://niwibe.github.io/clojure.jdbc">clojure.jdbc</a> connection object</p>
 </li>
 <li>
-<p><code>dbspec</code> hash-map (same format that <a href="http://niwibe.github.io/clojure.jdbc/#_connecting_to_database">clojure.jdbc</a> accepts, including with datasource)</p>
+<p>hash-map dbspec format (same format as in <em>clojure.jdbc</em>)</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>The use of <a href="http://niwibe.github.io/clojure.jdbc">clojure.jdbc</a> allows to <em>suricatta</em> have good
+support for datasource (<a href="http://niwibe.github.io/clojure.jdbc/#connection-pool">connection pool</a>) dbspec&#8217;s.</p>
 </div>
 <div class="paragraph">
 <p>Let see some examples:</p>
@@ -745,6 +752,20 @@ flags and sql rendering dialect.</p>
     <span class="tok-nv">res</span><span class="tok-p">))</span></code></pre>
 </div>
 </div>
+<div class="listingblock">
+<div class="title">Create context from dbspec with datasource (connection pool).</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Import the desired implementation</span>
+<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">jdbc.pool.dbcp</span> <span class="tok-ss">:as</span> <span class="tok-nv">pool</span><span class="tok-p">])</span>
+
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">dbspec</span> <span class="tok-p">(</span><span class="tok-nf">pool/make-datasource-spec</span> <span class="tok-p">{</span><span class="tok-ss">:classname</span> <span class="tok-s">&quot;org.postgresql.Driver&quot;</span>
+                                        <span class="tok-ss">:subprotocol</span> <span class="tok-s">&quot;postgresql&quot;</span>
+                                        <span class="tok-ss">:subname</span> <span class="tok-s">&quot;//localhost:5432/dbname&quot;</span><span class="tok-p">}))</span>
+
+<span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-nf">sc/context</span> <span class="tok-nv">dbspec</span><span class="tok-p">)]</span>
+  <span class="tok-p">(</span><span class="tok-nf">do-something-with</span> <span class="tok-nv">ctx</span><span class="tok-p">))</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_executing_queries">4.2. Executing queries</h3>
@@ -752,6 +773,7 @@ flags and sql rendering dialect.</p>
 <p><em>suricatta</em> has clear separation between queries that can return result, and queries that cannot.</p>
 </div>
 <div class="listingblock">
+<div class="title">Example using <code>suricatta.core/execute</code> function.</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">sc</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">sc/execute</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;CREATE TABLE foo&quot;</span><span class="tok-p">)</span></code></pre>
@@ -828,23 +850,21 @@ queries in <strong>sqlvec</strong> format.</p>
 <p>The <em>suricatta</em> library does not have support for low level transactions api, instead of it, offers a
 lightweight abstraction over complex transaction api.</p>
 </div>
-<div class="paragraph">
-<p>Let see an example:</p>
-</div>
 <div class="listingblock">
-<div class="title">Execute some query in a transaction block</div>
+<div class="title">Execute a query in a transaction block.</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">sc/atomic</span> <span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-k">fn </span><span class="tok-p">[</span><span class="tok-nv">ctx</span><span class="tok-p">]</span>
-                 <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;select id, name from book for update&quot;</span><span class="tok-p">)))</span></code></pre>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">sc/atomic-apply</span> <span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-k">fn </span><span class="tok-p">[</span><span class="tok-nv">ctx</span><span class="tok-p">]</span>
+                       <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;select id, name from book for update&quot;</span><span class="tok-p">)))</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Additionally to <code>atomic</code> high order functiom, <em>suricatta</em> comes with convenient macro offering
+<p>Additionally to <code>atomic-apply</code> high order functiom, <em>suricatta</em> comes with convenient macro offering
 lightweight sugar sytax for atomic blocks:</p>
 </div>
 <div class="listingblock">
+<div class="title">Execute a query in a transaction block using sugar syntax macro.</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">cs/with-atomic</span> <span class="tok-nv">ctx</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">cs/atomic</span> <span class="tok-nv">ctx</span>
   <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;select id, name from book for update&quot;</span><span class="tok-p">))</span></code></pre>
 </div>
 </div>
@@ -859,7 +879,7 @@ exposes a <code>suricatta.core/set-rollback!</code> function.</p>
 <div class="listingblock">
 <div class="title">Explicit rollback example</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">cs/with-atomic</span> <span class="tok-nv">ctx</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">cs/atomic</span> <span class="tok-nv">ctx</span>
   <span class="tok-p">(</span><span class="tok-nf">sc/execute</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;update table1 set f1 = 1&quot;</span><span class="tok-p">)</span>
   <span class="tok-p">(</span><span class="tok-nf">sc/set-rollback!</span> <span class="tok-nv">ctx</span><span class="tok-p">))</span></code></pre>
 </div>
@@ -873,7 +893,47 @@ the subtransaction will be marked for rollback, not the entire transaction.</p>
 <div class="sect2">
 <h3 id="_lazy_result_fetching">4.7. Lazy result fetching</h3>
 <div class="paragraph">
-<p>Not implemented yet.</p>
+<p>The <em>suricatta</em> library also comes with lazy fetching support. In this case, it tries instead
+of fetching all results in memory, fetch in small groups, allowing lower memory usage.</p>
+</div>
+<div class="paragraph">
+<p>Lazy fetching has few quirks:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>It some databases it requires run in one transaction, like <em>PostgreSQL</em>, because it uses a server
+side cursors for make it possible.</p>
+</li>
+<li>
+<p>Requires explicit resource management, because for make possible lazy fetching, a connection and
+internal resultset should be mantained open until fetching is finished.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To use lazy fetch is realy easy, because suricatta exposes it like simple lazy sequence. Let
+see one example:</p>
+</div>
+<div class="listingblock">
+<div class="title">Example executing large query and fetching elemens in groups of 10.</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">sql</span> <span class="tok-s">&quot;SELECT x FROM generate_series(1, 10000)&quot;</span><span class="tok-p">)</span>
+
+<span class="tok-p">(</span><span class="tok-nf">cs/atomic</span> <span class="tok-nv">ctx</span>
+  <span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">cursor</span> <span class="tok-p">(</span><span class="tok-nf">sc/fetch-lazy</span> <span class="tok-nv">ctx</span> <span class="tok-nv">sql</span> <span class="tok-p">{</span><span class="tok-ss">:fetch-size</span> <span class="tok-mi">10</span><span class="tok-p">})]</span>
+    <span class="tok-p">(</span><span class="tok-nb">doseq </span><span class="tok-p">[</span><span class="tok-nv">item</span> <span class="tok-p">(</span><span class="tok-nf">sc/cursor-&gt;lazyseq</span> <span class="tok-nv">cursor</span><span class="tok-p">)]</span>
+      <span class="tok-p">(</span><span class="tok-nb">println </span><span class="tok-nv">item</span><span class="tok-p">))))</span>
+
+<span class="tok-c1">;; This should print something similar to:</span>
+<span class="tok-c1">;; {:x 1}</span>
+<span class="tok-c1">;; {:x 2}</span>
+<span class="tok-c1">;; ...</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The third parameter of <code>sc/fetch-lazy</code> function is optional and the default fetch size
+currently has value of 100.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1468,6 +1528,30 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_executing_queries_2">5.7. Executing queries</h3>
+<div class="paragraph">
+<p>Almost all method in <strong>dsl</strong> always returns some kind of <strong>deferred</strong> object. That object implements
+needed protocos for make them compatible with <code>suricatta.core/execute</code> and <code>suricatta.core/fetch</code>
+functions.</p>
+</div>
+<div class="paragraph">
+<p>Let see an example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">my-query</span>
+  <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:id</span><span class="tok-p">)</span>
+      <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:books</span><span class="tok-p">)</span>
+      <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">[</span><span class="tok-s">&quot;age &gt; ?&quot;</span>, <span class="tok-mi">100</span><span class="tok-p">])</span>
+      <span class="tok-p">(</span><span class="tok-nf">dsl/limit</span> <span class="tok-mi">1</span><span class="tok-p">)))</span>
+
+<span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-nf">sc/context</span> <span class="tok-nv">dbspec</span><span class="tok-p">)]</span>
+  <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-nv">my-query</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; [{:id 4232}]</span></code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1608,19 +1692,30 @@ situation:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>Copyright (c) 2014 Andrey Antukh &lt;niwi@niwi.be&gt;
+<pre>Copyright (c) 2014, Andrey Antukh
 
-Licensed under the Apache License, Version 2.0 (the "License")
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+All rights reserved.
 
-    http://www.apache.org/licenses/LICENSE-2.0
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.</pre>
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1633,7 +1728,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-10-25 14:25:17 CEST
+Last updated 2014-11-06 00:09:15 CET
 </div>
 </div>
 </body>
