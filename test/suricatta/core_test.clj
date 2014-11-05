@@ -1,8 +1,11 @@
 (ns suricatta.core-test
   (:require [clojure.test :refer :all]
+            [clojure.core.async :refer [<!!]]
             [suricatta.core :refer :all]
+            [suricatta.async :as sca]
             [suricatta.format :refer [get-sql get-bind-values sqlvec] :as fmt]
-            [jdbc.core :as jdbc]))
+            [jdbc.core :as jdbc]
+            [cats.monad.exception :as exc]))
 
 (def dbspec {:subprotocol "h2"
              :subname "mem:"})
@@ -96,3 +99,20 @@
           (let [res (take 3 (cursor->lazyseq cursor))]
             (is (= (vec res) [{:x 1} {:x 2} {:x 3}]))))))
 ))
+
+
+(deftest async-support
+  (with-open [ctx (context dbspec)]
+    (execute ctx "create table foo (n int)")
+    (testing "Execute query asynchronously"
+      (let [result (<!! (sca/execute ctx "insert into foo (n) values (1), (2)"))]
+        (is (= result (exc/success 2)))))
+
+    (testing "Fetching query asynchronously"
+      (let [ch      (sca/fetch ctx "select * from foo order by n")
+            result1 (<!! ch)
+            result2 (<!! ch)]
+        (is (= result1 (exc/success {:n 1})))
+        (is (= result2 (exc/success {:n 2})))))
+))
+

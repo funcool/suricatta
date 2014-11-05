@@ -24,8 +24,8 @@
 
 (ns suricatta.async
   (:require [suricatta.core :as sc]
-            [clojure.core.async.impl.protocols :as asyncproto]
-            [clojure.core.async :refer [<! >! go chan put!]]))
+            [cats.monad.exception :as exc]
+            [clojure.core.async :refer [<! >! go chan put! close!]]))
 
 (defn execute
   "Execute a query asynchronously returning a channel."
@@ -34,7 +34,11 @@
   ([ctx q opts]
      (let [c   (or (:chan opts) (chan))
            act (.-act ctx)]
-       (send-off act (fn [_] (put! c (sc/execute ctx q))))
+       (send-off act (fn [counter]
+                       (let [result (exc/try-on (sc/execute ctx q))]
+                         (put! c result)
+                         (close! c))
+                       (inc counter)))
        c)))
 
 
@@ -47,11 +51,20 @@
      (let [c    (or (:chan opts) (chan))
            act  (.-act ctx)
            opts (dissoc opts :chan)]
-       (send-off act (fn [_]
-                       (reduce (fn [acc v]
-                                 (if-not (put! c v)
-                                   (reduced nil)
-                                   nil))
-                               nil
-                               (sc/fetch ctx q opts))))
+       (send-off act (fn [counter]
+                       (try
+                         (sc/with-atomic ctx
+                           (with-open [cursor (sc/fetch-lazy ctx q opts)]
+                             (reduce (fn [acc v]
+                                       (if-not (put! c (exc/success v))
+                                         (reduced nil)
+                                         nil))
+                                     nil
+                                     (sc/cursor->lazyseq cursor opts))
+                             (close! c)
+                             (inc counter)))
+                         (catch Exception e
+                           (put! c (exc/failure e))
+                           (close! c)))
+                       (inc counter)))
        c)))
