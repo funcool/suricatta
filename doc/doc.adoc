@@ -334,6 +334,54 @@ Batch execution
 Not implemented yet.
 
 
+Async interface
+~~~~~~~~~~~~~~~
+
+It is well known that jdbc does not support proper way handle queries in asynchronous manner. But
+exists also a well known way to handle with it: using a shared thread pool for execute queries
+asynchronously.
+
+Also, clojure comes with good abstractions for execute things asynchronously: agents. Agents
+in clojure uses a shared execution pool and guarantes that things are executed serially.
+
+The _suricatta_ library takes advantage of that, and exposes a simple async api using
+_core.async_ channels abstraction and link:https://github.com/niwibe/cats[cats library] for
+error handling (error as value).
+
+Let start importing necessary namespaces:
+
+[source, clojure]
+----
+(require '[clojure.core.async :refer [go <! into]])
+(require '[suricatta.async :as sca])
+(require '[cats.monad.exception :as exc])
+----
+
+You can found that the functions found on async namespace (`execute` and `fetch`)
+are almost identical that ones form `suricatta.core` (previously explained). The
+main difference is that them returns _core.async_ channels.
+
+.Example executing a query using async interface.
+[source, clojure]
+----
+(go
+  (with-open [ctx (sc/context dbspec)]
+    (let [sql    "insert into foo (n) values (1), (2)"
+          result (<! (sca/execute ctx sql))]
+      result)))
+----
+
+.Example fetching results from query using async interface.
+[source, clojure]
+----
+(go
+  (with-open [ctx (sc/context dbspec)]
+    (let [sql    "select * from foo order by n"
+          ch     (sca/fetch ctx sql)]
+      (<! (into [] ch)))))
+----
+
+
 SQL Building and Formatting
 ---------------------------
 
@@ -915,12 +963,6 @@ Let see an example:
   (sc/fetch ctx my-query))
 ;; => [{:id 4232}]
 ----
-
-
-Async interface
----------------
-
-Not implemented yet.
 
 
 FAQ
