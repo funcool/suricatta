@@ -37,6 +37,9 @@
 (defprotocol IFetch
   (fetch [q ctx opts] "Fetch eagerly results executing query."))
 
+(defprotocol IFetchLazy
+  (fetch-lazy [q ctx opts] "Fetch lazy results executing query."))
+
 (defprotocol IRenderer
   (get-sql [_ type dialect] "Render a query sql into a string.")
   (get-bind-values [_] "Get query bind values."))

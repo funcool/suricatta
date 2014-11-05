@@ -70,6 +70,23 @@
   [ctx querylike]
   (proto/query querylike ctx))
 
+(defn fetch-lazy
+  "Fetch lazily results executing a query.
+
+  This function returns a cursor instead of result.
+  You should explicitly close the cursor at the end of
+  iteration for release resources."
+  ([ctx q] (proto/fetch-lazy q ctx {}))
+  ([ctx q opts] (proto/fetch-lazy q ctx {})))
+
+(defn cursor->lazyseq
+  "Transform a cursor in a lazyseq.
+
+  The returned lazyseq will return values until a cursor
+  is closed or all values are fetched."
+  ([cursor] (impl/cursor->lazyseq cursor {}))
+  ([cursor opts] (impl/cursor->lazyseq cursor opts)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Transactions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

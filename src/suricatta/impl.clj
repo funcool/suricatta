@@ -157,17 +157,17 @@
       (-> (.fetch context sql)
           (result->vector opts))))
 
-  org.jooq.ResultQuery
-  (fetch [^ResultQuery query ^Context ctx opts]
-    (let [^DSLContext context (proto/get-context ctx)]
-      (-> (.fetch context query)
-          (result->vector opts))))
-
   PersistentVector
   (fetch [^PersistentVector sqlvec ^Context ctx opts]
     (let [^DSLContext context (proto/get-context ctx)
           ^ResultQuery query (->> (into-array Object (rest sqlvec))
                                   (.resultQuery context (first sqlvec)))]
+      (-> (.fetch context query)
+          (result->vector opts))))
+
+  org.jooq.ResultQuery
+  (fetch [^ResultQuery query ^Context ctx opts]
+    (let [^DSLContext context (proto/get-context ctx)]
       (-> (.fetch context query)
           (result->vector opts))))
 
@@ -183,6 +183,48 @@
           ^ResultQuery query  (.-query query)]
       (-> (.fetch context query)
           (result->vector opts)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; IFetchLazy Implementation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(extend-protocol proto/IFetchLazy
+  java.lang.String
+  (fetch-lazy [^String query ^Context ctx opts]
+    (let [^DSLContext context (proto/get-context ctx)
+          ^ResultQuery query  (.resultQuery context query)]
+      (.fetchSize query (get opts :fetch-size 60))
+      (.fetchLazy context query)))
+
+  clojure.lang.PersistentVector
+  (fetch-lazy [^PersistentVector sqlvec ^Context ctx opts]
+    (let [^DSLContext context (proto/get-context ctx)
+          ^ResultQuery query (->> (into-array Object (rest sqlvec))
+                                  (.resultQuery context (first sqlvec)))]
+      (.fetchSize query (get opts :fetch-size 60))
+      (.fetchLazy context query)))
+
+  org.jooq.ResultQuery
+  (fetch-lazy [^ResultQuery query ^Context ctx opts]
+    (let [^DSLContext context (proto/get-context ctx)]
+      (.fetchSize query (get opts :fetch-size 60))
+      (.fetchLazy context query)))
+
+  suricatta.types.Deferred
+  (fetch-lazy [deferred ctx opts]
+    (proto/fetch-lazy @deferred ctx opts)))
+
+(defn cursor->lazyseq
+  [cursor {:keys [rows mapfn] :or {rows false}}]
+  (let [lseq (fn thisfn []
+               (when (.hasNext cursor)
+                 (let [record (.fetchOne cursor)
+                       record (cond
+                               mapfn (mapfn record)
+                               rows  (result-record->row record)
+                               :else (result-record->record record))]
+                   (cons record (lazy-seq (thisfn))))))]
+    (lseq)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IQuery Implementation

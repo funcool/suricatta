@@ -81,3 +81,18 @@
       (let [result (fetch ctx "select * from foo")]
         (is (= 0 (count result))))))
 )
+
+(deftest lazy-fetch
+  (with-open [ctx (context dbspec)]
+    (testing "Fetch by default vector of rows."
+      (with-atomic ctx
+        (with-open [cursor (fetch-lazy ctx "select x from system_range(1, 300)")]
+          (let [res (take 3 (cursor->lazyseq cursor {:rows true}))]
+            (is (= (mapcat identity (vec res)) [1 2 3]))))))
+
+    (testing "Fetch by default vector of records."
+      (with-atomic ctx
+        (with-open [cursor (fetch-lazy ctx "select x from system_range(1, 300)")]
+          (let [res (take 3 (cursor->lazyseq cursor))]
+            (is (= (vec res) [{:x 1} {:x 2} {:x 3}]))))))
+))
