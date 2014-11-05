@@ -295,7 +295,37 @@ the subtransaction will be marked for rollback, not the entire transaction.
 Lazy result fetching
 ~~~~~~~~~~~~~~~~~~~~
 
-Not implemented yet.
+The _suricatta_ library also comes with lazy fetching support. In this case, it tries instead
+of fetching all results in memory, fetch in small groups, allowing lower memory usage.
+
+Lazy fetching has few quirks:
+
+- It some databases it requires run in one transaction, like _PostgreSQL_, because it uses a server
+  side cursors for make it possible.
+- Requires explicit resource management, because for make possible lazy fetching, a connection and
+  internal resultset should be mantained open until fetching is finished.
+
+To use lazy fetch is realy easy, because suricatta exposes it like simple lazy sequence. Let
+see one example:
+
+.Example executing large query and fetching elemens in groups of 10.
+[source, clojure]
+----
+(def sql "SELECT x FROM generate_series(1, 10000)")
+
+(cs/atomic ctx
+  (with-open [cursor (sc/fetch-lazy ctx sql {:fetch-size 10})]
+    (doseq [item (sc/cursor->lazyseq cursor)]
+      (println item))))
+
+;; This should print something similar to:
+;; {:x 1}
+;; {:x 2}
+;; ...
+----
+
+The third parameter of `sc/fetch-lazy` function is optional and the default fetch size
+currently has value of 100.
 
 
 Batch execution
