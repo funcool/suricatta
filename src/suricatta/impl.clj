@@ -201,13 +201,13 @@
     (let [^DSLContext context (proto/get-context ctx)
           ^ResultQuery query (->> (into-array Object (rest sqlvec))
                                   (.resultQuery context (first sqlvec)))]
-      (.fetchSize query (get opts :fetch-size 60))
+      (.fetchSize query (get opts :fetch-size 100))
       (.fetchLazy context query)))
 
   org.jooq.ResultQuery
   (fetch-lazy [^ResultQuery query ^Context ctx opts]
     (let [^DSLContext context (proto/get-context ctx)]
-      (.fetchSize query (get opts :fetch-size 60))
+      (.fetchSize query (get opts :fetch-size 100))
       (.fetchLazy context query)))
 
   suricatta.types.Deferred
