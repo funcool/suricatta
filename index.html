@@ -1524,7 +1524,7 @@ given transaction for subsequent updates. Let see an example of how use it with 
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:f1</span> <span class="tok-ss">:f2</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/values</span> <span class="tok-p">(</span><span class="tok-nf">dsl/row</span> <span class="tok-mi">1</span> <span class="tok-mi">2</span><span class="tok-p">)</span>
                               <span class="tok-p">(</span><span class="tok-nf">dsl/row</span> <span class="tok-mi">3</span> <span class="tok-mi">4</span><span class="tok-p">))</span>
-                  <span class="tok-p">(</span><span class="tok-nf">dsl/as</span> <span class="tok-s">&quot;t1&quot;</span> <span class="tok-s">&quot;f1&quot;</span> <span class="tok-s">&quot;f2&quot;</span><span class="tok-p">)))</span>
+                  <span class="tok-p">(</span><span class="tok-nf">dsl/as-table</span> <span class="tok-s">&quot;t1&quot;</span> <span class="tok-s">&quot;f1&quot;</span> <span class="tok-s">&quot;f2&quot;</span><span class="tok-p">)))</span>
     <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:type</span> <span class="tok-ss">:inlined</span><span class="tok-p">}))</span>
 <span class="tok-c1">;; =&gt; &quot;select f1, f2 from (values(1, 2), (3, 4)) as \&quot;t1\&quot; (\&quot;f1\&quot;, \&quot;f2\&quot;)&quot;</span></code></pre>
 </div>
@@ -1561,7 +1561,7 @@ given transaction for subsequent updates. Let see an example of how use it with 
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:f1</span><span class="tok-p">)</span>
                   <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
-                  <span class="tok-p">(</span><span class="tok-nf">dsl/as</span> <span class="tok-s">&quot;tt1&quot;</span><span class="tok-p">)))</span>
+                  <span class="tok-p">(</span><span class="tok-nf">dsl/as-table</span> <span class="tok-s">&quot;tt1&quot;</span><span class="tok-p">)))</span>
     <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select \&quot;tt1\&quot;.\&quot;f1\&quot; from (select f1 from t1) as \&quot;tt1\&quot;(\&quot;f1\&quot;)&quot;</span></code></pre>
 </div>
@@ -1772,7 +1772,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-11-06 16:50:50 CET
+Last updated 2014-11-06 17:31:57 CET
 </div>
 </div>
 </body>
