@@ -163,9 +163,8 @@ Let see some examples:
 ;; Import the desired implementation
 (require '[jdbc.pool.dbcp :as pool])
 
-(def dbspec (pool/make-datasource-spec {:classname "org.postgresql.Driver"
-                                        :subprotocol "postgresql"
-                                        :subname "//localhost:5432/dbname"}))
+(def dbspec (pool/make-datasource-spec {:subprotocol "postgresql"
+                                        :subname "//localhost/dbname"}))
 
 (with-open [ctx (sc/context dbspec)]
   (do-something-with ctx))
