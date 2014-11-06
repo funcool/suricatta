@@ -16,7 +16,7 @@ link:http://www.jooq.org/[jooq library])
 
 It consists in four modules:
 
-- *suricatta.core*: jdbc abstraction layer for executing queries.
+- *suricatta.core*: api for executing queries.
 - *suricatta.async*: asynchronous api for executing queries using *core.async*.
 - *suricatta.dsl*: lightweight dsl for idiomatic and composable sql building.
 - *suricatta.format*: sql rendering functions.
