@@ -317,12 +317,6 @@ The third parameter of `sc/fetch-lazy` function is optional and the default fetc
 currently has value of 100.
 
 
-Batch execution
-~~~~~~~~~~~~~~~
-
-Not implemented yet.
-
-
 Async interface
 ~~~~~~~~~~~~~~~
 
