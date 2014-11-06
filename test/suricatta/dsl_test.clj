@@ -227,7 +227,7 @@
                  (-> (dsl/values
                       (dsl/row 1 2)
                       (dsl/row 3 4))
-                     (dsl/as "t1" "f1" "f2"))))]
+                     (dsl/as-table "t1" "f1" "f2"))))]
       (is (= (fmt/get-sql q {:dialect :pgsql})
              "select f1, f2 from (values(?, ?), (?, ?)) as \"t1\"(\"f1\", \"f2\")"))))
 
@@ -242,7 +242,7 @@
     (let [q (-> (dsl/select)
                 (dsl/from (-> (dsl/select :f1)
                               (dsl/from :t1)
-                              (dsl/as "tt1" "f1"))))]
+                              (dsl/as-table "tt1" "f1"))))]
       (is (= (fmt/get-sql q {:dialect :pgsql})
              "select \"tt1\".\"f1\" from (select f1 from t1) as \"tt1\"(\"f1\")"))))
 
@@ -322,10 +322,10 @@
   (testing "Common table expressions"
     (let [cte1 (-> (dsl/name :t1)
                    (dsl/with-fields :f1 :f2)
-                   (dsl/as (dsl/select (dsl/val 1) (dsl/val "a"))))
+                   (dsl/as-table (dsl/select (dsl/val 1) (dsl/val "a"))))
           cte2 (-> (dsl/name :t2)
                    (dsl/with-fields :f1 :f2)
-                   (dsl/as (dsl/select (dsl/val 2) (dsl/val "b"))))
+                   (dsl/as-table (dsl/select (dsl/val 2) (dsl/val "b"))))
           q1   (-> (dsl/with cte1 cte2)
                    (dsl/select (dsl/field "t1.f2"))
                    (dsl/from :t1 :t2))
@@ -334,10 +334,10 @@
           q    (-> (dsl/with
                     (-> (dsl/name :t1)
                         (dsl/with-fields :f1 :f2)
-                        (dsl/as (dsl/select (dsl/val 1) (dsl/val "a"))))
+                        (dsl/as-table (dsl/select (dsl/val 1) (dsl/val "a"))))
                     (-> (dsl/name :t2)
                         (dsl/with-fields :f1 :f2)
-                        (dsl/as (dsl/select (dsl/val 2) (dsl/val "b")))))
+                        (dsl/as-table (dsl/select (dsl/val 2) (dsl/val "b")))))
                    (dsl/select (dsl/field "t1.f2"))
                    (dsl/from :t1 :t2))
           sql  (fmt/get-sql q {:type :inlined :dialect :pgsql})

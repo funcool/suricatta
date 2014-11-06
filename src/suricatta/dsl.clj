@@ -52,7 +52,7 @@
   (name* [_] "Name constructor (mainly used with CTE)"))
 
 (defprotocol ITableAlias
-  (as* [_ params] "Table alias constructor"))
+  (as-table* [_ params] "Table alias constructor"))
 
 (defprotocol IFieldAlias
   (as-field* [_ params] "Field alias constructor"))
@@ -175,22 +175,22 @@
 
 (extend-protocol ITableAlias
   org.jooq.Name
-  (as* [^org.jooq.Name n args]
+  (as-table* [^org.jooq.Name n args]
     (.as n ^String (first args)))
 
   org.jooq.DerivedColumnList
-  (as* [n args]
+  (as-table* [n args]
     (.as n (first args)))
 
   org.jooq.TableLike
-  (as* [n args]
+  (as-table* [n args]
     (let [^String alias (first args)]
       (->> (into-array String (rest args))
            (.asTable n alias))))
 
   suricatta.types.Deferred
-  (as* [t args]
-    (as* @t args)))
+  (as-table* [t args]
+    (as-table* @t args)))
 
 (extend-protocol IDeferred
   Object
@@ -203,11 +203,11 @@
 ;; Common DSL functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn as
+(defn as-table
   [o & args]
   (defer
     (->> (map unwrap* args)
-         (as* o))))
+         (as-table* o))))
 
 (defn as-field
   [o & args]
