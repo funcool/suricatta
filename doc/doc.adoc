@@ -184,7 +184,8 @@ _suricatta_ has clear separation between queries that can return result, and que
 (sc/execute ctx "CREATE TABLE foo")
 ----
 
-The return value of `suricatta.core/execute` function depends on the query.
+The return value of `suricatta.core/execute` function depends on the query, but in almost all
+cases it returns a number of affected rows.
 
 
 Fetching results
