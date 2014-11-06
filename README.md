@@ -1,5 +1,7 @@
 # suricatta
 
+[![Travis Badge](https://img.shields.io/travis/niwibe/suricatta.svg?style=flat)](https://travis-ci.org/niwibe/suricatta "Travis Badge")
+
 High level sql toolkit for clojure (backed by jooq library)
 
 ## Download
