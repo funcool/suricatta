@@ -968,6 +968,14 @@ Let see an example:
 FAQ
 ---
 
+Why I should use suricatta instead of clojure.jdbc or java.jdbc?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Unlike any jdbc library, _suricatta_ works in slightly higher level. It hides a lot of
+idiosyncrasies of jdbc under much *simpler, cleaner and less error prone api*, with better
+resource management.
+
+
 Why an other dsl? Is yet another?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -984,7 +992,7 @@ Is a korma-clone?
 
 Not, is not korma clone. Because it works very different, and it has different philosophy.
 
-_suricatta_ has cleanr differentiation between dsl and query execution/fetching. It not intends
+_suricatta_ has cleaner differentiation between dsl and query execution/fetching. It not intends
 to be a replacement of Korma. It intends be a replacement to raw jdbc access to the database.
 
 
@@ -997,16 +1005,8 @@ I have plans to make _suricatta_ work with enterprise version of JOOQ for users 
 "enterprise" databases in a future. In any case, that will not affect the open source version.
 
 
-Why I should use it instead clojure.jdbc or java.jdbc?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Unlike any jdbc library, _suricatta_ works in slightly higher level, and hides a lot of
-idiosyncrasies of jdbc under much simpler, cleaner and less error prone api, with better
-resource management.
-
-
-Can I store safely queries builded by DSL, they are immutable?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Can I store safely queries builded by DSL in a var, they are immutable?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Yes. Unlike JOOQ DSL interface that has mutable api, _suricatta_ exposes immutable
 api for building queries.
@@ -1053,7 +1053,7 @@ situation:
 License
 ~~~~~~~
 
-_suricatta_ is writen from scratch and is licensed under Apache 2.0 license:
+_suricatta_ is licensed under BSD (2-Clause) license:
 
 ----
 Copyright (c) 2014, Andrey Antukh
