@@ -526,11 +526,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_faq">6. FAQ</a>
 <ul class="sectlevel2">
-<li><a href="#_why_an_other_dsl_is_yet_another">6.1. Why an other dsl? Is yet another?</a></li>
-<li><a href="#_is_a_korma_clone">6.2. Is a korma-clone?</a></li>
-<li><a href="#_is_required_buy_jooq_comercial_license">6.3. Is required buy JOOQ comercial license?</a></li>
-<li><a href="#_why_i_should_use_it_instead_clojure_jdbc_or_java_jdbc">6.4. Why I should use it instead clojure.jdbc or java.jdbc?</a></li>
-<li><a href="#_can_i_store_safely_queries_builded_by_dsl_they_are_immutable">6.5. Can I store safely queries builded by DSL, they are immutable?</a></li>
+<li><a href="#_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc">6.1. Why I should use suricatta instead of clojure.jdbc or java.jdbc?</a></li>
+<li><a href="#_why_an_other_dsl_is_yet_another">6.2. Why an other dsl? Is yet another?</a></li>
+<li><a href="#_is_a_korma_clone">6.3. Is a korma-clone?</a></li>
+<li><a href="#_is_required_buy_jooq_comercial_license">6.4. Is required buy JOOQ comercial license?</a></li>
+<li><a href="#_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable">6.5. Can I store safely queries builded by DSL in a var, they are immutable?</a></li>
 </ul>
 </li>
 <li><a href="#_how_to_contribute">7. How to Contribute?</a>
@@ -1610,7 +1610,15 @@ functions.</p>
 <h2 id="_faq">6. FAQ</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_why_an_other_dsl_is_yet_another">6.1. Why an other dsl? Is yet another?</h3>
+<h3 id="_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc">6.1. Why I should use suricatta instead of clojure.jdbc or java.jdbc?</h3>
+<div class="paragraph">
+<p>Unlike any jdbc library, <em>suricatta</em> works in slightly higher level. It hides a lot of
+idiosyncrasies of jdbc under much <strong>simpler, cleaner and less error prone api</strong>, with better
+resource management.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_an_other_dsl_is_yet_another">6.2. Why an other dsl? Is yet another?</h3>
 <div class="paragraph">
 <p>In first instance <em>suricatta</em> is not a dsl library, is a sql toolkit, and one part of the
 toolkit is a dsl.</p>
@@ -1622,17 +1630,17 @@ sql constructions.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_is_a_korma_clone">6.2. Is a korma-clone?</h3>
+<h3 id="_is_a_korma_clone">6.3. Is a korma-clone?</h3>
 <div class="paragraph">
 <p>Not, is not korma clone. Because it works very different, and it has different philosophy.</p>
 </div>
 <div class="paragraph">
-<p><em>suricatta</em> has cleanr differentiation between dsl and query execution/fetching. It not intends
+<p><em>suricatta</em> has cleaner differentiation between dsl and query execution/fetching. It not intends
 to be a replacement of Korma. It intends be a replacement to raw jdbc access to the database.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_is_required_buy_jooq_comercial_license">6.3. Is required buy JOOQ comercial license?</h3>
+<h3 id="_is_required_buy_jooq_comercial_license">6.4. Is required buy JOOQ comercial license?</h3>
 <div class="paragraph">
 <p>Not, <em>suricatta</em> works and tested with opensource (Apache 2.0 licensed) version of JOOQ.</p>
 </div>
@@ -1642,15 +1650,7 @@ to be a replacement of Korma. It intends be a replacement to raw jdbc access to 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_why_i_should_use_it_instead_clojure_jdbc_or_java_jdbc">6.4. Why I should use it instead clojure.jdbc or java.jdbc?</h3>
-<div class="paragraph">
-<p>Unlike any jdbc library, <em>suricatta</em> works in slightly higher level, and hides a lot of
-idiosyncrasies of jdbc under much simpler, cleaner and less error prone api, with better
-resource management.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_can_i_store_safely_queries_builded_by_dsl_they_are_immutable">6.5. Can I store safely queries builded by DSL, they are immutable?</h3>
+<h3 id="_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable">6.5. Can I store safely queries builded by DSL in a var, they are immutable?</h3>
 <div class="paragraph">
 <p>Yes. Unlike JOOQ DSL interface that has mutable api, <em>suricatta</em> exposes immutable
 api for building queries.</p>
@@ -1732,7 +1732,7 @@ situation:</p>
 <div class="sect2">
 <h3 id="_license">7.3. License</h3>
 <div class="paragraph">
-<p><em>suricatta</em> is writen from scratch and is licensed under Apache 2.0 license:</p>
+<p><em>suricatta</em> is licensed under BSD (2-Clause) license:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1772,7 +1772,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-11-06 00:51:46 CET
+Last updated 2014-11-06 16:50:50 CET
 </div>
 </div>
 </body>
