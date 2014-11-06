@@ -480,7 +480,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>suricatta documentation</h1>
 <div class="details">
 <span id="author" class="author">Andrey Antukh, &lt;niwi@niwi.be&gt;</span><br>
-<span id="revdate">0.1.0-SNAPSHOT</span>
+<span id="revdate">0.1.0-alpha</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -505,8 +505,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_reusing_query_statement">4.5. Reusing query statement</a></li>
 <li><a href="#_transactions">4.6. Transactions</a></li>
 <li><a href="#_lazy_result_fetching">4.7. Lazy result fetching</a></li>
-<li><a href="#_batch_execution">4.8. Batch execution</a></li>
-<li><a href="#_async_interface">4.9. Async interface</a></li>
+<li><a href="#_async_interface">4.8. Async interface</a></li>
 </ul>
 </li>
 <li><a href="#_sql_building_and_formatting">5. SQL Building and Formatting</a>
@@ -611,7 +610,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 <div class="listingblock">
 <div class="title"><em>on project.clj</em></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">suricatta</span> <span class="tok-s">&quot;0.1.0-SNAPSHOT&quot;</span><span class="tok-p">]</span></code></pre>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">suricatta</span> <span class="tok-s">&quot;0.1.0-alpha&quot;</span><span class="tok-p">]</span></code></pre>
 </div>
 </div>
 </div>
@@ -622,7 +621,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="groovy"><span class="tok-n">compile</span> <span class="tok-s2">&quot;suricatta:suricatta:0.1.0-SNAPSHOT&quot;</span></code></pre>
+<pre class="pygments highlight"><code data-lang="groovy"><span class="tok-n">compile</span> <span class="tok-s2">&quot;suricatta:suricatta:0.1.0-alpha&quot;</span></code></pre>
 </div>
 </div>
 </div>
@@ -646,7 +645,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 <pre class="pygments highlight"><code data-lang="xml"><span class="tok-nt">&lt;dependency&gt;</span>
   <span class="tok-nt">&lt;groupId&gt;</span>suricatta<span class="tok-nt">&lt;/groupId&gt;</span>
   <span class="tok-nt">&lt;artifactId&gt;</span>suricatta<span class="tok-nt">&lt;/artifactId&gt;</span>
-  <span class="tok-nt">&lt;version&gt;</span>0.1.0-SNAPSHOT<span class="tok-nt">&lt;/version&gt;</span>
+  <span class="tok-nt">&lt;version&gt;</span>0.1.0-alpha<span class="tok-nt">&lt;/version&gt;</span>
 <span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -735,9 +734,8 @@ support for datasource (<a href="http://niwibe.github.io/clojure.jdbc/#connectio
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Import the desired implementation</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">jdbc.pool.dbcp</span> <span class="tok-ss">:as</span> <span class="tok-nv">pool</span><span class="tok-p">])</span>
 
-<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">dbspec</span> <span class="tok-p">(</span><span class="tok-nf">pool/make-datasource-spec</span> <span class="tok-p">{</span><span class="tok-ss">:classname</span> <span class="tok-s">&quot;org.postgresql.Driver&quot;</span>
-                                        <span class="tok-ss">:subprotocol</span> <span class="tok-s">&quot;postgresql&quot;</span>
-                                        <span class="tok-ss">:subname</span> <span class="tok-s">&quot;//localhost:5432/dbname&quot;</span><span class="tok-p">}))</span>
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">dbspec</span> <span class="tok-p">(</span><span class="tok-nf">pool/make-datasource-spec</span> <span class="tok-p">{</span><span class="tok-ss">:subprotocol</span> <span class="tok-s">&quot;postgresql&quot;</span>
+                                        <span class="tok-ss">:subname</span> <span class="tok-s">&quot;//localhost/dbname&quot;</span><span class="tok-p">}))</span>
 
 <span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-nf">sc/context</span> <span class="tok-nv">dbspec</span><span class="tok-p">)]</span>
   <span class="tok-p">(</span><span class="tok-nf">do-something-with</span> <span class="tok-nv">ctx</span><span class="tok-p">))</span></code></pre>
@@ -757,7 +755,8 @@ support for datasource (<a href="http://niwibe.github.io/clojure.jdbc/#connectio
 </div>
 </div>
 <div class="paragraph">
-<p>The return value of <code>suricatta.core/execute</code> function depends on the query.</p>
+<p>The return value of <code>suricatta.core/execute</code> function depends on the query, but in almost all
+cases it returns a number of affected rows.</p>
 </div>
 </div>
 <div class="sect2">
@@ -914,13 +913,7 @@ currently has value of 100.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_batch_execution">4.8. Batch execution</h3>
-<div class="paragraph">
-<p>Not implemented yet.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_async_interface">4.9. Async interface</h3>
+<h3 id="_async_interface">4.8. Async interface</h3>
 <div class="paragraph">
 <p>It is well known that jdbc does not support proper way handle queries in asynchronous manner. But
 exists also a well known way to handle with it: using a shared thread pool for execute queries
@@ -1772,7 +1765,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-11-06 17:58:08 CET
+Last updated 2014-11-06 18:18:40 CET
 </div>
 </div>
 </body>
