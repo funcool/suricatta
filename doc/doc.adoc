@@ -14,23 +14,12 @@ Introduction
 _suricatta_ is a high level sql toolkit for clojure (backed by fantastic
 link:http://www.jooq.org/[jooq library])
 
-It consists in three modules:
+It consists in four modules:
 
-- sql executor: jdbc abstraction layer for executing queries.
-- sql builder: lightweight dsl for idiomatic sql building.
-- sql formatter: sql rendering utils.
-
-
-Use cases
-~~~~~~~~~
-
-The _suricatta_ library is very flexible and it can be used in very different ways:
-
-- You can build queries with _suricatta_ and execute them with _clojure.jdbc_.
-- You can use _suricatta_ for executing queries with string-based sql.
-- You can combine the _suricatta_ library with _clojure.jdbc_.
-- And obviously, you can forget jdbc and use _suricatta_ for both purposes, building and/or
-  executing queries.
+- *suricatta.core*: jdbc abstraction layer for executing queries.
+- *suricatta.async*: asynchronous api for executing queries using *core.async*.
+- *suricatta.dsl*: lightweight dsl for idiomatic and composable sql building.
+- *suricatta.format*: sql rendering functions.
 
 
 Project Maturity
@@ -985,6 +974,18 @@ toolkit is a dsl.
 Secondly, _suricatta_'s dsl don't intends to be a sql abstraction. The real purpose of
 _suricatta_'s dsl is make SQL composable, allowing use all or almost all vendor specific
 sql constructions.
+
+
+That use cases have suricatta?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The _suricatta_ library is very flexible and it can be used in very different ways:
+
+- You can build queries with _suricatta_ and execute them with _clojure.jdbc_.
+- You can use _suricatta_ for executing queries with string-based sql.
+- You can combine the _suricatta_ library with _clojure.jdbc_.
+- And obviously, you can forget jdbc and use _suricatta_ for both purposes, building and/or
+  executing queries.
 
 
 Is a korma-clone?
