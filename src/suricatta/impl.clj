@@ -66,11 +66,7 @@
 (extend-protocol proto/IContextBuilder
   APersistentMap
   (make-context [^clojure.lang.APersistentMap dbspec]
-    (let [^DataSource datasource (:datasource dbspec)
-          ^Connection connection (if datasource
-                                   (.getConnection datasource)
-                                   (-> (jdbc/make-connection dbspec)
-                                       (:connection)))
+    (let [^Connection connection (:connection (jdbc/make-connection dbspec))
           ^SQLDialect dialect (if (:dialect dbspec)
                                 (translate-dialect (:dialect dbspec))
                                 (JDBCUtils/dialect connection))
