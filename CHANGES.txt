@@ -1,7 +1,17 @@
 Changelog
 =========
 
-0.1.0
------
+0.1.1-alpha
+-----------
+
+Date: Unreleased
+
+
+- Fix inconsistens when connection is created from datasource.
+
+0.1.0-alpha
+-----------
+
+Date: 2014-11-06
 
 - Initial version.
