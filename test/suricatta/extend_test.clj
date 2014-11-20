@@ -4,10 +4,11 @@
             [suricatta.dsl :as dsl]
             [suricatta.format :refer [get-sql get-bind-values sqlvec] :as fmt]
             [cheshire.core :refer :all])
-  (:import org.postgresql.util.PGobject))
+  (:import org.postgresql.util.PGobject
+           org.jooq.impl.DSL))
 
 ;; (def dbspec {:subprotocol "postgresql"
-;;              :subname "//localhost/test"})
+;;              :subname "//127.0.0.1/test"})
 
 ;; (def ^:dynamic *ctx*)
 
@@ -45,9 +46,38 @@
 ;;                       obj)))))))
 
 
+;; (defn json
+;;   [data]
+;;   (-> (str "'" (generate-string data) "'::json")
+;;       (DSL/queryPart)))
+
+;; (defn json
+;;   [data]
+;;   (proxy [org.jooq.impl.CustomField] [nil org.jooq.util.postgres.PostgresDataType/JSON]
+;;     (toSQL [context]
+;;       (if (.inline context)
+;;         (doto context
+;;           (.sql "'")
+;;           (.sql (generate-string data))
+;;           (.sql "'::json"))
+;;         (.sql context "?")))
+;;     (bind [context]
+;;       (let [statement (.statement context)
+;;             next-index (.nextIndex context)]
+;;         (.setObject statement next-index (doto (PGobject.)
+;;                                            (.setType "json")
+;;                                            (.setValue (generate-string data))))))))
+
+
 ;; (deftest inserting-json
 ;;   (sc/execute *ctx* "create table t1 (data json, k int)")
 ;;   (sc/execute *ctx* ["insert into t1 (data, k) values (?, ?)" (json {:foo "bar"}) 2])
+;;   (-> (sc/fetch *ctx* "select * from t1")
+;;       (println)))
+
+;; (deftest inserting-array
+;;   (sc/execute *ctx* "create table t1 (data json, k int)")
+;;   (sc/execute *ctx* ["insert into t1 (data, k) values ({0}, {1})" (json {:foo "bar"}) 2])
 ;;   (-> (sc/fetch *ctx* "select * from t1")
 ;;       (println)))
 
