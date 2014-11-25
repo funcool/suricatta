@@ -229,6 +229,7 @@
   (val* v))
 
 (defn table
+  "Create a table instance."
   [data & {:keys [alias] :as opts}]
   (defer
     (let [f (table* data)]
