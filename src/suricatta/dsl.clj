@@ -263,8 +263,8 @@
 (defn select-from
   "Helper for create select * from <table>
   statement directly (without specify fields)"
-  [table']
-  (-> (table* table')
+  [t]
+  (-> (table* t)
       (DSL/selectFrom)))
 
 (defn select-count
@@ -475,20 +475,20 @@
     (DSL/update (table* t))))
 
 (defn set
-  "Attach values to the UPDATE statement"
-  ([t f]
-     (defer
-       (let [t (unwrap* t)]
-         (reduce (fn [acc [k v]]
-                   (.set t (field* k) v))
-                 t f))))
-  ([t f v]
-     (defer
-       (let [v (unwrap* v)
-             t (unwrap* t)]
-         (if (instance? org.jooq.Row f)
-           (.set t f v)
-           (.set t (field* f) v))))))
+  "Attach values to the UPDATE statement."
+  ([t kv]
+   (defer
+     (let [t (unwrap* t)]
+       (reduce (fn [acc [k v]]
+                 (.set t (field* k) v))
+               t kv))))
+  ([t k v]
+   (defer
+     (let [v (unwrap* v)
+           t (unwrap* t)]
+       (if (instance? org.jooq.Row k)
+         (.set t k v)
+         (.set t (field* k) v))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Delete statement
@@ -578,18 +578,17 @@
    :mysql/timestamp MySQLDataType/TIMESTAMP
    :mysql/varchar MySQLDataType/VARCHAR})
 
-
-
 (defn truncate
   [t]
   (defer
-    (-> (table* t)
-        (DSL/truncate))))
+    (DSL/truncate (table* t))))
 
 (defn alter-table
-  [t]
+  "Creates new and empty alter table expression."
+  [name]
   (defer
-    (-> (table* t)
+    (-> (unwrap* name)
+        (table*)
         (DSL/alterTable))))
 
 (defn- datatype-transformer
