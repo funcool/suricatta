@@ -190,36 +190,6 @@
              "(select name from books) union all (select name from articles)"))))
 )
 
-(deftest dsl-ddl
-  (testing "Truncate table"
-    (let [q (dsl/truncate :table1)]
-      (is (= (fmt/get-sql q)
-             "truncate table table1"))))
-
-  (testing "Alter table with add column"
-    (let [q (-> (dsl/alter-table :t1)
-                (dsl/add-column :title :pg/varchar {:length 2 :null false}))]
-      (is (= (fmt/get-sql q)
-             "alter table t1 add title varchar(2) not null"))))
-
-  (testing "Alter table with set new datatype"
-    (let [q (-> (dsl/alter-table :t1)
-                (dsl/set-column-type :title :pg/varchar {:length 100}))]
-      (is (= (fmt/get-sql q)
-             "alter table t1 alter title varchar(100)"))))
-
-  (testing "Alter table with drop column"
-    (let [q (-> (dsl/alter-table :t1)
-                (dsl/drop-column :title :cascade))]
-      (is (= (fmt/get-sql q)
-             "alter table t1 drop title cascade"))))
-
-  (testing "Drop table"
-    (let [q (dsl/drop-table :t1)]
-      (is (= (fmt/get-sql q)
-             "drop table t1"))))
-)
-
 (deftest dsl-table-expressions
   (testing "Values table expression"
     (let [q (-> (dsl/select :f1 :f2)
@@ -347,3 +317,47 @@
       (is (= sql esql))))
 )
 
+(deftest dsl-ddl
+  (testing "Truncate table"
+    (let [q (dsl/truncate :table1)]
+      (is (= (fmt/get-sql q)
+             "truncate table table1"))))
+
+  (testing "Alter table with add column"
+    (let [q (-> (dsl/alter-table :t1)
+                (dsl/add-column :title {:type :pg/varchar :length 2 :null false}))]
+      (is (= (fmt/get-sql q)
+             "alter table t1 add title varchar(2) not null"))))
+
+  (testing "Create table with add column"
+    (let [q (-> (dsl/create-table :t1)
+                (dsl/add-column :title {:type :pg/varchar :length 2 :null true}))]
+      (is (= (fmt/get-sql q)
+             "create table t1(title varchar(2))"))))
+
+  (testing "Alter table with set new datatype"
+    (let [q (-> (dsl/alter-table :t1)
+                (dsl/alter-column :title {:type :pg/varchar :length 100}))]
+      (is (= (fmt/get-sql q)
+             "alter table t1 alter title varchar(100)"))))
+
+  ;; (testing "Alter table with drop column"
+  ;;   (let [q (-> (dsl/alter-table :t1)
+  ;;               (dsl/drop-column :title :cascade))]
+  ;;     (is (= (fmt/get-sql q)
+  ;;            "alter table t1 drop title cascade"))))
+
+  ;; (testing "Drop table"
+  ;;   (let [q (dsl/drop-table :t1)]
+  ;;     (is (= (fmt/get-sql q)
+  ;;            "drop table t1"))))
+
+  ;; (testing "Create table"
+  ;;   (let [q (dsl/create-table :foo [(dsl/column :id :pg/serial)
+  ;;                                   (dsl/column :name :pg/varchar {:length 255})])]))
+
+  ;; (testing "Create table"
+  ;;   (let [q (-> (dsl/create-table :foo)
+  ;;               (dsl/add-column :id :pg/serial)
+  ;;               (dsl/add-column :name :pg/varchar {:length 255}))]))
+)

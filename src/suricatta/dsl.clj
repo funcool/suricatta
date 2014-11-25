@@ -591,42 +591,73 @@
         (table*)
         (DSL/alterTable))))
 
-(defn- datatype-transformer
-  [opts ^org.jooq.DataType acc attr]
-  (case attr
-    :length (.length acc (attr opts))
-    :null   (.nullable acc (attr opts))))
-
-(defn set-column-type
-  [t name datatype & [opts]]
+(defn create-table
+  [name]
   (defer
-    (let [^org.jooq.AlterTableFinalStep t (.alter @t (field* name))]
-      (->> (reduce (partial datatype-transformer opts)
-                   (datatype *datatypes*)
-                   (keys opts))
-           (.set t)))))
+    (-> (unwrap* name)
+        (table*)
+        (DSL/createTable))))
 
-(defn add-column
-  "Add column to alter table step."
-  [t name datatype & [opts]]
+(defn- make-datatype
+  [{:keys [type] :as opts}]
+  (reduce (fn [dt [attname attvalue]]
+            (case attname
+              :length (.length dt attvalue)
+              :null (.nullable dt attvalue)
+              :precision (.precision dt attvalue)
+              dt))
+          (get *datatypes* type)
+          (into [] opts)))
+
+(defmulti add-column (comp class unwrap* first vector))
+
+(defmethod add-column org.jooq.AlterTableStep
+  [step name & [{:keys [default] :as opts}]]
   (defer
-    (->> (reduce (partial datatype-transformer opts)
-                 (datatype *datatypes*)
-                 (keys opts))
-         (.add @t (field* name)))))
+    (let [step (unwrap* step)
+          name (field* name)
+          type (make-datatype opts)
+          step (.add step name type)]
+        (if default
+           (.setDefault step (field* default))
+           step))))
+
+(defmethod add-column org.jooq.CreateTableAsStep
+  [step name & [{:keys [default] :as opts}]]
+  (defer
+    (let [step (unwrap* step)
+          name (field* name)
+          type (make-datatype opts)
+          type (.defaulted type true)]
+      (.column step name type))))
+
+(defn alter-column
+  [step name & [{:keys [type default null length] :as opts}]]
+  (defer
+    (let [step (-> (unwrap* step)
+                   (.alter (field* name)))]
+      (when (clojure.core/and (clojure.core/or null length) (clojure.core/not type))
+        (throw (IllegalArgumentException.
+                "For change null or length you should specify type.")))
+      (when type
+        (.set step (make-datatype opts)))
+      (when default
+        (.defautValue step default))
+      step)))
 
 (defn drop-column
   "Drop column from alter table step."
-  [t name & [type]]
+  [step name & [type]]
   (defer
-    (let [^org.jooq.AlterTableDropStep t (.drop @t (field* name))]
+    (let [step (-> (unwrap* step)
+                   (.drop name))]
       (case type
-        :cascade (.cascade t)
-        :restrict (.restrict t)
-        t))))
+        :cascade (.cascade step)
+        :restrict (.restrict step)
+        step))))
 
 (defn drop-table
   "Drop table statement constructor."
   [t]
   (defer
-    (DSL/dropTable ^org.jooq.Table (table* t))))
+    (DSL/dropTable (table* t))))
