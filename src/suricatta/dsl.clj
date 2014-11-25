@@ -216,7 +216,8 @@
          (as-field* o))))
 
 (defn field
-  [data & {:keys [alias] :as opts}]
+  "Create a field instance."
+  [data {:keys [alias] :as opts}]
   (defer
     (let [f (field* data)]
       (if alias
