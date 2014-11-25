@@ -202,12 +202,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn as-table
+  "Coerce querypart to table expression."
   [o & args]
   (defer
     (->> (map unwrap* args)
          (as-table* o))))
 
 (defn as-field
+  "Coerce querypart to field expression."
   [o & args]
   (defer
     (->> (map unwrap* args)
