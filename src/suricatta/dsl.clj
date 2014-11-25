@@ -51,10 +51,10 @@
 (defprotocol IName
   (name* [_] "Name constructor (mainly used with CTE)"))
 
-(defprotocol ITableAlias
+(defprotocol ITableCoerce
   (as-table* [_ params] "Table alias constructor"))
 
-(defprotocol IFieldAlias
+(defprotocol IFieldCoerce
   (as-field* [_ params] "Field alias constructor"))
 
 (defprotocol IOnStep
@@ -74,6 +74,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol Implementations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (extend-protocol IField
   java.lang.String
   (field* ^org.jooq.Field [^String s]
@@ -88,9 +89,6 @@
 
   org.jooq.impl.Val
   (field* ^org.jooq.Field [v] v))
-
-  ;; Deferred
-  ;; (field* ^org.jooq.Field [v] @v))
 
 (extend-protocol ISortField
   java.lang.String
@@ -164,7 +162,7 @@
   Object
   (val* [v] (DSL/val v)))
 
-(extend-protocol IFieldAlias
+(extend-protocol IFieldCoerce
   org.jooq.FieldLike
   (as-field* [n args]
     (let [^String alias (first args)]
@@ -173,7 +171,7 @@
   suricatta.types.Deferred
   (as-field* [n args] (as-field* @n args)))
 
-(extend-protocol ITableAlias
+(extend-protocol ITableCoerce
   org.jooq.Name
   (as-table* [^org.jooq.Name n args]
     (.as n ^String (first args)))
