@@ -331,7 +331,7 @@
 
   (testing "Create table with add column"
     (let [q (-> (dsl/create-table :t1)
-                (dsl/add-column :title {:type :pg/varchar :length 2 :null true}))]
+                (dsl/add-column :title {:type :pg/varchar :length 2 :null false}))]
       (is (= (fmt/get-sql q)
              "create table t1(title varchar(2))"))))
 
@@ -341,23 +341,14 @@
       (is (= (fmt/get-sql q)
              "alter table t1 alter title varchar(100)"))))
 
-  ;; (testing "Alter table with drop column"
-  ;;   (let [q (-> (dsl/alter-table :t1)
-  ;;               (dsl/drop-column :title :cascade))]
-  ;;     (is (= (fmt/get-sql q)
-  ;;            "alter table t1 drop title cascade"))))
+  (testing "Alter table with drop column"
+    (let [q (-> (dsl/alter-table :t1)
+                (dsl/drop-column :title :cascade))]
+      (is (= (fmt/get-sql q)
+             "alter table t1 drop title cascade"))))
 
-  ;; (testing "Drop table"
-  ;;   (let [q (dsl/drop-table :t1)]
-  ;;     (is (= (fmt/get-sql q)
-  ;;            "drop table t1"))))
-
-  ;; (testing "Create table"
-  ;;   (let [q (dsl/create-table :foo [(dsl/column :id :pg/serial)
-  ;;                                   (dsl/column :name :pg/varchar {:length 255})])]))
-
-  ;; (testing "Create table"
-  ;;   (let [q (-> (dsl/create-table :foo)
-  ;;               (dsl/add-column :id :pg/serial)
-  ;;               (dsl/add-column :name :pg/varchar {:length 255}))]))
+  (testing "Drop table"
+    (let [q (dsl/drop-table :t1)]
+      (is (= (fmt/get-sql q)
+             "drop table t1"))))
 )

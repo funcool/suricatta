@@ -598,6 +598,14 @@
         (table*)
         (DSL/createTable))))
 
+(defn drop-table
+  "Drop table statement constructor."
+  [t]
+  (defer
+    (DSL/dropTable (table* t))))
+
+;; Columns functions
+
 (defn- make-datatype
   [{:keys [type] :as opts}]
   (reduce (fn [dt [attname attvalue]]
@@ -650,14 +658,11 @@
   [step name & [type]]
   (defer
     (let [step (-> (unwrap* step)
-                   (.drop name))]
+                   (.drop (field* name)))]
       (case type
         :cascade (.cascade step)
         :restrict (.restrict step)
         step))))
 
-(defn drop-table
-  "Drop table statement constructor."
-  [t]
-  (defer
-    (DSL/dropTable (table* t))))
+
+
