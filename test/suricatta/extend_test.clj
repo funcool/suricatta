@@ -7,20 +7,20 @@
   (:import org.postgresql.util.PGobject
            org.jooq.impl.DSL))
 
-;; (def dbspec {:subprotocol "postgresql"
-;;              :subname "//127.0.0.1/test"})
+(def dbspec {:subprotocol "postgresql"
+             :subname "//127.0.0.1/test"})
 
-;; (def ^:dynamic *ctx*)
+(def ^:dynamic *ctx*)
 
-;; (defn my-fixture
-;;   [end]
-;;   (with-open [ctx (sc/context dbspec)]
-;;     (sc/atomic ctx
-;;       (binding [*ctx* ctx]
-;;         (end)
-;;         (sc/set-rollback! ctx)))))
+(defn my-fixture
+  [end]
+  (with-open [ctx (sc/context dbspec)]
+    (sc/atomic ctx
+      (binding [*ctx* ctx]
+        (end)
+        (sc/set-rollback! ctx)))))
 
-;; (use-fixtures :each my-fixture)
+(use-fixtures :each my-fixture)
 
 ;; (defn json
 ;;   [data]
@@ -91,15 +91,31 @@
 ;;   (-> (sc/fetch *ctx* "select * from t1")
 ;;       (println)))
 
+(def datatype (org.jooq.impl.DefaultDataType/getDefaultDataType "__other"))
+
+(deftest inserting-json
+  (sc/execute *ctx* "create table t1 (data json, k int)")
+  (sc/execute *ctx* ["insert into t1 (data, k) values (?, ?)" (DSL/val #{:foo "bar"} datatype) 3])
+  (-> (sc/fetch *ctx* ["select * from t1"])
+      (println)))
+
+;; (deftest inserting-json
+;;   (sc/execute *ctx* "create table t1 (k int)")
+;;   (sc/execute *ctx* ["insert into t1 (k) values (?)" 3])
+;;   (-> (sc/fetch *ctx* ["select * from t1"])
+;;       (println)))
+
+;; (deftest json-select
+;;   (let [q (dsl/select (.as (json {:a 1}) "dd"))]
+;;     (-> (sc/fetch *ctx* q)
+;;         (println))))
+
 
 ;; (deftest inserting-arrays
 ;;   (sc/execute *ctx* "create table t1 (data int[])")
 ;;   (let [data [1 2 3]]
 ;;     (sc/execute *ctx* ["insert into t1 (data) values (?)" data])
+;;   (let [data (into-array Integer (map int [1 2 3]))]
+;;     (sc/execute *ctx* ["insert into t1 (data) values (?::int[])" "{1,2,3}"])
 ;;     (-> (sc/fetch *ctx* "select * from t1")
-;;         (println))))
-
-;; (deftest json-select
-;;   (let [q (dsl/select (.as (json {:a 1}) "dd"))]
-;;     (-> (sc/fetch *ctx* q)
 ;;         (println))))

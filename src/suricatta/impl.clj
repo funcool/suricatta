@@ -63,6 +63,44 @@
 ;; Context Constructor Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def datatype (org.jooq.impl.DefaultDataType/getDefaultDataType "__other"))
+
+
+(def visit-listener
+  (proxy [org.jooq.impl.DefaultVisitListener] []
+    (visitStart [^org.jooq.VisitContext context]
+      (when-let [ctx (.bindContext context)]
+        (let [querypart (.queryPart context)]
+          (when (instance? org.jooq.Param querypart)
+            (let [stmt (.statement ctx)
+                  idx (.peekIndex ctx)]
+              (.queryPart context nil)
+              (.data context "suricatta.idx" idx))))))
+
+    ;; ;; (.setInt stmt idx (inc (.getValue querypart)))
+    ;; ;; (.queryPart context nil)
+    ;; (println "VISIT0" idx)
+    ;; (println "VISIT1" querypart (.getValue querypart) tp)
+    ;; (println "VISIT2", (type querypart)))))))
+
+    (visitEnd [^org.jooq.VisitContext context]
+      (when-let [ctx (.bindContext context)]
+        (let [querypart (.queryPart context)]
+          (when (instance? org.jooq.Param querypart)
+            (let [stmt (.statement ctx)
+                  idx  (.data context "suricatta.idx")
+                  tp  (.getDataType querypart (.configuration context))]
+              ;; (.setInt stmt (dec idx) (inc (.getValue querypart)))
+              ;; (.queryPart context nil)
+              (println "VISIT3" idx)
+              (println "VISIT4" querypart (.getValue querypart) tp)
+              (println "VISIT5", (type querypart)))))))))
+
+(def visit-listener-provider
+  (reify
+    org.jooq.VisitListenerProvider
+    (provide [_] visit-listener)))
+
 (extend-protocol proto/IContextBuilder
   APersistentMap
   (make-context [^clojure.lang.APersistentMap dbspec]
@@ -72,6 +110,8 @@
                                 (JDBCUtils/dialect connection))
           ^Configuration conf (doto (DefaultConfiguration.)
                                 (.set dialect)
+                                (.set (into-array org.jooq.VisitListenerProvider
+                                                  [visit-listener-provider]))
                                 (.set connection))]
       (types/->context conf)))
 
@@ -145,6 +185,10 @@
    mapfn (mapv mapfn result)
    rows  (mapv result-record->row result)
    :else (mapv result-record->record result)))
+
+;; (defn wrap-if-need
+;;   [obj]
+;;   (if (instance? org.jooq.Param
 
 (extend-protocol proto/IFetch
   String
