@@ -74,7 +74,13 @@
           (when (instance? org.jooq.Param querypart)
             (let [stmt (.statement ctx)
                   idx (.peekIndex ctx)]
-              (.queryPart context nil)
+              ;; If getValue returns anythibng that implements an future defined protocol
+              ;; then, call protocol method for build new querypart and replace it
+              ;; else, do nothing.
+              ;; The bind/render behavior should be defined in the new custom querypart
+              ;; implementation.
+              (println "VISIT0" (.getDataType querypart))
+              (.queryPart context (DSL/val querypart))
               (.data context "suricatta.idx" idx))))))
 
     ;; ;; (.setInt stmt idx (inc (.getValue querypart)))
