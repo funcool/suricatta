@@ -128,10 +128,9 @@
 
   clojure.lang.PersistentVector
   (execute [^PersistentVector sqlvec ^Context ctx]
-    (let [^DSLContext context   (proto/get-context ctx)
-          ^Query query (.query context
-                               (first sqlvec)
-                               (into-array Object (rest sqlvec)))]
+    (let [^DSLContext context (proto/get-context ctx)
+          ^Query query        (->> (into-array Object (map wrap-if-need (rest sqlvec)))
+                                   (.query context (first sqlvec)))]
       (.execute context query)))
 
   suricatta.types.Deferred
@@ -180,7 +179,7 @@
   PersistentVector
   (fetch [^PersistentVector sqlvec ^Context ctx opts]
     (let [^DSLContext context (proto/get-context ctx)
-          ^ResultQuery query (->> (into-array Object (rest sqlvec))
+          ^ResultQuery query (->> (into-array Object (map wrap-if-need (rest sqlvec)))
                                   (.resultQuery context (first sqlvec)))]
       (-> (.fetch context query)
           (result->vector opts))))
