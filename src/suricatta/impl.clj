@@ -62,42 +62,26 @@
       :sqlite     SQLDialect/SQLITE
       SQLDialect/SQL99)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; jOOQ VisitListener Implementation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; This make to be able easy extend suricatta with vendor
-;; specific types like postgresql json or hstore fields.
-
-(defn- make-param-impl
+(defn make-param-impl
+  "Wraps a value that implements IParamType
+  protocol in valid jOOQ Param implementation."
   [value]
-  (reify suricatta.impl.IParam
-    (render [_ ^RenderContext ctx]
-      (proto/render value))
-    (bind [_ ^BindContext ctx]
-      (let [stmt  (.statement ctx)
-            index (.nextIndex ctx)]
-        (proto/bind value stmt index)))))
+  (->
+   (reify suricatta.impl.IParam
+     (render [_ ^RenderContext ctx]
+       (let [sql (proto/render value)]
+         (.sql ctx sql)))
+     (bind [_ ^BindContext ctx]
+       (let [stmt  (.statement ctx)
+             index (.nextIndex ctx)]
+         (proto/bind value stmt index))))
+   (suricatta.impl.ParamWrapper.)))
 
-(defn- make-visitor-impl
-  []
-  (reify suricatta.impl.IVisitListener
-    (start [_ ^VisitContext context]
-      (let [querypart (.queryPart context)
-            value (when (instance? org.jooq.Param querypart)
-                    (.getValue querypart))]
-        (when (satisfies? proto/IParamType value)
-          (let [param (make-param-impl value)
-                wrapper (suricatta.impl.ParamWrapper. param)]
-            (.queryPart context wrapper)))))
-    (end [_ ^VisitContext context])))
-
-(def visit-listener-provider
-  (reify
-    org.jooq.VisitListenerProvider
-    (provide [_]
-      (let [visitor-impl (make-visitor-impl)]
-        (suricatta.impl.VisitListenerWrapper. visitor-impl)))))
+(defn wrap-if-need
+  [obj]
+  (if (satisfies? proto/IParamType obj)
+    (make-param-impl obj)
+    obj))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Context Constructor Implementation
@@ -112,8 +96,6 @@
                                 (JDBCUtils/dialect connection))
           ^Configuration conf (doto (DefaultConfiguration.)
                                 (.set dialect)
-                                (.set (into-array org.jooq.VisitListenerProvider
-                                                  [visit-listener-provider]))
                                 (.set connection))]
       (types/->context conf)))
 
