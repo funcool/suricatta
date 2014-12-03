@@ -14,3 +14,14 @@ jdk:
   - openjdk7
   - oraclejdk7
   - oraclejdk8
+
+branches:
+  only:
+    - master
+
+notifications:
+  email:
+    recipients:
+      - niwi@niwi.be
+    on_success: change
+    on_failure: change
