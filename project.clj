@@ -9,6 +9,7 @@
                                   [com.h2database/h2 "1.3.176"]
                                   [cheshire "5.3.1"]]
                    :global-vars {*warn-on-reflection* true}}}
+  :java-source-paths ["src/java"]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  ;; [org.jooq/jooq "3.5.0"]
                  [org.jooq/jooq "3.6.0-SNAPSHOT"]

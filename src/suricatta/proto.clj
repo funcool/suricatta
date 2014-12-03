@@ -46,3 +46,12 @@
 
 (defprotocol IQuery
   (query [_ ctx] "Build a query."))
+
+;; Custom data types binding protocols
+
+;; (defprotocol IParamType
+;;   (param [_] "Build param (querypart)."))
+
+(defprotocol IParamType
+  (render [_] "Render param value as inline sql")
+  (bind [_ stmt index] "Bind param value to the statement."))

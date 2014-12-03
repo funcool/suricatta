@@ -35,6 +35,7 @@
            org.jooq.DSLContext
            org.jooq.ResultQuery
            org.jooq.Query
+           org.jooq.VisitContext
            org.jooq.Configuration
            clojure.lang.PersistentVector
            clojure.lang.APersistentMap
@@ -63,49 +64,68 @@
 ;; Context Constructor Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def datatype (org.jooq.impl.DefaultDataType/getDefaultDataType "__other"))
+(defprotocol IQueryPartBind
+  (noop [_] "noop"))
 
+(extend-protocol IQueryPartBind
+  Long
+  (noop [self] (DSL/val self)))
 
-(def visit-listener
-  (proxy [org.jooq.impl.DefaultVisitListener] []
-    (visitStart [^org.jooq.VisitContext context]
-      (when-let [ctx (.bindContext context)]
-        (let [querypart (.queryPart context)]
-          (when (instance? org.jooq.Param querypart)
-            (let [stmt (.statement ctx)
-                  idx (.peekIndex ctx)]
-              ;; If getValue returns anythibng that implements an future defined protocol
-              ;; then, call protocol method for build new querypart and replace it
-              ;; else, do nothing.
-              ;; The bind/render behavior should be defined in the new custom querypart
-              ;; implementation.
-              (println "VISIT0" (.getDataType querypart))
-              (.queryPart context (DSL/val querypart))
-              (.data context "suricatta.idx" idx))))))
+(defn make-visit-listener
+  []
+  (let [visitor (reify
+                  suricatta.impl.IVisitListener
+                  (start [_ ^VisitContext context]
+                    (let [qp (.queryPart context)]
+                      (when (instance? org.jooq.Param qp)
+                        (let [value (.getValue qp)]
+                          (when (satisfies? proto/IParamType value)
+                            (let [
+                            (println "satisfies" value)
+                            (println "notsatisfies" value))))))
+                  (end [_  ^VisitContext context]))]
+    (suricatta.impl.VisitListenerWrapper. visitor)))
 
-    ;; ;; (.setInt stmt idx (inc (.getValue querypart)))
-    ;; ;; (.queryPart context nil)
-    ;; (println "VISIT0" idx)
-    ;; (println "VISIT1" querypart (.getValue querypart) tp)
-    ;; (println "VISIT2", (type querypart)))))))
+;; (def visit-listener
+;;   (proxy [org.jooq.impl.DefaultVisitListener] []
+;;     (visitStart [^org.jooq.VisitContext context]
+;;       (when-let [ctx (.bindContext context)]
+;;         (let [querypart (.queryPart context)]
+;;           (when (instance? org.jooq.Param querypart)
+;;             (let [stmt (.statement ctx)
+;;                   idx (.peekIndex ctx)]
+;;               ;; If getValue returns anythibng that implements an future defined protocol
+;;               ;; then, call protocol method for build new querypart and replace it
+;;               ;; else, do nothing.
+;;               ;; The bind/render behavior should be defined in the new custom querypart
+;;               ;; implementation.
+;;               (println "VISIT0" (.getDataType querypart))
+;;               ;; (.queryPart context (DSL/val querypart))
+;;               (.data context "suricatta.idx" idx))))))
 
-    (visitEnd [^org.jooq.VisitContext context]
-      (when-let [ctx (.bindContext context)]
-        (let [querypart (.queryPart context)]
-          (when (instance? org.jooq.Param querypart)
-            (let [stmt (.statement ctx)
-                  idx  (.data context "suricatta.idx")
-                  tp  (.getDataType querypart (.configuration context))]
-              ;; (.setInt stmt (dec idx) (inc (.getValue querypart)))
-              ;; (.queryPart context nil)
-              (println "VISIT3" idx)
-              (println "VISIT4" querypart (.getValue querypart) tp)
-              (println "VISIT5", (type querypart)))))))))
+;;     ;; ;; (.setInt stmt idx (inc (.getValue querypart)))
+;;     ;; ;; (.queryPart context nil)
+;;     ;; (println "VISIT0" idx)
+;;     ;; (println "VISIT1" querypart (.getValue querypart) tp)
+;;     ;; (println "VISIT2", (type querypart)))))))
+
+;;     (visitEnd [^org.jooq.VisitContext context]
+;;       (when-let [ctx (.bindContext context)]
+;;         (let [querypart (.queryPart context)]
+;;           (when (instance? org.jooq.Param querypart)
+;;             (let [stmt (.statement ctx)
+;;                   idx  (.data context "suricatta.idx")
+;;                   tp  (.getDataType querypart (.configuration context))]
+;;               ;; (.setInt stmt (dec idx) (inc (.getValue querypart)))
+;;               ;; (.queryPart context nil)
+;;               (println "VISIT3" idx)
+;;               (println "VISIT4" querypart (.getValue querypart) tp)
+;;               (println "VISIT5", (type querypart)))))))))
 
 (def visit-listener-provider
   (reify
     org.jooq.VisitListenerProvider
-    (provide [_] visit-listener)))
+    (provide [_] (make-visit-listener))))
 
 (extend-protocol proto/IContextBuilder
   APersistentMap

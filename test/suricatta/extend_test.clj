@@ -93,17 +93,17 @@
 
 (def datatype (org.jooq.impl.DefaultDataType/getDefaultDataType "__other"))
 
-(deftest inserting-json
-  (sc/execute *ctx* "create table t1 (data json, k int)")
-  (sc/execute *ctx* ["insert into t1 (data, k) values (?, ?)" (DSL/val #{:foo "bar"} datatype) 3])
-  (-> (sc/fetch *ctx* ["select * from t1"])
-      (println)))
-
 ;; (deftest inserting-json
-;;   (sc/execute *ctx* "create table t1 (k int)")
-;;   (sc/execute *ctx* ["insert into t1 (k) values (?)" 3])
+;;   (sc/execute *ctx* "create table t1 (data json, k int)")
+;;   (sc/execute *ctx* ["insert into t1 (data, k) values (?, ?)" (DSL/val #{:foo "bar"} datatype) 3])
 ;;   (-> (sc/fetch *ctx* ["select * from t1"])
 ;;       (println)))
+
+(deftest inserting-json
+  (sc/execute *ctx* "create table t1 (k int)")
+  (sc/execute *ctx* ["insert into t1 (k) values (?)" (DSL/val 3)])
+  (-> (sc/fetch *ctx* ["select * from t1"])
+      (println)))
 
 ;; (deftest json-select
 ;;   (let [q (dsl/select (.as (json {:a 1}) "dd"))]
