@@ -26,6 +26,7 @@
   "Sql building dsl"
   (:refer-clojure :exclude [val group-by and or not name set])
   (:require [suricatta.core :as core]
+            [suricatta.impl :as impl]
             [suricatta.types :as types :refer [defer]]
             [suricatta.proto :as proto])
   (:import org.jooq.impl.DSL
@@ -192,10 +193,12 @@
 
 (extend-protocol IDeferred
   Object
-  (unwrap* [self] self)
+  (unwrap* [self]
+    (impl/wrap-if-need self))
 
   suricatta.types.Deferred
-  (unwrap* [self] @self))
+  (unwrap* [self]
+    (unwrap* @self)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common DSL functions
@@ -460,7 +463,8 @@
 (defn insert-values
   [t values]
   (defer
-    (-> (fn [acc [k v]] (.set acc (field* k) (unwrap* v)))
+    (-> (fn [acc [k v]]
+          (.set acc (field* k) (unwrap* v)))
         (reduce (unwrap* t) values)
         (.newRecord))))
 
