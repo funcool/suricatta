@@ -385,6 +385,23 @@ And functions related to formating sql into string or sqlvec format in `suricatt
 (require '[suricatta.format :as fmt])
 ----
 
+
+Object instances retured by dsl api are fully compatible with sql executing api. Let see an example:
+
+[source, clojure]
+----
+(def my-query
+  (-> (dsl/select :id)
+      (dsl/from :books)
+      (dsl/where ["age > ?", 100])
+      (dsl/limit 1)))
+
+(with-open [ctx (sc/context dbspec)]
+  (sc/fetch ctx my-query))
+;; => [{:id 4232}]
+----
+
+
 The SELECT statement
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -969,27 +986,6 @@ Nested SELECTs
 ;; => "select fullname, (select count(*) from book where (book.authorid = author.id)) "books" from author"
 ----
 
-Executing queries
-~~~~~~~~~~~~~~~~~
-
-Almost all method in *dsl* always returns some kind of *deferred* object. That object implements
-needed protocos for make them compatible with `suricatta.core/execute` and `suricatta.core/fetch`
-functions.
-
-Let see an example:
-
-[source, clojure]
-----
-(def my-query
-  (-> (dsl/select :id)
-      (dsl/from :books)
-      (dsl/where ["age > ?", 100])
-      (dsl/limit 1)))
-
-(with-open [ctx (sc/context dbspec)]
-  (sc/fetch ctx my-query))
-;; => [{:id 4232}]
-----
 
 Advanced usage
 --------------
