@@ -1,4 +1,4 @@
-(defproject suricatta "0.1.1-alpha"
+(defproject suricatta "0.2.0-SNAPSHOT"
   :description "High level sql toolkit for clojure (backed by jooq library)"
   :url "https://github.com/niwibe/suricatta"
 

@@ -1,7 +1,7 @@
 suricatta documentation
 ========================
 Andrey Antukh, <niwi@niwi.be>
-0.1.0-alpha
+0.2.0-SNAPSHOT
 :toc: left
 :numbered:
 :source-highlighter: pygments
@@ -54,7 +54,7 @@ vector on your *_project.clj_* file:
 ._on project.clj_
 [source,clojure]
 ----
-[suricatta "0.1.0-alpha"]
+[suricatta "0.2.0-SNAPSHOT"]
 ----
 
 
@@ -65,7 +65,7 @@ If you are using gradle, this is a dependency line for gradle dsl:
 
 [source,groovy]
 ----
-compile "suricatta:suricatta:0.1.0-alpha"
+compile "suricatta:suricatta:0.2.0-SNAPSHOT"
 ----
 
 
@@ -89,7 +89,7 @@ If you are using maven:
 <dependency>
   <groupId>suricatta</groupId>
   <artifactId>suricatta</artifactId>
-  <version>0.1.0-alpha</version>
+  <version>0.2.0-SNAPSHOT</version>
 </dependency>
 ----
 
