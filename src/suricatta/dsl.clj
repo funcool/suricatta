@@ -297,12 +297,21 @@
 ;;   [q t]
 ;;   (.leftOuterJoin q t))
 
-(defn on
-  [q & clauses]
+(defmulti on (comp class unwrap* first vector))
+
+(defmethod on org.jooq.SelectOnStep
+  [step & clauses]
   (defer
     (->> (map condition* clauses)
          (into-array org.jooq.Condition)
-         (.on @q))))
+         (.on (unwrap* step)))))
+
+(defmethod on org.jooq.TableOnStep
+  [step & clauses]
+  (defer
+    (->> (map condition* clauses)
+         (into-array org.jooq.Condition)
+         (.on (unwrap* step)))))
 
 (defn where
   "Create where clause with variable number
