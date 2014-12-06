@@ -163,11 +163,19 @@
   (into [] (.intoArray record)))
 
 (defn- result->vector
-  [^org.jooq.Result result {:keys [rows mapfn] :or {rows false}}]
-  (cond
-   mapfn (mapv mapfn result)
-   rows  (mapv result-record->row result)
-   :else (mapv result-record->record result)))
+  [^org.jooq.Result result {:keys [mapfn into format]
+                            :or {rows false format :record}}]
+  (if mapfn
+    (mapv mapfn result)
+    (condp = format
+      :record (mapv result-record->record result)
+      :row    (mapv result-record->row result)
+      :json   (if into
+                (.formatJSON result into)
+                (.formatJSON result))
+      :csv    (if into
+                (.formatCSV result into)
+                (.formatCSV result)))))
 
 (extend-protocol proto/IFetch
   String

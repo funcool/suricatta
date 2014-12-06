@@ -31,7 +31,7 @@
 
     (testing "Fetch vector of rows"
       (let [sql    "select x, x+1 as i from system_range(1, 3)"
-            result (fetch ctx sql {:rows true})]
+            result (fetch ctx sql {:format :row})]
         (is (= result [[1 2] [2 3] [3 4]]))))
 
     (testing "Reuse the statement"
@@ -100,6 +100,23 @@
             (is (= (vec res) [{:x 1} {:x 2} {:x 3}]))))))
 ))
 
+(deftest fetch-format
+  (testing "Fetch in csv format"
+    (with-open [ctx (context dbspec)]
+      (let [sql "select x, x+1 as i, 'a,b' as k from system_range(1, 1)"
+            result (fetch ctx sql {:format :csv})]
+        (is (= (str "X,I,K\n1,2,\"a,b\"\n") result)))))
+
+  (testing "Fetch in json format"
+    (with-open [ctx (context dbspec)]
+      (let [sql "select x, x+1 as i, 'a,b' as k from system_range(1, 1)"
+            result (fetch ctx sql {:format :json})]
+        (is (= (str "{\"fields\":[{\"name\":\"X\",\"type\":\"BIGINT\"},"
+                    "{\"name\":\"I\",\"type\":\"BIGINT\"},"
+                    "{\"name\":\"K\",\"type\":\"VARCHAR\"}],"
+                    "\"records\":[[1,2,\"a,b\"]]}")
+               result)))))
+)
 
 (deftest async-support
   (with-open [ctx (context dbspec)]

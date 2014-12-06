@@ -1,13 +1,22 @@
 Changelog
 =========
 
-0.1.1-alpha
------------
+0.2.0-SNAPSHOT
+--------------
 
-Date: Unreleased
-
-
+- Add support for CREATE/ALTER/DROP INDEX on dsl.
+- Add support for CREATE/ALTER/DROP SEQUENCE on dsl.
+- Add support for FULL/LEFT/RIGHT OUTER JOIN on dsl.
+- Add support for CREATE TABLE on dsl.
 - Fix inconsistens when connection is created from datasource.
+- Add suport for csv and json as export format.
+
+Backward incompatible changes:
+
+- Change dsl/table and dsl/field api: remove named parameters in favor to options map.
+- Fetch options are changed. It is mainly affects if you are using the rows parameter.
+  In that case change `{:rows true}` with `{:format :row}`
+
 
 0.1.0-alpha
 -----------
