@@ -674,5 +674,25 @@
         :restrict (.restrict step)
         step))))
 
+;; Create Index functions
 
+(defmethod on org.jooq.CreateIndexStep
+  [step table field & extrafields]
+  (defer
+    (let [fields (->> (concat [field] extrafields)
+                      (map (comp field* unwrap*))
+                      (into-array org.jooq.Field))]
+      (.on (unwrap* step) (table* table) fields))))
+
+(defn create-index
+  [indexname]
+  (defer
+    (let [indexname (clojure.core/name indexname)]
+      (DSL/createIndex indexname))))
+
+(defn drop-index
+  [indexname]
+  (defer
+    (let [indexname (clojure.core/name indexname)]
+      (DSL/dropIndex indexname))))
 

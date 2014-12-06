@@ -329,6 +329,23 @@
       (is (= (fmt/get-sql q)
              "alter table t1 drop title cascade"))))
 
+  (testing "Create index support"
+    (let [q (-> (dsl/create-index "test")
+                (dsl/on :t1 :title))]
+      (is (= (fmt/get-sql q)
+             "create index \"test\" on t1(title)"))))
+
+  (testing "Create index with expressions support"
+    (let [q (-> (dsl/create-index "test")
+                (dsl/on :t1 (dsl/field "lower(title)")))]
+      (is (= (fmt/get-sql q)
+             "create index \"test\" on t1(lower(title))"))))
+
+  (testing "Drop index"
+    (let [q (dsl/drop-index :test)]
+      (is (= (fmt/get-sql q)
+             "drop index \"test\""))))
+
   (testing "Drop table"
     (let [q (dsl/drop-table :t1)]
       (is (= (fmt/get-sql q)

@@ -6,7 +6,7 @@ Andrey Antukh, <niwi@niwi.be>
 :numbered:
 :source-highlighter: pygments
 :pygments-style: friendly
-
+:sectlinks:
 
 Introduction
 ------------
@@ -810,12 +810,8 @@ The DELETE statement
 ;; => "delete from t1 where (id = 1)"
 ----
 
-
-SQL Statements (DDL)
-~~~~~~~~~~~~~~~~~~~~
-
 The TRUNCATE statement
-^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~
 
 [source, clojure]
 ----
@@ -825,7 +821,7 @@ The TRUNCATE statement
 ----
 
 The CREATE TABLE statement
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [source, clojure]
 (-> (dsl/create-table :t1)
@@ -837,8 +833,19 @@ NOTE: at this moment, the add-column function doest not permit the way to setup
 default value for a field in table creation statement.
 
 
-The ALTER statement
-^^^^^^^^^^^^^^^^^^^
+The DROP TABLE statement
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.Drop table example
+[source, clojure]
+----
+(-> (dsl/drop-table :t1)
+    (fmt/get-sql))
+;; => "drop table t1"
+----
+
+The ALTER TABL Estatement
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Alter statements are used mainly for add, modify or delete columns from table.
 
@@ -869,17 +876,40 @@ Alter statements are used mainly for add, modify or delete columns from table.
 ;; => "alter table t1 drop title cascade"
 ----
 
+[[create-index]]
+The CREATE INDEX statement
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The DROP statement
-^^^^^^^^^^^^^^^^^^
-
-.Drop table example
+.Create simple on field
 [source, clojure]
 ----
-(-> (dsl/drop-table :t1)
+(-> (dsl/create-index "test")
+    (dsl/on :t1 :title)
     (fmt/get-sql))
-;; => "drop table t1"
+;; => "create index \"test\" on t1(title)"
 ----
+
+.Create index on field expression
+[source, clojure]
+----
+(-> (dsl/create-index "test")
+    (dsl/on :t1 (dsl/field "lower(title)"))
+    (fmt/get-sql))
+;; => "create index \"test\" on t1(lower(title))"
+----
+
+[[drop-index]]
+The DROP INDEX statement
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.Drop index
+[source, clojure]
+----
+(-> (dsl/drop-index "test")
+    (fmt/get-sql))
+;; => "drop index \"test\""
+----
+
 
 Table Expressions
 ~~~~~~~~~~~~~~~~~
