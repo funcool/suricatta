@@ -961,6 +961,19 @@ Let see an example:
 ;; => [{:id 4232}]
 ----
 
+Advanced usage
+--------------
+
+Extending with custom types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Since 0.2.0 version, suricatta comes with extending with custom (or vendor specific)
+types support. It consist in two protocols, one for convert user definet types to jooq/jdbc
+compatible types, and other the backwards conversion.
+
+TODO
+
 
 FAQ
 ---
