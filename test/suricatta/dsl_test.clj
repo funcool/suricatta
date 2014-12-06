@@ -42,13 +42,13 @@
       (is (= bv [2]))))
 
   (testing "Select clause with field as condition and alias"
-    (let [q (-> (dsl/select (dsl/field "foo > 5" :alias "bar"))
+    (let [q (-> (dsl/select (dsl/field "foo > 5" {:alias "bar"}))
                 (dsl/from "baz"))]
       (is (= (fmt/get-sql q)
              "select foo > 5 \"bar\" from baz"))))
 
   (testing "Select clause with count(*) expresion"
-    (let [q (-> (dsl/select (dsl/field "count(*)" :alias "count"))
+    (let [q (-> (dsl/select (dsl/field "count(*)" {:alias "count"}))
                 (dsl/from "baz"))]
       (is (= (fmt/get-sql q)
              "select count(*) \"count\" from baz"))))
@@ -56,8 +56,8 @@
   (testing "Select with two tables in from clause"
     (let [q (-> (dsl/select-one)
                 (dsl/from
-                 (dsl/table "table1" :alias "foo")
-                 (dsl/table "table2" :alias "bar")))]
+                 (dsl/table "table1" {:alias "foo"})
+                 (dsl/table "table2" {:alias "bar"})))]
       (is (= (fmt/get-sql q)
              "select 1 \"one\" from table1 \"foo\", table2 \"bar\""))))
 

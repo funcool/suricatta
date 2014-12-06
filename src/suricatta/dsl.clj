@@ -220,7 +220,7 @@
 
 (defn field
   "Create a field instance."
-  [data {:keys [alias] :as opts}]
+  [data & [{:keys [alias] :as opts}]]
   (defer
     (let [f (field* data)]
       (if alias
@@ -233,7 +233,7 @@
 
 (defn table
   "Create a table instance."
-  [data & {:keys [alias] :as opts}]
+  [data & [{:keys [alias] :as opts}]]
   (defer
     (let [f (table* data)]
       (if alias
