@@ -58,9 +58,6 @@
 (defprotocol IFieldCoerce
   (as-field* [_ params] "Field alias constructor"))
 
-(defprotocol IOnStep
-  (on [_ conditions]))
-
 (defprotocol ICondition
   (condition* [_] "Condition constructor"))
 
