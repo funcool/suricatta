@@ -293,9 +293,33 @@
   (defer
     (.join @q t)))
 
-;; (defn left-outer-join
-;;   [q t]
-;;   (.leftOuterJoin q t))
+(defn cross-join
+  [step tlike]
+  (defer
+    (let [t (table* (unwrap* tlike))
+          step (unwrap* step)]
+      (.crossJoin step t))))
+
+(defn full-outer-join
+  [step tlike]
+  (defer
+    (let [t (table* (unwrap* tlike))
+          step (unwrap* step)]
+      (.fullOuterJoin step t))))
+
+(defn left-outer-join
+  [step tlike]
+  (defer
+    (let [t (table* (unwrap* tlike))
+          step (unwrap* step)]
+      (.leftOuterJoin step t))))
+
+(defn right-outer-join
+  [step tlike]
+  (defer
+    (let [t (table* (unwrap* tlike))
+          step (unwrap* step)]
+      (.rightOuterJoin step t))))
 
 (defmulti on (comp class unwrap* first vector))
 

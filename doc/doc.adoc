@@ -575,6 +575,8 @@ Using explicit logical operators:
 ;; => "select name from book where ((book.age > 20) or (not book.in_store))"
 ----
 
+Different kind of joins are suported with that functions: `dsl/full-outer-join`, `dsl/left-outer-join`, `dsl/right-outer-join` and `dsl/cross-join`.
+
 
 The GROUP BY clause
 ^^^^^^^^^^^^^^^^^^^

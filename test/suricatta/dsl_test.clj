@@ -172,6 +172,39 @@
              "(select name from books) union all (select name from articles)"))))
 )
 
+(deftest dsl-join
+  (testing "cross-join"
+    (let [q (-> (dsl/select-one)
+                (dsl/from :book)
+                (dsl/cross-join :article))]
+      (is (= (fmt/get-sql q)
+             "select 1 \"one\" from book cross join article"))))
+
+  (testing "dsl-full-outer-join"
+    (let [q (-> (dsl/select-one)
+                (dsl/from :book)
+                (dsl/full-outer-join :article)
+                (dsl/on "article.id = book.id"))]
+      (is (= (fmt/get-sql q)
+             "select 1 \"one\" from book full outer join article on (article.id = book.id)"))))
+
+  (testing "dsl-left-outer-join"
+    (let [q (-> (dsl/select-one)
+                (dsl/from :book)
+                (dsl/left-outer-join :article)
+                (dsl/on "article.id = book.id"))]
+      (is (= (fmt/get-sql q)
+             "select 1 \"one\" from book left outer join article on (article.id = book.id)"))))
+
+  (testing "dsl-right-outer-join"
+    (let [q (-> (dsl/select-one)
+                (dsl/from :book)
+                (dsl/right-outer-join :article)
+                (dsl/on "article.id = book.id"))]
+      (is (= (fmt/get-sql q)
+             "select 1 \"one\" from book right outer join article on (article.id = book.id)"))))
+)
+
 (deftest dsl-table-expressions
   (testing "Values table expression"
     (let [q (-> (dsl/select :f1 :f2)
