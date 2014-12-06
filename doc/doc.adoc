@@ -471,8 +471,8 @@ Also, you can specify alias for each table:
 [source, clojure]
 ----
 (-> (dsl/select-one)
-    (dsl/from (dsl/table "book" :alias "a")
-              (dsl/table "article" :alias "b"))
+    (dsl/from (dsl/table "book" {:alias "a"})
+              (dsl/table "article" {:alias "b"}))
     (fmt/get-sql))
 ;; => "select 1 from book \"a\", article \"b\""
 ----
@@ -824,6 +824,19 @@ The TRUNCATE statement
 ;; => "truncate table table1"
 ----
 
+The CREATE TABLE statement
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[source, clojure]
+(-> (dsl/create-table :t1)
+    (dsl/add-column :title {:type :pg/varchar :length 100 :null false})
+    (fmt/get-sql))
+;; => "create table t1 (title varchar(100) not null)"
+
+NOTE: at this moment, the add-column function doest not permit the way to setup
+default value for a field in table creation statement.
+
+
 The ALTER statement
 ^^^^^^^^^^^^^^^^^^^
 
@@ -833,7 +846,7 @@ Alter statements are used mainly for add, modify or delete columns from table.
 [source, clojure]
 ----
 (-> (dsl/alter-table :t1)
-    (dsl/add-column :title :pg/varchar {:length 2 :null false})
+    (dsl/add-column :title {:type :pg/varchar :length 2 :null false})
     (fmt/get-sql))
 ;; => "alter table t1 add title varchar(2) not null"
 ----
@@ -842,9 +855,9 @@ Alter statements are used mainly for add, modify or delete columns from table.
 [source, clojure]
 ----
 (-> (dsl/alter-table :t1)
-    (dsl/set-column-type :title :pg/varchar {:length 100})
+    (dsl/alter-column :title {:type :pg/varchar :length 100 :null false})
     (fmt/get-sql))
-;; => "alter table t1 alter title varchar(100)"
+;; => "alter table t1 alter title varchar(100) not null"
 ----
 
 .Drop column
@@ -855,6 +868,7 @@ Alter statements are used mainly for add, modify or delete columns from table.
     (fmt/get-sql))
 ;; => "alter table t1 drop title cascade"
 ----
+
 
 The DROP statement
 ^^^^^^^^^^^^^^^^^^
