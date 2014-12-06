@@ -346,6 +346,31 @@
       (is (= (fmt/get-sql q)
              "drop index \"test\""))))
 
+  (testing "Create sequence"
+    (let [q (dsl/create-sequence "testseq")]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "create sequence \"testseq\""))))
+
+  (testing "Alter sequence"
+    (let [q (dsl/alter-sequence "testseq" true)]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "alter sequence \"testseq\" restart"))))
+
+  (testing "Alter sequence with specific number"
+    (let [q (dsl/alter-sequence "testseq" 19)]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "alter sequence \"testseq\" restart with 19"))))
+
+  (testing "Drop sequence"
+    (let [q (dsl/drop-sequence :test)]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "drop sequence \"test\""))))
+
+  (testing "Drop sequence if exists"
+    (let [q (dsl/drop-sequence :test true)]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "drop sequence if exists \"test\""))))
+
   (testing "Drop table"
     (let [q (dsl/drop-table :t1)]
       (is (= (fmt/get-sql q)

@@ -827,8 +827,12 @@ The DELETE statement
 ;; => "delete from t1 where (id = 1)"
 ----
 
+The DDL statements
+~~~~~~~~~~~~~~~~~~
+
+
 The TRUNCATE statement
-~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^
 
 [source, clojure]
 ----
@@ -837,8 +841,9 @@ The TRUNCATE statement
 ;; => "truncate table table1"
 ----
 
+
 The CREATE TABLE statement
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 [source, clojure]
 (-> (dsl/create-table :t1)
@@ -851,7 +856,7 @@ default value for a field in table creation statement.
 
 
 The DROP TABLE statement
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .Drop table example
 [source, clojure]
@@ -861,8 +866,9 @@ The DROP TABLE statement
 ;; => "drop table t1"
 ----
 
-The ALTER TABL Estatement
-~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ALTER TABLE statement
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Alter statements are used mainly for add, modify or delete columns from table.
 
@@ -893,9 +899,10 @@ Alter statements are used mainly for add, modify or delete columns from table.
 ;; => "alter table t1 drop title cascade"
 ----
 
+
 [[create-index]]
 The CREATE INDEX statement
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .Create simple on field
 [source, clojure]
@@ -915,9 +922,10 @@ The CREATE INDEX statement
 ;; => "create index \"test\" on t1(lower(title))"
 ----
 
+
 [[drop-index]]
 The DROP INDEX statement
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .Drop index
 [source, clojure]
@@ -925,6 +933,57 @@ The DROP INDEX statement
 (-> (dsl/drop-index "test")
     (fmt/get-sql))
 ;; => "drop index \"test\""
+----
+
+
+The CREATE SEQUENCE statement
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[source, clojure]
+----
+(-> (dsl/create-sequence "testseq")
+    (fmt/get-sql))
+;; => "create sequence \"testseq\""
+----
+
+
+The ALTER SEQUENCE statement
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.Restart sequence
+[source, clojure]
+----
+(-> (dsl/alter-sequence "testseq" true)
+    (fmt/get-sql))
+;; => "alter sequence \"testseq\" restart"
+----
+
+.Restart sequence with concrete number
+[source, clojure]
+----
+(-> (dsl/alter-sequence "testseq" 19)
+    (fmt/get-sql))
+;; => "alter sequence \"testseq\" restart with 19"
+----
+
+
+The DROP SEQUENCE statement
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.Drop sequence
+[source, clojure]
+----
+(-> (dsl/drop-sequence "testseq")
+    (fmt/get-sql))
+;; => "drop sequence \"testseq\""
+----
+
+.Drop sequence if exists
+[source, clojure]
+----
+(-> (dsl/drop-sequence "testseq" true)
+    (fmt/get-sql))
+;; => "drop sequence if exists \"testseq\""
 ----
 
 

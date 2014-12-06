@@ -674,7 +674,7 @@
         :restrict (.restrict step)
         step))))
 
-;; Create Index functions
+;; Index functions
 
 (defmethod on org.jooq.CreateIndexStep
   [step table field & extrafields]
@@ -696,3 +696,29 @@
     (let [indexname (clojure.core/name indexname)]
       (DSL/dropIndex indexname))))
 
+
+;; Sequence functions
+
+(defn create-sequence
+  [seqname]
+  (defer
+    (let [seqname (clojure.core/name seqname)]
+      (DSL/createSequence seqname))))
+
+(defn alter-sequence
+  [seqname restart]
+  (defer
+    (let [seqname (clojure.core/name seqname)
+          step    (DSL/alterSequence seqname)]
+      (if (true? restart)
+        (.restart step)
+        (.restartWith step restart)))))
+
+(defn drop-sequence
+  ([seqname] (drop-sequence seqname false))
+  ([seqname ifexists]
+   (defer
+     (let [seqname (clojure.core/name seqname)]
+       (if ifexists
+         (DSL/dropSequenceIfExists seqname)
+         (DSL/dropSequence seqname))))))
