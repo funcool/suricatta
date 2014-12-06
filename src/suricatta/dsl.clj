@@ -126,9 +126,6 @@
 ;; Protocols for constructors
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol IField
-  (field* [_] "Field constructor"))
-
 (defprotocol ISortField
   (sort-field* [_] "Sort field constructor"))
 
@@ -159,20 +156,26 @@
 ;; Protocol Implementations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(extend-protocol IField
-  java.lang.String
-  (field* ^org.jooq.Field [^String s]
-    (DSL/field s))
+(defmulti field* (comp class first vector))
 
-  clojure.lang.Keyword
-  (field* ^org.jooq.Field [kw]
-    (field* (clojure.core/name kw)))
+(defmethod field* java.lang.String
+  [^String name & [type]]
+  (let [type (get *datatypes* type)]
+    (if type
+      (DSL/field name type)
+      (DSL/field name))))
 
-  org.jooq.Field
-  (field* ^org.jooq.Field [f] f)
+(defmethod field* clojure.lang.Keyword
+  [name & args]
+  (apply field* (clojure.core/name name) args))
 
-  org.jooq.impl.Val
-  (field* ^org.jooq.Field [v] v))
+(defmethod field* org.jooq.Field
+  [field & args]
+  field)
+
+(defmethod field* org.jooq.impl.Val
+  [field & args]
+  field)
 
 (extend-protocol ISortField
   java.lang.String
