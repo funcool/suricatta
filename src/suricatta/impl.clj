@@ -275,3 +275,35 @@
       (-> (doto query
             (.keepStatement true))
           (types/->query conf)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Load into implementation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn load-into
+  [ctx tablename data {:keys [format commit fields ignore-rows
+                              nullstring quotechar separator]
+                       :or {format :csv commit :none ignore-rows 0
+                            nullstring "" quotechar \" separator \,}}]
+  (let [^DSLContext context (proto/get-context ctx)
+        step (.loadInto context (DSL/table (name tablename)))
+        step (condp = commit
+               :none (.commitNone step)
+               :each (.commitEach step)
+               :all  (.commitAll step)
+               (.commitAfter step commit))
+        step (condp = format
+               :csv  (.loadCSV step data)
+               :json (.loadJSON step data))
+        ;; fields (->> (map #(DSL/field (name %)) fields)
+        ;;             (into-array org.jooq.Field))
+        fields (into-array org.jooq.Field fields)]
+    (doto step
+      (.fields fields)
+      (.ignoreRows ignore-rows))
+    (when (= format :csv)
+      (doto step
+        (.quote quotechar)
+        (.nullString nullstring)
+        (.separator separator)))
+    (.execute step)))

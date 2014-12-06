@@ -87,6 +87,12 @@
   ([cursor] (impl/cursor->lazyseq cursor {}))
   ([cursor opts] (impl/cursor->lazyseq cursor opts)))
 
+(defn load-into
+  "Load data into a table. Supports csv and json formats."
+  ([ctx tablename data] (load-into ctx tablename data {}))
+  ([ctx tablename data opts]
+   (impl/load-into ctx tablename data opts)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Transactions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

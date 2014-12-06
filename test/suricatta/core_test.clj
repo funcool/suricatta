@@ -2,10 +2,13 @@
   (:require [clojure.test :refer :all]
             [clojure.core.async :refer [<!!]]
             [suricatta.core :as sc]
+            [suricatta.dsl :as dsl]
             [suricatta.async :as sca]
             [suricatta.format :refer [get-sql get-bind-values sqlvec] :as fmt]
             [jdbc.core :as jdbc]
-            [cats.monad.exception :as exc]))
+            [cats.monad.exception :as exc])
+  (:import org.jooq.impl.DSL
+           org.jooq.util.postgres.PostgresDataType))
 
 (def dbspec {:subprotocol "h2"
              :subname "mem:"})
@@ -84,6 +87,16 @@
                   "\"records\":[[1,2,\"a,b\"]]}")
              result))))
 )
+
+(deftest data-loading
+  (testing "load csv"
+    (sc/execute *ctx* "create table foo1 (a int, b int)")
+    (let [data (str "1,2\n3,4\n")]
+      (sc/load-into *ctx* :foo1 data {:fields [(dsl/field* "a" :pg/int4)
+                                               (dsl/field* "b" :pg/int4)]
+                                      :format :csv}))
+    (let [result (sc/fetch *ctx* "select * from foo1")]
+      (println result))))
 
 (deftest async-support
   (sc/execute *ctx* "create table foo (n int)")
