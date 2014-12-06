@@ -519,21 +519,26 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_executing_queries_2">5.7. Executing queries</a></li>
 </ul>
 </li>
-<li><a href="#_faq">6. FAQ</a>
+<li><a href="#_advanced_usage">6. Advanced usage</a>
 <ul class="sectlevel2">
-<li><a href="#_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc">6.1. Why I should use suricatta instead of clojure.jdbc or java.jdbc?</a></li>
-<li><a href="#_why_an_other_dsl_is_yet_another">6.2. Why an other dsl? Is yet another?</a></li>
-<li><a href="#_that_use_cases_have_suricatta">6.3. That use cases have suricatta?</a></li>
-<li><a href="#_is_a_korma_clone">6.4. Is a korma-clone?</a></li>
-<li><a href="#_is_required_buy_jooq_comercial_license">6.5. Is required buy JOOQ comercial license?</a></li>
-<li><a href="#_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable">6.6. Can I store safely queries builded by DSL in a var, they are immutable?</a></li>
+<li><a href="#_extending_with_custom_types">6.1. Extending with custom types</a></li>
 </ul>
 </li>
-<li><a href="#_how_to_contribute">7. How to Contribute?</a>
+<li><a href="#_faq">7. FAQ</a>
 <ul class="sectlevel2">
-<li><a href="#_philosophy">7.1. Philosophy</a></li>
-<li><a href="#_procedure">7.2. Procedure</a></li>
-<li><a href="#_license">7.3. License</a></li>
+<li><a href="#_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc">7.1. Why I should use suricatta instead of clojure.jdbc or java.jdbc?</a></li>
+<li><a href="#_why_an_other_dsl_is_yet_another">7.2. Why an other dsl? Is yet another?</a></li>
+<li><a href="#_that_use_cases_have_suricatta">7.3. That use cases have suricatta?</a></li>
+<li><a href="#_is_a_korma_clone">7.4. Is a korma-clone?</a></li>
+<li><a href="#_is_required_buy_jooq_comercial_license">7.5. Is required buy JOOQ comercial license?</a></li>
+<li><a href="#_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable">7.6. Can I store safely queries builded by DSL in a var, they are immutable?</a></li>
+</ul>
+</li>
+<li><a href="#_how_to_contribute">8. How to Contribute?</a>
+<ul class="sectlevel2">
+<li><a href="#_philosophy">8.1. Philosophy</a></li>
+<li><a href="#_procedure">8.2. Procedure</a></li>
+<li><a href="#_license">8.3. License</a></li>
 </ul>
 </li>
 </ul>
@@ -1601,10 +1606,26 @@ functions.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_faq">6. FAQ</h2>
+<h2 id="_advanced_usage">6. Advanced usage</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc">6.1. Why I should use suricatta instead of clojure.jdbc or java.jdbc?</h3>
+<h3 id="_extending_with_custom_types">6.1. Extending with custom types</h3>
+<div class="paragraph">
+<p>Since 0.2.0 version, suricatta comes with extending with custom (or vendor specific)
+types support. It consist in two protocols, one for convert user definet types to jooq/jdbc
+compatible types, and other the backwards conversion.</p>
+</div>
+<div class="paragraph">
+<p>TODO</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_faq">7. FAQ</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc">7.1. Why I should use suricatta instead of clojure.jdbc or java.jdbc?</h3>
 <div class="paragraph">
 <p>Unlike any jdbc library, <em>suricatta</em> works in slightly higher level. It hides a lot of
 idiosyncrasies of jdbc under much <strong>simpler, cleaner and less error prone api</strong>, with better
@@ -1612,7 +1633,7 @@ resource management.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_why_an_other_dsl_is_yet_another">6.2. Why an other dsl? Is yet another?</h3>
+<h3 id="_why_an_other_dsl_is_yet_another">7.2. Why an other dsl? Is yet another?</h3>
 <div class="paragraph">
 <p>In first instance <em>suricatta</em> is not a dsl library, is a sql toolkit, and one part of the
 toolkit is a dsl.</p>
@@ -1624,7 +1645,7 @@ sql constructions.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_that_use_cases_have_suricatta">6.3. That use cases have suricatta?</h3>
+<h3 id="_that_use_cases_have_suricatta">7.3. That use cases have suricatta?</h3>
 <div class="paragraph">
 <p>The <em>suricatta</em> library is very flexible and it can be used in very different ways:</p>
 </div>
@@ -1647,7 +1668,7 @@ executing queries.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_is_a_korma_clone">6.4. Is a korma-clone?</h3>
+<h3 id="_is_a_korma_clone">7.4. Is a korma-clone?</h3>
 <div class="paragraph">
 <p>Not, is not korma clone. Because it works very different, and it has different philosophy.</p>
 </div>
@@ -1657,7 +1678,7 @@ to be a replacement of Korma. It intends be a replacement to raw jdbc access to 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_is_required_buy_jooq_comercial_license">6.5. Is required buy JOOQ comercial license?</h3>
+<h3 id="_is_required_buy_jooq_comercial_license">7.5. Is required buy JOOQ comercial license?</h3>
 <div class="paragraph">
 <p>Not, <em>suricatta</em> works and tested with opensource (Apache 2.0 licensed) version of JOOQ.</p>
 </div>
@@ -1667,7 +1688,7 @@ to be a replacement of Korma. It intends be a replacement to raw jdbc access to 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable">6.6. Can I store safely queries builded by DSL in a var, they are immutable?</h3>
+<h3 id="_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable">7.6. Can I store safely queries builded by DSL in a var, they are immutable?</h3>
 <div class="paragraph">
 <p>Yes. Unlike JOOQ DSL interface that has mutable api, <em>suricatta</em> exposes immutable
 api for building queries.</p>
@@ -1679,10 +1700,10 @@ api for building queries.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_how_to_contribute">7. How to Contribute?</h2>
+<h2 id="_how_to_contribute">8. How to Contribute?</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_philosophy">7.1. Philosophy</h3>
+<h3 id="_philosophy">8.1. Philosophy</h3>
 <div class="paragraph">
 <p>Five most important rules:</p>
 </div>
@@ -1710,7 +1731,7 @@ api for building queries.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_procedure">7.2. Procedure</h3>
+<h3 id="_procedure">8.2. Procedure</h3>
 <div class="paragraph">
 <p><strong>suricatta</strong> unlike Clojure and other Clojure contrib libs, does not have many
 restrictions for contributions. Just follow the following steps depending on the
@@ -1747,7 +1768,7 @@ situation:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_license">7.3. License</h3>
+<h3 id="_license">8.3. License</h3>
 <div class="paragraph">
 <p><em>suricatta</em> is licensed under BSD (2-Clause) license:</p>
 </div>
@@ -1789,7 +1810,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-12-06 11:30:17 CET
+Last updated 2014-12-06 11:38:04 CET
 </div>
 </div>
 </body>
