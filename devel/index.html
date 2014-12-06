@@ -514,9 +514,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_the_insert_statement">5.2. The INSERT statement</a></li>
 <li><a href="#_the_update_statement">5.3. The UPDATE statement</a></li>
 <li><a href="#_the_delete_statement">5.4. The DELETE statement</a></li>
-<li><a href="#_sql_statements_ddl">5.5. SQL Statements (DDL)</a></li>
-<li><a href="#_table_expressions">5.6. Table Expressions</a></li>
-<li><a href="#_executing_queries_2">5.7. Executing queries</a></li>
+<li><a href="#_the_truncate_statement">5.5. The TRUNCATE statement</a></li>
+<li><a href="#_the_create_table_statement">5.6. The CREATE TABLE statement</a></li>
+<li><a href="#_the_drop_table_statement">5.7. The DROP TABLE statement</a></li>
+<li><a href="#_the_alter_tabl_estatement">5.8. The ALTER TABL Estatement</a></li>
+<li><a href="#create-index">5.9. The CREATE INDEX statement</a></li>
+<li><a href="#drop-index">5.10. The DROP INDEX statement</a></li>
+<li><a href="#_table_expressions">5.11. Table Expressions</a></li>
+<li><a href="#_executing_queries_2">5.12. Executing queries</a></li>
 </ul>
 </li>
 <li><a href="#_advanced_usage">6. Advanced usage</a>
@@ -546,7 +551,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_introduction">1. Introduction</h2>
+<h2 id="_introduction"><a class="link" href="#_introduction">1. Introduction</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p><em>suricatta</em> is a high level sql toolkit for clojure (backed by fantastic
@@ -574,7 +579,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="_project_maturity">2. Project Maturity</h2>
+<h2 id="_project_maturity"><a class="link" href="#_project_maturity">2. Project Maturity</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p><em>suricatta</em> is considered in alpha state.</p>
@@ -585,13 +590,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="_install">3. Install</h2>
+<h2 id="_install"><a class="link" href="#_install">3. Install</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>This section covers the <em>suricatta</em> library installing process and its requirements.</p>
 </div>
 <div class="sect2">
-<h3 id="_requirements">3.1. Requirements</h3>
+<h3 id="_requirements"><a class="link" href="#_requirements">3.1. Requirements</a></h3>
 <div class="paragraph">
 <p><em>suricatta</em> is tested with these platforms:</p>
 </div>
@@ -607,7 +612,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_leiningen">3.2. Leiningen</h3>
+<h3 id="_leiningen"><a class="link" href="#_leiningen">3.2. Leiningen</a></h3>
 <div class="paragraph">
 <p>The simplest way to use <em>suricatta</em> in a clojure project, is by including it in the dependency
 vector on your <strong><em>project.clj</em></strong> file:</p>
@@ -620,7 +625,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_gradle">3.3. Gradle</h3>
+<h3 id="_gradle"><a class="link" href="#_gradle">3.3. Gradle</a></h3>
 <div class="paragraph">
 <p>If you are using gradle, this is a dependency line for gradle dsl:</p>
 </div>
@@ -631,7 +636,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_maven">3.4. Maven</h3>
+<h3 id="_maven"><a class="link" href="#_maven">3.4. Maven</a></h3>
 <div class="paragraph">
 <p>If you are using maven:</p>
 </div>
@@ -656,7 +661,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_get_the_code">3.5. Get the Code</h3>
+<h3 id="_get_the_code"><a class="link" href="#_get_the_code">3.5. Get the Code</a></h3>
 <div class="paragraph">
 <p><em>suricatta</em> is open source and is entirely developed on
 <a href="https://github.com/niwibe/suricatta">github</a>.</p>
@@ -673,13 +678,13 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_sql_execution">4. SQL Execution</h2>
+<h2 id="_sql_execution"><a class="link" href="#_sql_execution">4. SQL Execution</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>This section intends to explain the usage of a sql execution part of the library.</p>
 </div>
 <div class="sect2">
-<h3 id="_connecting_to_database">4.1. Connecting to database</h3>
+<h3 id="_connecting_to_database"><a class="link" href="#_connecting_to_database">4.1. Connecting to database</a></h3>
 <div class="paragraph">
 <p><em>suricatta</em>, unlike other database libraries, uses a concept of <strong>context instead of *connection</strong>.
 A <strong>context</strong> has the resposibility of jdbc connection resource management, transaction isolation
@@ -748,7 +753,7 @@ support for datasource (<a href="http://niwibe.github.io/clojure.jdbc/#connectio
 </div>
 </div>
 <div class="sect2">
-<h3 id="_executing_queries">4.2. Executing queries</h3>
+<h3 id="_executing_queries"><a class="link" href="#_executing_queries">4.2. Executing queries</a></h3>
 <div class="paragraph">
 <p><em>suricatta</em> has clear separation between queries that can return result, and queries that cannot.</p>
 </div>
@@ -765,7 +770,7 @@ cases it returns a number of affected rows.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_fetching_results">4.3. Fetching results</h3>
+<h3 id="_fetching_results"><a class="link" href="#_fetching_results">4.3. Fetching results</a></h3>
 <div class="paragraph">
 <p>Let see an example of how execute a query and fetch results:</p>
 </div>
@@ -800,7 +805,7 @@ not have special syntax for queries with <code>RETURNING</code> clause:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parametrized_queries">4.4. Parametrized queries</h3>
+<h3 id="_parametrized_queries"><a class="link" href="#_parametrized_queries">4.4. Parametrized queries</a></h3>
 <div class="paragraph">
 <p>Like <em>clojure.jdbc</em> and <em>clojure.java.jdbc</em>, <em>suricatta</em> has support for parametrized
 queries in <strong>sqlvec</strong> format.</p>
@@ -813,7 +818,7 @@ queries in <strong>sqlvec</strong> format.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_reusing_query_statement">4.5. Reusing query statement</h3>
+<h3 id="_reusing_query_statement"><a class="link" href="#_reusing_query_statement">4.5. Reusing query statement</a></h3>
 <div class="paragraph">
 <p>The above technique can be quite useful when you want to reuse expensive database resources.</p>
 </div>
@@ -826,7 +831,7 @@ queries in <strong>sqlvec</strong> format.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_transactions">4.6. Transactions</h3>
+<h3 id="_transactions"><a class="link" href="#_transactions">4.6. Transactions</a></h3>
 <div class="paragraph">
 <p>The <em>suricatta</em> library does not have support for low level transactions api, instead of it, offers a
 lightweight abstraction over complex transaction api.</p>
@@ -872,7 +877,7 @@ the subtransaction will be marked for rollback, not the entire transaction.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_lazy_result_fetching">4.7. Lazy result fetching</h3>
+<h3 id="_lazy_result_fetching"><a class="link" href="#_lazy_result_fetching">4.7. Lazy result fetching</a></h3>
 <div class="paragraph">
 <p>The <em>suricatta</em> library also comes with lazy fetching support. In this case, it tries instead
 of fetching all results in memory, fetch in small groups, allowing lower memory usage.</p>
@@ -918,7 +923,7 @@ currently has value of 100.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_async_interface">4.8. Async interface</h3>
+<h3 id="_async_interface"><a class="link" href="#_async_interface">4.8. Async interface</a></h3>
 <div class="paragraph">
 <p>It is well known that jdbc does not support proper way handle queries in asynchronous manner. But
 exists also a well known way to handle with it: using a shared thread pool for execute queries
@@ -972,7 +977,7 @@ main difference is that them returns <em>core.async</em> channels.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_sql_building_and_formatting">5. SQL Building and Formatting</h2>
+<h2 id="_sql_building_and_formatting"><a class="link" href="#_sql_building_and_formatting">5. SQL Building and Formatting</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>This section intends to explain the usage of sql building library, the lightweight layer on
@@ -995,9 +1000,9 @@ top of <code>jooq</code> dsl.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_the_select_statement">5.1. The SELECT statement</h3>
+<h3 id="_the_select_statement"><a class="link" href="#_the_select_statement">5.1. The SELECT statement</a></h3>
 <div class="sect3">
-<h4 id="_select_clause">5.1.1. Select clause</h4>
+<h4 id="_select_clause"><a class="link" href="#_select_clause">5.1.1. Select clause</a></h4>
 <div class="paragraph">
 <p>Simple select clause without from part:</p>
 </div>
@@ -1027,7 +1032,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 </div>
 </div>
 <div class="sect3">
-<h4 id="_select_distinct">5.1.2. Select DISTINCT</h4>
+<h4 id="_select_distinct"><a class="link" href="#_select_distinct">5.1.2. Select DISTINCT</a></h4>
 <div class="paragraph">
 <p>You can add distinct keyword using special select function:</p>
 </div>
@@ -1040,7 +1045,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 </div>
 </div>
 <div class="sect3">
-<h4 id="_select">5.1.3. Select *</h4>
+<h4 id="_select"><a class="link" href="#_select">5.1.3. Select *</a></h4>
 <div class="paragraph">
 <p>You can ommit fields on <code>select</code> function for use the "SELECT *" form:</p>
 </div>
@@ -1054,7 +1059,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 </div>
 </div>
 <div class="sect3">
-<h4 id="_the_from_clause">5.1.4. The FROM clause</h4>
+<h4 id="_the_from_clause"><a class="link" href="#_the_from_clause">5.1.4. The FROM clause</a></h4>
 <div class="paragraph">
 <p>Simple select sql with form clause:</p>
 </div>
@@ -1091,7 +1096,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 </div>
 </div>
 <div class="sect3">
-<h4 id="_the_join_clause">5.1.5. The JOIN clause</h4>
+<h4 id="_the_join_clause"><a class="link" href="#_the_join_clause">5.1.5. The JOIN clause</a></h4>
 <div class="paragraph">
 <p><em>suricata</em> comes with complete dsl for making join clauses. Let see one simple example:</p>
 </div>
@@ -1120,7 +1125,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 </div>
 </div>
 <div class="sect3">
-<h4 id="_the_where_clause">5.1.6. The WHERE clause</h4>
+<h4 id="_the_where_clause"><a class="link" href="#_the_where_clause">5.1.6. The WHERE clause</a></h4>
 <div class="paragraph">
 <p>The WHERE clause can be used for JOIN or filter predicates, in order to restrict the data returned
 by the query:</p>
@@ -1175,7 +1180,7 @@ by the query:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_the_group_by_clause">5.1.7. The GROUP BY clause</h4>
+<h4 id="_the_group_by_clause"><a class="link" href="#_the_group_by_clause">5.1.7. The GROUP BY clause</a></h4>
 <div class="paragraph">
 <p>GROUP BY can be used to create unique groups of data, to form aggregations, to remove duplicates and for other reasons. Let see an example of how it can be done using <em>suricatta</em> dsl:</p>
 </div>
@@ -1191,7 +1196,7 @@ by the query:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_the_having_clause">5.1.8. The HAVING clause</h4>
+<h4 id="_the_having_clause"><a class="link" href="#_the_having_clause">5.1.8. The HAVING clause</a></h4>
 <div class="paragraph">
 <p>The HAVING clause is used to further restrict aggregated data. Let see an example:</p>
 </div>
@@ -1208,7 +1213,7 @@ by the query:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_the_order_by_clause">5.1.9. The ORDER BY clause</h4>
+<h4 id="_the_order_by_clause"><a class="link" href="#_the_order_by_clause">5.1.9. The ORDER BY clause</a></h4>
 <div class="paragraph">
 <p>Here an example of how specify the ordering to the query:</p>
 </div>
@@ -1259,7 +1264,7 @@ uses <code>ASC</code> for sort fields that comes without explicit ordering direc
 </div>
 </div>
 <div class="sect3">
-<h4 id="_the_limit_and_offset_clauses">5.1.10. The LIMIT and OFFSET clauses</h4>
+<h4 id="_the_limit_and_offset_clauses"><a class="link" href="#_the_limit_and_offset_clauses">5.1.10. The LIMIT and OFFSET clauses</a></h4>
 <div class="paragraph">
 <p>Let see some examples of how to apply limit and offset to your queries with <em>suricatta</em>:</p>
 </div>
@@ -1275,7 +1280,7 @@ uses <code>ASC</code> for sort fields that comes without explicit ordering direc
 </div>
 </div>
 <div class="sect3">
-<h4 id="_the_for_update_clause">5.1.11. The FOR UPDATE clause</h4>
+<h4 id="_the_for_update_clause"><a class="link" href="#_the_for_update_clause">5.1.11. The FOR UPDATE clause</a></h4>
 <div class="paragraph">
 <p>For inter-process synchronisation and other reasons, you may choose to use the SELECT .. FOR UPDATE
 clause to indicate to the database, that a set of cells or records should be locked by a
@@ -1303,7 +1308,7 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_the_union_and_union_all_clause">5.1.12. The UNION and UNION ALL clause</h4>
+<h4 id="_the_union_and_union_all_clause"><a class="link" href="#_the_union_and_union_all_clause">5.1.12. The UNION and UNION ALL clause</a></h4>
 <div class="paragraph">
 <p>These operators combine two results into one. UNION removes all duplicate records resulting from this combination and UNION ALL preserves all results as they are.</p>
 </div>
@@ -1334,7 +1339,7 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_the_insert_statement">5.2. The INSERT statement</h3>
+<h3 id="_the_insert_statement"><a class="link" href="#_the_insert_statement">5.2. The INSERT statement</a></h3>
 <div class="paragraph">
 <p>The INSERT statement is used to insert new records into a database table.</p>
 </div>
@@ -1350,7 +1355,7 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_the_update_statement">5.3. The UPDATE statement</h3>
+<h3 id="_the_update_statement"><a class="link" href="#_the_update_statement">5.3. The UPDATE statement</a></h3>
 <div class="paragraph">
 <p>The UPDATE statement is used to modify one or several pre-existing records in a database table.</p>
 </div>
@@ -1418,7 +1423,7 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_the_delete_statement">5.4. The DELETE statement</h3>
+<h3 id="_the_delete_statement"><a class="link" href="#_the_delete_statement">5.4. The DELETE statement</a></h3>
 <div class="listingblock">
 <div class="title">Simple example of delete statement with one condition</div>
 <div class="content">
@@ -1430,9 +1435,7 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_sql_statements_ddl">5.5. SQL Statements (DDL)</h3>
-<div class="sect3">
-<h4 id="_the_truncate_statement">5.5.1. The TRUNCATE statement</h4>
+<h3 id="_the_truncate_statement"><a class="link" href="#_the_truncate_statement">5.5. The TRUNCATE statement</a></h3>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/truncate</span> <span class="tok-ss">:table1</span><span class="tok-p">)</span>
@@ -1441,8 +1444,8 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_the_create_table_statement">5.5.2. The CREATE TABLE statement</h4>
+<div class="sect2">
+<h3 id="_the_create_table_statement"><a class="link" href="#_the_create_table_statement">5.6. The CREATE TABLE statement</a></h3>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/create-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
@@ -1465,8 +1468,19 @@ default value for a field in table creation statement.
 </table>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_the_alter_statement">5.5.3. The ALTER statement</h4>
+<div class="sect2">
+<h3 id="_the_drop_table_statement"><a class="link" href="#_the_drop_table_statement">5.7. The DROP TABLE statement</a></h3>
+<div class="listingblock">
+<div class="title">Drop table example</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/drop-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;drop table t1&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_alter_tabl_estatement"><a class="link" href="#_the_alter_tabl_estatement">5.8. The ALTER TABL Estatement</a></h3>
 <div class="paragraph">
 <p>Alter statements are used mainly for add, modify or delete columns from table.</p>
 </div>
@@ -1498,22 +1512,42 @@ default value for a field in table creation statement.
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_the_drop_statement">5.5.4. The DROP statement</h4>
+<div class="sect2">
+<h3 id="create-index"><a class="link" href="#create-index">5.9. The CREATE INDEX statement</a></h3>
 <div class="listingblock">
-<div class="title">Drop table example</div>
+<div class="title">Create simple on field</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/drop-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/create-index</span> <span class="tok-s">&quot;test&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-ss">:t1</span> <span class="tok-ss">:title</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
-<span class="tok-c1">;; =&gt; &quot;drop table t1&quot;</span></code></pre>
+<span class="tok-c1">;; =&gt; &quot;create index \&quot;test\&quot; on t1(title)&quot;</span></code></pre>
 </div>
+</div>
+<div class="listingblock">
+<div class="title">Create index on field expression</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/create-index</span> <span class="tok-s">&quot;test&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-ss">:t1</span> <span class="tok-p">(</span><span class="tok-nf">dsl/field</span> <span class="tok-s">&quot;lower(title)&quot;</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;create index \&quot;test\&quot; on t1(lower(title))&quot;</span></code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_table_expressions">5.6. Table Expressions</h3>
+<h3 id="drop-index"><a class="link" href="#drop-index">5.10. The DROP INDEX statement</a></h3>
+<div class="listingblock">
+<div class="title">Drop index</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/drop-index</span> <span class="tok-s">&quot;test&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;drop index \&quot;test\&quot;&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_table_expressions"><a class="link" href="#_table_expressions">5.11. Table Expressions</a></h3>
 <div class="sect3">
-<h4 id="_the_values_table_constructor">5.6.1. The VALUES() table constructor</h4>
+<h4 id="_the_values_table_constructor"><a class="link" href="#_the_values_table_constructor">5.11.1. The VALUES() table constructor</a></h4>
 <div class="paragraph">
 <p>Some databases allow for expressing in-memory temporary tables using a <code>values()</code>.</p>
 </div>
@@ -1542,7 +1576,7 @@ default value for a field in table creation statement.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_nested_selects">5.6.2. Nested SELECTs</h4>
+<h4 id="_nested_selects"><a class="link" href="#_nested_selects">5.11.2. Nested SELECTs</a></h4>
 <div class="listingblock">
 <div class="title">Using nested select in where clause</div>
 <div class="content">
@@ -1580,7 +1614,7 @@ default value for a field in table creation statement.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_executing_queries_2">5.7. Executing queries</h3>
+<h3 id="_executing_queries_2"><a class="link" href="#_executing_queries_2">5.12. Executing queries</a></h3>
 <div class="paragraph">
 <p>Almost all method in <strong>dsl</strong> always returns some kind of <strong>deferred</strong> object. That object implements
 needed protocos for make them compatible with <code>suricatta.core/execute</code> and <code>suricatta.core/fetch</code>
@@ -1606,10 +1640,10 @@ functions.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_advanced_usage">6. Advanced usage</h2>
+<h2 id="_advanced_usage"><a class="link" href="#_advanced_usage">6. Advanced usage</a></h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_extending_with_custom_types">6.1. Extending with custom types</h3>
+<h3 id="_extending_with_custom_types"><a class="link" href="#_extending_with_custom_types">6.1. Extending with custom types</a></h3>
 <div class="paragraph">
 <p>Since 0.2.0 version, suricatta comes with extending with custom (or vendor specific)
 types support. It consist in two protocols, one for convert user definet types to jooq/jdbc
@@ -1622,10 +1656,10 @@ compatible types, and other the backwards conversion.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_faq">7. FAQ</h2>
+<h2 id="_faq"><a class="link" href="#_faq">7. FAQ</a></h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc">7.1. Why I should use suricatta instead of clojure.jdbc or java.jdbc?</h3>
+<h3 id="_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc"><a class="link" href="#_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc">7.1. Why I should use suricatta instead of clojure.jdbc or java.jdbc?</a></h3>
 <div class="paragraph">
 <p>Unlike any jdbc library, <em>suricatta</em> works in slightly higher level. It hides a lot of
 idiosyncrasies of jdbc under much <strong>simpler, cleaner and less error prone api</strong>, with better
@@ -1633,7 +1667,7 @@ resource management.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_why_an_other_dsl_is_yet_another">7.2. Why an other dsl? Is yet another?</h3>
+<h3 id="_why_an_other_dsl_is_yet_another"><a class="link" href="#_why_an_other_dsl_is_yet_another">7.2. Why an other dsl? Is yet another?</a></h3>
 <div class="paragraph">
 <p>In first instance <em>suricatta</em> is not a dsl library, is a sql toolkit, and one part of the
 toolkit is a dsl.</p>
@@ -1645,7 +1679,7 @@ sql constructions.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_that_use_cases_have_suricatta">7.3. That use cases have suricatta?</h3>
+<h3 id="_that_use_cases_have_suricatta"><a class="link" href="#_that_use_cases_have_suricatta">7.3. That use cases have suricatta?</a></h3>
 <div class="paragraph">
 <p>The <em>suricatta</em> library is very flexible and it can be used in very different ways:</p>
 </div>
@@ -1668,7 +1702,7 @@ executing queries.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_is_a_korma_clone">7.4. Is a korma-clone?</h3>
+<h3 id="_is_a_korma_clone"><a class="link" href="#_is_a_korma_clone">7.4. Is a korma-clone?</a></h3>
 <div class="paragraph">
 <p>Not, is not korma clone. Because it works very different, and it has different philosophy.</p>
 </div>
@@ -1678,7 +1712,7 @@ to be a replacement of Korma. It intends be a replacement to raw jdbc access to 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_is_required_buy_jooq_comercial_license">7.5. Is required buy JOOQ comercial license?</h3>
+<h3 id="_is_required_buy_jooq_comercial_license"><a class="link" href="#_is_required_buy_jooq_comercial_license">7.5. Is required buy JOOQ comercial license?</a></h3>
 <div class="paragraph">
 <p>Not, <em>suricatta</em> works and tested with opensource (Apache 2.0 licensed) version of JOOQ.</p>
 </div>
@@ -1688,7 +1722,7 @@ to be a replacement of Korma. It intends be a replacement to raw jdbc access to 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable">7.6. Can I store safely queries builded by DSL in a var, they are immutable?</h3>
+<h3 id="_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable"><a class="link" href="#_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable">7.6. Can I store safely queries builded by DSL in a var, they are immutable?</a></h3>
 <div class="paragraph">
 <p>Yes. Unlike JOOQ DSL interface that has mutable api, <em>suricatta</em> exposes immutable
 api for building queries.</p>
@@ -1700,10 +1734,10 @@ api for building queries.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_how_to_contribute">8. How to Contribute?</h2>
+<h2 id="_how_to_contribute"><a class="link" href="#_how_to_contribute">8. How to Contribute?</a></h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_philosophy">8.1. Philosophy</h3>
+<h3 id="_philosophy"><a class="link" href="#_philosophy">8.1. Philosophy</a></h3>
 <div class="paragraph">
 <p>Five most important rules:</p>
 </div>
@@ -1731,7 +1765,7 @@ api for building queries.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_procedure">8.2. Procedure</h3>
+<h3 id="_procedure"><a class="link" href="#_procedure">8.2. Procedure</a></h3>
 <div class="paragraph">
 <p><strong>suricatta</strong> unlike Clojure and other Clojure contrib libs, does not have many
 restrictions for contributions. Just follow the following steps depending on the
@@ -1768,7 +1802,7 @@ situation:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_license">8.3. License</h3>
+<h3 id="_license"><a class="link" href="#_license">8.3. License</a></h3>
 <div class="paragraph">
 <p><em>suricatta</em> is licensed under BSD (2-Clause) license:</p>
 </div>
@@ -1810,7 +1844,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-12-06 11:38:04 CET
+Last updated 2014-12-06 13:11:36 CET
 </div>
 </div>
 </body>
