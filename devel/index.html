@@ -514,14 +514,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_the_insert_statement">5.2. The INSERT statement</a></li>
 <li><a href="#_the_update_statement">5.3. The UPDATE statement</a></li>
 <li><a href="#_the_delete_statement">5.4. The DELETE statement</a></li>
-<li><a href="#_the_truncate_statement">5.5. The TRUNCATE statement</a></li>
-<li><a href="#_the_create_table_statement">5.6. The CREATE TABLE statement</a></li>
-<li><a href="#_the_drop_table_statement">5.7. The DROP TABLE statement</a></li>
-<li><a href="#_the_alter_tabl_estatement">5.8. The ALTER TABL Estatement</a></li>
-<li><a href="#create-index">5.9. The CREATE INDEX statement</a></li>
-<li><a href="#drop-index">5.10. The DROP INDEX statement</a></li>
-<li><a href="#_table_expressions">5.11. Table Expressions</a></li>
-<li><a href="#_executing_queries_2">5.12. Executing queries</a></li>
+<li><a href="#_the_ddl_statements">5.5. The DDL statements</a></li>
+<li><a href="#_table_expressions">5.6. Table Expressions</a></li>
 </ul>
 </li>
 <li><a href="#_advanced_usage">6. Advanced usage</a>
@@ -999,6 +993,22 @@ top of <code>jooq</code> dsl.</p>
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.format</span> <span class="tok-ss">:as</span> <span class="tok-nv">fmt</span><span class="tok-p">])</span></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Object instances retured by dsl api are fully compatible with sql executing api. Let see an example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">my-query</span>
+  <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:id</span><span class="tok-p">)</span>
+      <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:books</span><span class="tok-p">)</span>
+      <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">[</span><span class="tok-s">&quot;age &gt; ?&quot;</span>, <span class="tok-mi">100</span><span class="tok-p">])</span>
+      <span class="tok-p">(</span><span class="tok-nf">dsl/limit</span> <span class="tok-mi">1</span><span class="tok-p">)))</span>
+
+<span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-nf">sc/context</span> <span class="tok-nv">dbspec</span><span class="tok-p">)]</span>
+  <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-nv">my-query</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; [{:id 4232}]</span></code></pre>
+</div>
+</div>
 <div class="sect2">
 <h3 id="_the_select_statement"><a class="link" href="#_the_select_statement">5.1. The SELECT statement</a></h3>
 <div class="sect3">
@@ -1435,7 +1445,9 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_the_truncate_statement"><a class="link" href="#_the_truncate_statement">5.5. The TRUNCATE statement</a></h3>
+<h3 id="_the_ddl_statements"><a class="link" href="#_the_ddl_statements">5.5. The DDL statements</a></h3>
+<div class="sect3">
+<h4 id="_the_truncate_statement"><a class="link" href="#_the_truncate_statement">5.5.1. The TRUNCATE statement</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/truncate</span> <span class="tok-ss">:table1</span><span class="tok-p">)</span>
@@ -1444,8 +1456,8 @@ given transaction for subsequent updates. Let see an example of how use it with 
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_the_create_table_statement"><a class="link" href="#_the_create_table_statement">5.6. The CREATE TABLE statement</a></h3>
+<div class="sect3">
+<h4 id="_the_create_table_statement"><a class="link" href="#_the_create_table_statement">5.5.2. The CREATE TABLE statement</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/create-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
@@ -1468,8 +1480,8 @@ default value for a field in table creation statement.
 </table>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_the_drop_table_statement"><a class="link" href="#_the_drop_table_statement">5.7. The DROP TABLE statement</a></h3>
+<div class="sect3">
+<h4 id="_the_drop_table_statement"><a class="link" href="#_the_drop_table_statement">5.5.3. The DROP TABLE statement</a></h4>
 <div class="listingblock">
 <div class="title">Drop table example</div>
 <div class="content">
@@ -1479,8 +1491,8 @@ default value for a field in table creation statement.
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_the_alter_tabl_estatement"><a class="link" href="#_the_alter_tabl_estatement">5.8. The ALTER TABL Estatement</a></h3>
+<div class="sect3">
+<h4 id="_the_alter_table_statement"><a class="link" href="#_the_alter_table_statement">5.5.4. The ALTER TABLE statement</a></h4>
 <div class="paragraph">
 <p>Alter statements are used mainly for add, modify or delete columns from table.</p>
 </div>
@@ -1512,8 +1524,8 @@ default value for a field in table creation statement.
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="create-index"><a class="link" href="#create-index">5.9. The CREATE INDEX statement</a></h3>
+<div class="sect3">
+<h4 id="create-index"><a class="link" href="#create-index">5.5.5. The CREATE INDEX statement</a></h4>
 <div class="listingblock">
 <div class="title">Create simple on field</div>
 <div class="content">
@@ -1533,8 +1545,8 @@ default value for a field in table creation statement.
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="drop-index"><a class="link" href="#drop-index">5.10. The DROP INDEX statement</a></h3>
+<div class="sect3">
+<h4 id="drop-index"><a class="link" href="#drop-index">5.5.6. The DROP INDEX statement</a></h4>
 <div class="listingblock">
 <div class="title">Drop index</div>
 <div class="content">
@@ -1544,10 +1556,59 @@ default value for a field in table creation statement.
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_table_expressions"><a class="link" href="#_table_expressions">5.11. Table Expressions</a></h3>
 <div class="sect3">
-<h4 id="_the_values_table_constructor"><a class="link" href="#_the_values_table_constructor">5.11.1. The VALUES() table constructor</a></h4>
+<h4 id="_the_create_sequence_statement"><a class="link" href="#_the_create_sequence_statement">5.5.7. The CREATE SEQUENCE statement</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/create-sequence</span> <span class="tok-s">&quot;testseq&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;create sequence \&quot;testseq\&quot;&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_alter_sequence_statement"><a class="link" href="#_the_alter_sequence_statement">5.5.8. The ALTER SEQUENCE statement</a></h4>
+<div class="listingblock">
+<div class="title">Restart sequence</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/alter-sequence</span> <span class="tok-s">&quot;testseq&quot;</span> <span class="tok-nv">true</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;alter sequence \&quot;testseq\&quot; restart&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Restart sequence with concrete number</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/alter-sequence</span> <span class="tok-s">&quot;testseq&quot;</span> <span class="tok-mi">19</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;alter sequence \&quot;testseq\&quot; restart with 19&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_drop_sequence_statement"><a class="link" href="#_the_drop_sequence_statement">5.5.9. The DROP SEQUENCE statement</a></h4>
+<div class="listingblock">
+<div class="title">Drop sequence</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/drop-sequence</span> <span class="tok-s">&quot;testseq&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;drop sequence \&quot;testseq\&quot;&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Drop sequence if exists</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/drop-sequence</span> <span class="tok-s">&quot;testseq&quot;</span> <span class="tok-nv">true</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;drop sequence if exists \&quot;testseq\&quot;&quot;</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_table_expressions"><a class="link" href="#_table_expressions">5.6. Table Expressions</a></h3>
+<div class="sect3">
+<h4 id="_the_values_table_constructor"><a class="link" href="#_the_values_table_constructor">5.6.1. The VALUES() table constructor</a></h4>
 <div class="paragraph">
 <p>Some databases allow for expressing in-memory temporary tables using a <code>values()</code>.</p>
 </div>
@@ -1576,7 +1637,7 @@ default value for a field in table creation statement.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_nested_selects"><a class="link" href="#_nested_selects">5.11.2. Nested SELECTs</a></h4>
+<h4 id="_nested_selects"><a class="link" href="#_nested_selects">5.6.2. Nested SELECTs</a></h4>
 <div class="listingblock">
 <div class="title">Using nested select in where clause</div>
 <div class="content">
@@ -1610,30 +1671,6 @@ default value for a field in table creation statement.
     <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select fullname, (select count(*) from book where (book.authorid = author.id)) &quot;books&quot; from author&quot;</span></code></pre>
 </div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_executing_queries_2"><a class="link" href="#_executing_queries_2">5.12. Executing queries</a></h3>
-<div class="paragraph">
-<p>Almost all method in <strong>dsl</strong> always returns some kind of <strong>deferred</strong> object. That object implements
-needed protocos for make them compatible with <code>suricatta.core/execute</code> and <code>suricatta.core/fetch</code>
-functions.</p>
-</div>
-<div class="paragraph">
-<p>Let see an example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">my-query</span>
-  <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:id</span><span class="tok-p">)</span>
-      <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:books</span><span class="tok-p">)</span>
-      <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">[</span><span class="tok-s">&quot;age &gt; ?&quot;</span>, <span class="tok-mi">100</span><span class="tok-p">])</span>
-      <span class="tok-p">(</span><span class="tok-nf">dsl/limit</span> <span class="tok-mi">1</span><span class="tok-p">)))</span>
-
-<span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-nf">sc/context</span> <span class="tok-nv">dbspec</span><span class="tok-p">)]</span>
-  <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-nv">my-query</span><span class="tok-p">))</span>
-<span class="tok-c1">;; =&gt; [{:id 4232}]</span></code></pre>
 </div>
 </div>
 </div>
@@ -1844,7 +1881,7 @@ repo.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-12-06 13:11:36 CET
+Last updated 2014-12-06 17:23:43 CET
 </div>
 </div>
 </body>
