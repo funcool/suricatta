@@ -49,12 +49,26 @@
                 (.setValue (generate-string (.-data self))))]
       (.setObject stmt index obj))))
 
+(extend-protocol proto/ISQLType
+  PGobject
+  (convert [self]
+    (let [type (.getType self)]
+      (condp = type
+        "json" (parse-string (.getValue self) true)))))
+
 (deftest inserting-json
   (sc/execute *ctx* "create table t1 (k json)")
   (sc/execute *ctx* ["insert into t1 (k) values (?)" (myjson {:foo 1})])
   (let [result (sc/fetch *ctx* ["select * from t1"])
         result1 (first result)]
-    (is (= (.getValue (:k result1)) (generate-string {:foo 1})))))
+    (is (= (:k result1) {:foo 1}))))
+
+;; (deftest inserting-json-2
+;;   (sc/execute *ctx* "create table t1 (k json)")
+;;   (sc/execute *ctx* ["insert into t1 (k) values (?)" (myjson {:foo 1})])
+;;   (let [result (sc/fetch *ctx* "select * from t1")
+;;         result1 (first result)]
+;;     (println result1)))
 
 (deftest render-json
   (let [q (-> (dsl/insert-into :t1)

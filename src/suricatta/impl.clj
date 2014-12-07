@@ -35,6 +35,8 @@
            org.jooq.DSLContext
            org.jooq.ResultQuery
            org.jooq.Query
+           org.jooq.Field
+           org.jooq.Result
            org.jooq.VisitContext
            org.jooq.RenderContext
            org.jooq.BindContext
@@ -149,18 +151,23 @@
 ;; IFetch Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- keywordize-keys
-  "Recursively transforms all map keys from strings to keywords."
-  [m]
-  (into {} (map (fn [[k v]] [(keyword (.toLowerCase ^String k)) v]) m)))
-
 (defn- result-record->record
   [^org.jooq.Record record]
-  (keywordize-keys (.intoMap record)))
+  (into {} (for [^int i (range (.size record))]
+             (let [^Field field (.field record i)
+                   value (.getValue record i)]
+               [(keyword (.toLowerCase (.getName field)))
+                (if (satisfies? proto/ISQLType value)
+                  (proto/convert value)
+                  value)]))))
 
 (defn- result-record->row
   [^org.jooq.Record record]
-  (into [] (.intoArray record)))
+  (into [] (for [^int i (range (.size record))]
+             (let [value (.getValue record i)]
+               (if (satisfies? proto/ISQLType value)
+                  (proto/convert value)
+                  value)))))
 
 (defn- result->vector
   [^org.jooq.Result result {:keys [mapfn into format]
@@ -180,9 +187,9 @@
 (extend-protocol proto/IFetch
   String
   (fetch [^String sql ^Context ctx opts]
-    (let [^DSLContext context (proto/get-context ctx)]
-      (-> (.fetch context sql)
-          (result->vector opts))))
+    (let [^DSLContext context (proto/get-context ctx)
+          ^Result result (.fetch context sql)]
+      (result->vector result opts)))
 
   PersistentVector
   (fetch [^PersistentVector sqlvec ^Context ctx opts]

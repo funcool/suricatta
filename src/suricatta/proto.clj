@@ -52,3 +52,6 @@
 (defprotocol IParamType
   (render [_] "Render param value as inline sql")
   (bind [_ stmt index] "Bind param value to the statement."))
+
+(defprotocol ISQLType
+  (convert [_] "Convert sql type to user type."))
