@@ -25,12 +25,6 @@
 
 (use-fixtures :each my-fixture)
 
-;; (deftest inserting-json
-;;   (sc/execute *ctx* "create table t1 (data json, k int)")
-;;   (sc/execute *ctx* ["insert into t1 (data, k) values (?, ?)" (DSL/val #{:foo "bar"} datatype) 3])
-;;   (-> (sc/fetch *ctx* ["select * from t1"])
-;;       (println)))
-
 (deftype MyJson [data])
 
 (defn myjson
@@ -80,7 +74,7 @@
   (render [self]
     (let [items (->> (map str (.-data self))
                      (interpose ","))]
-      (str "{" (apply str items) "}")))
+      (str "'{" (apply str items) "}'::bigint[]")))
 
   (bind [self stmt index]
     (let [con (.getConnection stmt)
@@ -99,3 +93,10 @@
     (sc/execute *ctx* ["insert into t1 (data) values (?)" data]))
   (let [result (sc/fetch *ctx* "select * from t1")]
     (is (= result [{:data [1 2 3]}]))))
+
+(deftest render-array
+  (let [q (-> (dsl/insert-into :t1)
+              (dsl/insert-values {:data (myintarray [1 2 3])}))]
+    (is (= (fmt/get-sql q {:dialect :pgsql :type :inlined})
+           "insert into t1 (data) values ('{1,2,3}'::bigint[])"))))
+
