@@ -63,41 +63,39 @@
         result1 (first result)]
     (is (= (:k result1) {:foo 1}))))
 
-;; (deftest inserting-json-2
-;;   (sc/execute *ctx* "create table t1 (k json)")
-;;   (sc/execute *ctx* ["insert into t1 (k) values (?)" (myjson {:foo 1})])
-;;   (let [result (sc/fetch *ctx* "select * from t1")
-;;         result1 (first result)]
-;;     (println result1)))
-
 (deftest render-json
   (let [q (-> (dsl/insert-into :t1)
               (dsl/insert-values {:data (myjson {:foo 1})}))]
     (is (= (fmt/get-sql q {:dialect :pgsql :type :inlined})
            "insert into t1 (data) values ('{\"foo\":1}'::json)"))))
 
-;; (deftest inserting-json-dsl
-;;   (sc/execute *ctx* "create table t1 (data json)")
-;;   (let [q (-> (dsl/insert-into :t1)
-;;               (dsl/insert-values {:data (json {:foo 1})})
-;;               (dsl/insert-values {:data (json {:bar 2})}))]
-;;     (sc/execute *ctx* q))
-;;   (-> (sc/fetch *ctx* "select * from t1")
-;;       (println)))
+(deftype MyArray [data])
 
+(defn myintarray
+  [data]
+  (MyArray. data))
 
+(extend-protocol proto/IParamType
+  MyArray
+  (render [self]
+    (let [items (->> (map str (.-data self))
+                     (interpose ","))]
+      (str "{" (apply str items) "}")))
 
-;; (deftest json-select
-;;   (let [q (dsl/select (.as (json {:a 1}) "dd"))]
-;;     (-> (sc/fetch *ctx* q)
-;;         (println))))
+  (bind [self stmt index]
+    (let [con (.getConnection stmt)
+          arr (into-array Long (.-data self))
+          arr (.createArrayOf con "bigint" arr)]
+      (.setArray stmt index arr))))
 
+(extend-protocol proto/ISQLType
+  java.sql.Array
+  (convert [self]
+    (into [] (.getArray self))))
 
-;; (deftest inserting-arrays
-;;   (sc/execute *ctx* "create table t1 (data int[])")
-;;   (let [data [1 2 3]]
-;;     (sc/execute *ctx* ["insert into t1 (data) values (?)" data])
-;;   (let [data (into-array Integer (map int [1 2 3]))]
-;;     (sc/execute *ctx* ["insert into t1 (data) values (?::int[])" "{1,2,3}"])
-;;     (-> (sc/fetch *ctx* "select * from t1")
-;;         (println))))
+(deftest inserting-arrays
+  (sc/execute *ctx* "create table t1 (data bigint[])")
+  (let [data (myintarray [1 2 3])]
+    (sc/execute *ctx* ["insert into t1 (data) values (?)" data]))
+  (let [result (sc/fetch *ctx* "select * from t1")]
+    (is (= result [{:data [1 2 3]}]))))
