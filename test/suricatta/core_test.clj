@@ -96,7 +96,7 @@
                                                (dsl/field* "b" :pg/int4)]
                                       :format :csv}))
     (let [result (sc/fetch *ctx* "select * from foo1")]
-      (println result))))
+      (is (= [{:a 1, :b 2} {:a 3, :b 4}] result)))))
 
 (deftest async-support
   (sc/execute *ctx* "create table foo (n int)")

@@ -348,7 +348,7 @@
     (let [q (-> (dsl/create-table :t1)
                 (dsl/add-column :title {:type :pg/varchar :length 2 :null false}))]
       (is (= (fmt/get-sql q)
-             "create table t1(title varchar(2))"))))
+             "create table t1(title varchar(2) not null)"))))
 
   (testing "Alter table with set new datatype"
     (let [q (-> (dsl/alter-table :t1)
