@@ -320,15 +320,17 @@ currently has value of 100.
 Async interface
 ~~~~~~~~~~~~~~~
 
-It is well known that jdbc does not support proper way handle queries in asynchronous manner. But
-exists also a well known way to handle with it: using a shared thread pool for execute queries
-asynchronously.
+It is well known that jdbc does not support proper way handle queries in asynchronous manner. 
+The other hand, exists one well known way to handle with it: using a shared thread pool for execute
+queries asynchronously.
 
-Also, clojure comes with good abstractions for execute things asynchronously: agents. Agents
-in clojure uses a shared execution pool and guarantes that things are executed serially.
+Clojure comes with good abstractions for execute things asynchronously: agents. Agents
+in clojure uses a shared execution pool and guarantes that things are executed serially. That
+behavior is really desidered because you only can execute one query on same time using the same
+connection.
 
-The _suricatta_ library takes advantage of that, and exposes a simple async api using
-_core.async_ channels abstraction and link:https://github.com/niwibe/cats[cats library] for
+_surricata_ has one agent bound to connection that handles the async execution, exposes 
+_core.async_ asynchronous api and uses link:https://github.com/niwibe/cats[cats library] for
 error handling (error as value).
 
 Let start importing necessary namespaces:
@@ -340,9 +342,8 @@ Let start importing necessary namespaces:
 (require '[cats.monad.exception :as exc])
 ----
 
-You can found that the functions found on async namespace (`execute` and `fetch`)
-are almost identical that ones form `suricatta.core` (previously explained). The
-main difference is that them returns _core.async_ channels.
+Functions found on suricatta.async ns (`execute` and `fetch` are almost identical to sync ones
+found on suricatta.core with the exception that they return channels.
 
 .Example executing a query using async interface.
 [source, clojure]
@@ -359,10 +360,32 @@ main difference is that them returns _core.async_ channels.
 ----
 (go
   (with-open [ctx (sc/context dbspec)]
-    (let [sql    "select * from foo order by n"
-          ch     (sca/fetch ctx sql)]
-      (<! (into [] ch)))))
+    (let [sql "select * from foo order by n"
+          ch  (sca/fetch ctx sql)]
+      (println "Result: " (<! ch)))))
+
+;; That will print to stdout:
+;; "Result: #<Success [{:n 1} {:n 2}]>"
 ----
+
+
+Fetch function also supports a `:chan` parameter on opts, that allows pass own channel with
+transducer:
+
+
+.Example fetching results from query using channel with transducer.
+[source, clojure]
+----
+(let [c (chan 1 (comp
+                 (map exc/from-success)
+                 (mapcat identity)))
+      res (sca/fetch *ctx* "select * from foo order by n" {:chan c})]
+  (println "Result1: " (<!! res))
+  (println "Result2: " (<!! res)))
+
+;; That prints to stdout:
+;; "Result1: {:n 1}"
+;; "Result2: {:n 2}"
 
 
 SQL Building and Formatting

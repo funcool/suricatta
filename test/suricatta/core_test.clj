@@ -1,6 +1,6 @@
 (ns suricatta.core-test
   (:require [clojure.test :refer :all]
-            [clojure.core.async :refer [<!!]]
+            [clojure.core.async :refer [<!! chan]]
             [suricatta.core :as sc]
             [suricatta.dsl :as dsl]
             [suricatta.async :as sca]
@@ -109,6 +109,14 @@
     (let [ch      (sca/fetch *ctx* "select * from foo order by n")
           result (<!! ch)]
       (is (= result (exc/success [{:n 1} {:n 2}])))))
+
+  (testing "Fetching query asynchronously and transducer"
+    (let [xform (comp
+                 (map exc/from-success)
+                 (mapcat identity))
+          ch (sca/fetch *ctx* "select * from foo order by n" {:chan (chan 1 xform)})
+          result (<!! ch)]
+      (is (= result {:n 1}))))
 )
 
 (deftest transactions
