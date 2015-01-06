@@ -67,7 +67,7 @@
   "Wraps a value that implements IParamType
   protocol in valid jOOQ Param implementation."
   [value]
-  (->
+  (suricatta.impl.ParamWrapper.
    (reify suricatta.impl.IParam
      (render [_ ^RenderContext ctx]
        (let [sql (proto/render value)]
@@ -75,8 +75,7 @@
      (bind [_ ^BindContext ctx]
        (let [stmt  (.statement ctx)
              index (.nextIndex ctx)]
-         (proto/bind value stmt index))))
-   (suricatta.impl.ParamWrapper.)))
+         (proto/bind value stmt index))))))
 
 (defn wrap-if-need
   [obj]
