@@ -37,7 +37,6 @@
            org.jooq.Query
            org.jooq.Field
            org.jooq.Result
-           org.jooq.VisitContext
            org.jooq.RenderContext
            org.jooq.BindContext
            org.jooq.Configuration
