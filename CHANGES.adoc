@@ -14,6 +14,7 @@ Backward incompatible changes:
 - Change dsl/table and dsl/field api: remove named parameters in favor to options map.
 - Fetch options are changed. It is mainly affects if you are using the rows parameter.
   In that case change `{:rows true}` with `{:format :row}`
+- suricatta.async/fetch changed returned value.
 
 == 0.1.0-alpha
 
