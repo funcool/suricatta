@@ -62,7 +62,7 @@
   (testing "Fetch by default vector of rows."
     (sc/atomic *ctx*
             (with-open [cursor (sc/fetch-lazy *ctx* "select x from generate_series(1, 300) as x")]
-              (let [res (take 3 (sc/cursor->lazyseq cursor {:rows true}))]
+              (let [res (take 3 (sc/cursor->lazyseq cursor {:format :row}))]
                 (is (= (mapcat identity (vec res)) [1 2 3]))))))
 
   (testing "Fetch by default vector of records."

@@ -249,14 +249,13 @@
     (proto/fetch-lazy @deferred ctx opts)))
 
 (defn cursor->lazyseq
-  [cursor {:keys [rows mapfn] :or {rows false}}]
+  [cursor {:keys [format mapfn] :or {format :record}}]
   (let [lseq (fn thisfn []
                (when (.hasNext cursor)
-                 (let [record (.fetchOne cursor)
-                       record (cond
-                               mapfn (mapfn record)
-                               rows  (result-record->row record)
-                               :else (result-record->record record))]
+                 (let [item (.fetchOne cursor)
+                       record (condp = format
+                                :record (result-record->record item)
+                                :row (result-record->row item))]
                    (cons record (lazy-seq (thisfn))))))]
     (lseq)))
 

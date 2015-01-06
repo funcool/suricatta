@@ -388,6 +388,7 @@ transducer:
 ;; "Result2: {:n 2}"
 ----
 
+
 SQL Building and Formatting
 ---------------------------
 

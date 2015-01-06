@@ -11,10 +11,11 @@
 
 Backward incompatible changes:
 
-- Change dsl/table and dsl/field api: remove named parameters in favor to options map.
 - Fetch options are changed. It is mainly affects if you are using the rows parameter.
   In that case change `{:rows true}` with `{:format :row}`
+- Change dsl/table and dsl/field api: remove named parameters in favor to options map.
 - suricatta.async/fetch changed returned value.
+- suricatta.core/cursor->lazyseq opts are changed. See the first point.
 
 == 0.1.0-alpha
 
