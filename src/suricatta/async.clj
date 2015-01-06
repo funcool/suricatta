@@ -52,19 +52,7 @@
          act (.-act ctx)
          opts (dissoc opts :chan)]
      (send-off act (fn [counter]
-                     (try
-                       (sc/atomic ctx
-                                  (with-open [cursor (sc/fetch-lazy ctx q opts)]
-                                    (reduce (fn [acc v]
-                                              (if-not (put! c (exc/success v))
-                                                (reduced nil)
-                                                nil))
-                                            nil
-                                            (sc/cursor->lazyseq cursor opts))
-                                    (close! c)
-                                    (inc counter)))
-                       (catch Exception e
-                         (put! c (exc/failure e))
-                         (close! c)))
+                     (put! c (exc/try-on (sc/fetch ctx q opts)))
+                     (close! c)
                      (inc counter)))
      c)))

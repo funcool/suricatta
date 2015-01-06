@@ -107,10 +107,8 @@
 
   (testing "Fetching query asynchronously"
     (let [ch      (sca/fetch *ctx* "select * from foo order by n")
-          result1 (<!! ch)
-          result2 (<!! ch)]
-      (is (= result1 (exc/success {:n 1})))
-      (is (= result2 (exc/success {:n 2})))))
+          result (<!! ch)]
+      (is (= result (exc/success [{:n 1} {:n 2}])))))
 )
 
 (deftest transactions
