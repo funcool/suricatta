@@ -24,7 +24,7 @@
 
 (ns suricatta.dsl
   "Sql building dsl"
-  (:refer-clojure :exclude [val group-by and or not name set])
+  (:refer-clojure :exclude [val group-by and or not name set update])
   (:require [suricatta.core :as core]
             [suricatta.impl :as impl]
             [suricatta.types :as types :refer [defer]]
