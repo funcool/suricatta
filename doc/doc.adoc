@@ -386,7 +386,7 @@ transducer:
 ;; That prints to stdout:
 ;; "Result1: {:n 1}"
 ;; "Result2: {:n 2}"
-
+----
 
 SQL Building and Formatting
 ---------------------------
