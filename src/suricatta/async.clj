@@ -34,25 +34,21 @@
   ([ctx q opts]
    (let [c   (or (:chan opts) (chan))
          act (.-act ctx)]
-     (send-off act (fn [counter]
-                     (let [result (exc/try-on (sc/execute ctx q))]
-                       (put! c result)
-                       (close! c))
-                     (inc counter)))
+     (send-off act (fn [_]
+                     (put! c (exc/try-on (sc/execute ctx q)))
+                     (close! c)))
      c)))
 
 
 (defn fetch
-  "Execute a query asynchronously returning a channel with
-  streaming results."
+  "Execute a query asynchronously returning a channel."
   ([ctx q]
    (fetch ctx q {}))
   ([ctx q opts]
    (let [c (or (:chan opts) (chan))
          act (.-act ctx)
          opts (dissoc opts :chan)]
-     (send-off act (fn [counter]
+     (send-off act (fn [_]
                      (put! c (exc/try-on (sc/fetch ctx q opts)))
-                     (close! c)
-                     (inc counter)))
+                     (close! c)))
      c)))
