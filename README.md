@@ -10,4 +10,5 @@ High level sql toolkit for clojure (backed by jooq library)
 
 ## Documentation ##
 
-http://niwibe.github.io/suricatta/
+- Latest stable documentation: http://niwibe.github.io/suricatta/latest/
+- Development documentation: http://niwibe.github.io/suricatta/devel/
