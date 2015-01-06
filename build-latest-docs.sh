@@ -1,7 +1,15 @@
 #!/bin/sh
+VERSION="devel"
+
 (cd doc; make)
-cp -vr doc/index.html /tmp/index.html;
+
+rm -rf /tmp/index.html
+mv doc/index.html /tmp/index.html;
 git checkout gh-pages;
-mv -fv /tmp/index.html ./latest/
-git add --all ./latest/index.html
-git commit -a -m "Update stable doc"
+
+rm -rf ./$VERSION
+mkdir -p ./$VERSION/
+mv -fv /tmp/index.html ./$VERSION/
+
+git add --all ./$VERSION/index.html
+git commit -a -m "Update ${VERSION} doc"
