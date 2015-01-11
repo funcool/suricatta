@@ -27,21 +27,25 @@
   (:import org.jooq.impl.DSL
            org.jooq.ResultQuery
            org.jooq.Configuration
-           org.jooq.SQLDialect))
+           org.jooq.ConnectionProvider
+           org.jooq.SQLDialect
+           java.sql.Connection
+           clojure.lang.Agent))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Context
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftype Context [^Configuration conf ^clojure.lang.Agent act]
+(deftype Context [^Configuration conf
+                  ^Agent act]
   proto/IContext
   (get-context [_] (DSL/using conf))
   (get-configuration [_] conf)
 
   java.io.Closeable
   (close [_]
-    (let [^org.jooq.ConnectionProvider provider (.connectionProvider conf)
-          ^java.sql.Connection connection (.acquire provider)]
+    (let [^ConnectionProvider provider (.connectionProvider conf)
+          ^Connection connection (.acquire provider)]
       (.close connection)
       (.set conf (org.jooq.impl.NoConnectionProvider.)))))
 
@@ -52,7 +56,7 @@
 
 (defn context?
   [ctx]
-  (instance? Context ctx))
+  (satisfies? proto/IContext ctx))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Deferred Computation (without caching the result unlike delay)

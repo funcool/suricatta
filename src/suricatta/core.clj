@@ -128,7 +128,7 @@
 (defn atomic-apply
   "Execute a function in one transaction
   or subtransaction."
-  [^Context ctx func & args]
+  [ctx func & args]
   (let [^Configuration conf (.derive (proto/get-configuration ctx))
         ^TransactionContext txctx (transaction-context conf)
         ^TransactionProvider provider (.transactionProvider conf)]
@@ -161,7 +161,7 @@
   This function is not safe and it not aborts
   the execution of current function, it only
   marks the current transaction for rollback."
-  [^Context ctx]
+  [ctx]
   (let [^Configuration conf (proto/get-configuration ctx)]
     (.data conf "suricatta.rollback" true)
     ctx))

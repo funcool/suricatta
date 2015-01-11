@@ -34,12 +34,13 @@
            org.jooq.Query
            org.jooq.Field
            org.jooq.Result
+           org.jooq.Cursor
            org.jooq.RenderContext
            org.jooq.BindContext
            org.jooq.Configuration
            clojure.lang.PersistentVector
-           clojure.lang.APersistentMap
            java.sql.Connection
+           java.sql.PreparedStatement
            javax.sql.DataSource
            suricatta.types.Context))
 
@@ -67,10 +68,10 @@
   (suricatta.impl.ParamWrapper.
    (reify suricatta.impl.IParam
      (render [_ ^RenderContext ctx]
-       (let [sql (proto/render value)]
+       (let [^String sql (proto/render value)]
          (.sql ctx sql)))
      (bind [_ ^BindContext ctx]
-       (let [stmt  (.statement ctx)
+       (let [^PreparedStetement stmt (.statement ctx)
              index (.nextIndex ctx)]
          (proto/bind value stmt index))))))
 
@@ -216,7 +217,7 @@
     (proto/fetch-lazy @deferred ctx opts)))
 
 (defn cursor->lazyseq
-  [cursor {:keys [format mapfn] :or {format :record}}]
+  [^Cursor cursor {:keys [format mapfn] :or {format :record}}]
   (let [lseq (fn thisfn []
                (when (.hasNext cursor)
                  (let [item (.fetchOne cursor)
@@ -268,8 +269,6 @@
         step (condp = format
                :csv  (.loadCSV step data)
                :json (.loadJSON step data))
-        ;; fields (->> (map #(DSL/field (name %)) fields)
-        ;;             (into-array org.jooq.Field))
         fields (into-array org.jooq.Field fields)]
     (doto step
       (.fields fields)
