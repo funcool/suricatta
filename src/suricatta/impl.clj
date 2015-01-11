@@ -23,10 +23,7 @@
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (ns suricatta.impl
-  (:require [jdbc.core :as jdbc]
-            [jdbc.types :as jdbctypes]
-            [jdbc.proto :as jdbcproto]
-            [suricatta.types :as types :refer [defer]]
+  (:require [suricatta.types :as types :refer [defer]]
             [suricatta.proto :as proto])
   (:import org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
@@ -82,34 +79,6 @@
   (if (satisfies? proto/IParamType obj)
     (make-param-impl obj)
     obj))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Context Constructor Implementation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(extend-protocol proto/IContextBuilder
-  APersistentMap
-  (make-context [^clojure.lang.APersistentMap dbspec]
-    (let [^Connection connection (:connection (jdbc/make-connection dbspec))
-          ^SQLDialect dialect (if (:dialect dbspec)
-                                (translate-dialect (:dialect dbspec))
-                                (JDBCUtils/dialect connection))
-          ^Configuration conf (doto (DefaultConfiguration.)
-                                (.set dialect)
-                                (.set connection))]
-      (types/->context conf)))
-
-  java.sql.Connection
-  (make-context [^Connection connection]
-    (let [^SQLDialect dialect (JDBCUtils/dialect connection)
-          ^Configuration conf (doto (DefaultConfiguration.)
-                                (.set dialect)
-                                (.set connection))]
-      (types/->context conf)))
-
-  jdbc.types.Connection
-  (make-context [^jdbc.types.Connection connection]
-    (proto/make-context (:connection connection))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IExecute implementation

@@ -24,9 +24,6 @@
 
 (ns suricatta.proto)
 
-(defprotocol IContextBuilder
-  (make-context [_] "Create new context (dslcontext)."))
-
 (defprotocol IContext
   (get-context [_] "Get context with attached configuration")
   (get-configuration [_] "Get attached configuration."))
