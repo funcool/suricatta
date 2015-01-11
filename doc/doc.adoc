@@ -1,5 +1,4 @@
-suricatta documentation
-========================
+= suricatta documentation
 Andrey Antukh, <niwi@niwi.be>
 0.2.0-SNAPSHOT
 :toc: left
@@ -8,8 +7,7 @@ Andrey Antukh, <niwi@niwi.be>
 :pygments-style: friendly
 :sectlinks:
 
-Introduction
-------------
+== Introduction
 
 _suricatta_ is a high level sql toolkit for clojure (backed by fantastic
 link:http://www.jooq.org/[jooq library])
@@ -22,22 +20,19 @@ It consists in four modules:
 - *suricatta.format*: sql rendering functions.
 
 
-Project Maturity
-----------------
+== Project Maturity
 
 _suricatta_ is considered in alpha state.
 
 Since _suricatta_ is a young project there may be some API breakage.
 
 
-Install
--------
+== Install
 
 This section covers the _suricatta_ library installing process and its requirements.
 
 
-Requirements
-~~~~~~~~~~~~
+=== Requirements
 
 _suricatta_ is tested with these platforms:
 
@@ -45,8 +40,7 @@ _suricatta_ is tested with these platforms:
 - JDK8
 
 
-Leiningen
-~~~~~~~~~
+=== Leiningen
 
 The simplest way to use _suricatta_ in a clojure project, is by including it in the dependency
 vector on your *_project.clj_* file:
@@ -58,8 +52,7 @@ vector on your *_project.clj_* file:
 ----
 
 
-Gradle
-~~~~~~
+=== Gradle
 
 If you are using gradle, this is a dependency line for gradle dsl:
 
@@ -69,33 +62,7 @@ compile "suricatta:suricatta:0.2.0-SNAPSHOT"
 ----
 
 
-Maven
-~~~~~
-
-If you are using maven:
-
-.Repository entry.
-[source,xml]
-----
-<repository>
-    <id>clojars.org</id>
-    <url>http://clojars.org/repo</url>
-</repository>
-----
-
-.Dependency entry.
-[source,xml]
-----
-<dependency>
-  <groupId>suricatta</groupId>
-  <artifactId>suricatta</artifactId>
-  <version>0.2.0-SNAPSHOT</version>
-</dependency>
-----
-
-
-Get the Code
-~~~~~~~~~~~~
+=== Get the Code
 
 _suricatta_ is open source and is entirely developed on
 link:https://github.com/niwibe/suricatta[github].
@@ -108,14 +75,12 @@ git clone https://github.com/niwibe/suricatta
 ----
 
 
-SQL Execution
--------------
+== SQL Execution
 
 This section intends to explain the usage of a sql execution part of the library.
 
 
-Connecting to database
-~~~~~~~~~~~~~~~~~~~~~~
+=== Connecting to database
 
 _suricatta_, unlike other database libraries, uses a concept of *context instead of *connection*.
 A **context** has the resposibility of jdbc connection resource management, transaction isolation
@@ -123,26 +88,33 @@ flags and sql rendering dialect.
 
 You can create it **context** from:
 
-- Plain jdbc connection.
-- link:http://niwibe.github.io/clojure.jdbc[clojure.jdbc] connection object
-- hash-map dbspec format (same format as in _clojure.jdbc_)
+- hash-map dbspec format (plain connection params).
+- datasource instance (connection pool).
+- link:http://niwibe.github.io/clojure.jdbc[clojure.jdbc] connection instance.
 
-The use of link:http://niwibe.github.io/clojure.jdbc[clojure.jdbc] allows to _suricatta_ have good
-support for datasource (link:http://niwibe.github.io/clojure.jdbc/#connection-pool[connection pool]) dbspec's.
+.This is a default aspect of one dbspec.
+[source,clojure]
+----
+(def dbspec {:subprotocol "postgresql"
+             :subname "//localhost:5432/dbname"
+             :user "username"         ;; Optional
+             :password "password"}    ;; Optional
+----
 
-Let see some examples:
+==== Create Context from plain dbspec.
 
-.Creating context from _dbspec_
+.Example creating context from dbspec.
 [source, clojure]
 ----
 (require '[suricatta.core :as sc])
-
 (with-open [ctx (sc/context {:subprotocol "h2"
                              :subname "mem:"})]
   (do-something-with ctx))
 ----
 
-.Create context from existing _clojure.jdbc_ connection.
+==== Create Context from _clojure.jdbc_ connection.
+
+.Example creating context from _clojure.jdbc_ connection instance.
 [source, clojure]
 ----
 (require '[jdbc.core :as jdbc])
@@ -151,28 +123,64 @@ Let see some examples:
 (def dbspec {:subprotocol "h2"
              :subname "mem:"})
 
-(jdbc/with-connection [conn dbspec]
-  (let [ctx (sc/context conn)
-        res (do-something ctx)]
-    res))
+(with-open [conn (jdbc/connection dbspec)
+            ctx (sc/context conn)]
+  (do-something ctx))
 ----
 
-.Create context from dbspec with datasource (connection pool).
+NOTE: when closing the _suricatta_ context, the wrapped connection
+also will be closed.
+
+
+==== Create Context from DataSource.
+
+DataSource is the preferd way to connect to the database in production enviroments, and
+is usually used for implement connection pools.
+
+In our case we will use *hikaricp* as datasource with connection pool. Let start adding new dependency
+entry on your _project.clj_:
+
 [source, clojure]
 ----
-;; Import the desired implementation
-(require '[jdbc.pool.dbcp :as pool])
+[hikari-cp "0.13.0" :exclusions [com.zaxxer/HikariCP]]
+[com.zaxxer/HikariCP-java6 "2.2.5"]
+----
 
-(def dbspec (pool/make-datasource-spec {:subprotocol "postgresql"
-                                        :subname "//localhost/dbname"}))
+Now create the datasource instance:
 
-(with-open [ctx (sc/context dbspec)]
+[source, clojure]
+----
+(require '[hikari-cp.core :as hikari])
+
+(def ^javax.sql.Datasource
+  datasource (hikari/make-datasource
+              {:connection-timeout 30000
+               :idle-timeout 600000
+               :max-lifetime 1800000
+               :minimum-idle 10
+               :maximum-pool-size  10
+               :adapter "postgresql"
+               :username "username"
+               :password "password"
+               :database-name "database"
+               :server-name "localhost"
+               :port-number 5432}))
+----
+
+Now, having a datasource instace, you can use it like plain dbspec for creating
+a context instance:
+
+[source, clojure]
+----
+(with-open [ctx (sc/context datasource)]
   (do-something-with ctx))
 ----
 
+You can found more information and documentation about hikari-cp 
+here: https://github.com/tomekw/hikari-cp
 
-Executing queries
-~~~~~~~~~~~~~~~~~
+
+=== Executing queries
 
 _suricatta_ has clear separation between queries that can return result, and queries that cannot.
 
@@ -187,8 +195,7 @@ The return value of `suricatta.core/execute` function depends on the query, but 
 cases it returns a number of affected rows.
 
 
-Fetching results
-~~~~~~~~~~~~~~~~
+=== Fetching results
 
 Let see an example of how execute a query and fetch results:
 
@@ -213,8 +220,7 @@ not have special syntax for queries with `RETURNING` clause:
 ====
 
 
-Parametrized queries
-~~~~~~~~~~~~~~~~~~~~
+=== Parametrized queries
 
 Like _clojure.jdbc_ and _clojure.java.jdbc_, _suricatta_ has support for parametrized
 queries in *sqlvec* format.
@@ -226,8 +232,7 @@ queries in *sqlvec* format.
 ----
 
 
-Reusing query statement
-~~~~~~~~~~~~~~~~~~~~~~~
+=== Reusing query statement
 
 The above technique can be quite useful when you want to reuse expensive database resources.
 
@@ -239,8 +244,7 @@ The above technique can be quite useful when you want to reuse expensive databas
 ----
 
 
-Transactions
-~~~~~~~~~~~~
+=== Transactions
 
 The _suricatta_ library does not have support for low level transactions api, instead of it, offers a
 lightweight abstraction over complex transaction api.
@@ -281,8 +285,7 @@ the execution. And it is aware of subtransactions, if it is used in a subtransac
 the subtransaction will be marked for rollback, not the entire transaction.
 
 
-Lazy result fetching
-~~~~~~~~~~~~~~~~~~~~
+=== Lazy result fetching
 
 The _suricatta_ library also comes with lazy fetching support. In this case, it tries instead
 of fetching all results in memory, fetch in small groups, allowing lower memory usage.
@@ -317,10 +320,9 @@ The third parameter of `sc/fetch-lazy` function is optional and the default fetc
 currently has value of 100.
 
 
-Async interface
-~~~~~~~~~~~~~~~
+=== Async interface
 
-It is well known that jdbc does not support proper way handle queries in asynchronous manner. 
+It is well known that jdbc does not support proper way handle queries in asynchronous manner.
 The other hand, exists one well known way to handle with it: using a shared thread pool for execute
 queries asynchronously.
 
@@ -329,7 +331,7 @@ in clojure uses a shared execution pool and guarantes that things are executed s
 behavior is really desidered because you only can execute one query on same time using the same
 connection.
 
-_surricata_ has one agent bound to connection that handles the async execution, exposes 
+_surricata_ has one agent bound to connection that handles the async execution, exposes
 _core.async_ asynchronous api and uses link:https://github.com/niwibe/cats[cats library] for
 error handling (error as value).
 
@@ -368,10 +370,8 @@ found on suricatta.core with the exception that they return channels.
 ;; "Result: #<Success [{:n 1} {:n 2}]>"
 ----
 
-
 Fetch function also supports a `:chan` parameter on opts, that allows pass own channel with
 transducer:
-
 
 .Example fetching results from query using channel with transducer.
 [source, clojure]
@@ -389,8 +389,7 @@ transducer:
 ----
 
 
-SQL Building and Formatting
----------------------------
+== SQL Building and Formatting
 
 This section intends to explain the usage of sql building library, the lightweight layer on
 top of `jooq` dsl.
@@ -426,11 +425,9 @@ Object instances retured by dsl api are fully compatible with sql executing api.
 ----
 
 
-The SELECT statement
-~~~~~~~~~~~~~~~~~~~~
+=== The SELECT statement
 
-Select clause
-^^^^^^^^^^^^^
+==== Select clause
 
 Simple select clause without from part:
 
@@ -457,8 +454,7 @@ passing `:dialect` option to `get-sql` function of `suricatta.format` namespace:
 ----
 
 
-Select DISTINCT
-^^^^^^^^^^^^^^^
+==== Select DISTINCT
 
 You can add distinct keyword using special select function:
 
@@ -470,8 +466,7 @@ You can add distinct keyword using special select function:
 ----
 
 
-Select *
-^^^^^^^^
+==== Select *
 
 You can ommit fields on `select` function for use the "SELECT *" form:
 
@@ -484,8 +479,7 @@ You can ommit fields on `select` function for use the "SELECT *" form:
 ----
 
 
-The FROM clause
-^^^^^^^^^^^^^^^
+==== The FROM clause
 
 Simple select sql with form clause:
 
@@ -519,8 +513,7 @@ Also, you can specify alias for each table:
 ----
 
 
-The JOIN clause
-^^^^^^^^^^^^^^^
+==== The JOIN clause
 
 _suricata_ comes with complete dsl for making join clauses. Let see one simple example:
 
@@ -547,8 +540,7 @@ Also, join clause can be applied to table expression:
 ----
 
 
-The WHERE clause
-^^^^^^^^^^^^^^^^
+==== The WHERE clause
 
 The WHERE clause can be used for JOIN or filter predicates, in order to restrict the data returned
 by the query:
@@ -602,8 +594,7 @@ Using explicit logical operators:
 Different kind of joins are suported with that functions: `dsl/full-outer-join`, `dsl/left-outer-join`, `dsl/right-outer-join` and `dsl/cross-join`.
 
 
-The GROUP BY clause
-^^^^^^^^^^^^^^^^^^^
+==== The GROUP BY clause
 
 GROUP BY can be used to create unique groups of data, to form aggregations, to remove duplicates and for other reasons. Let see an example of how it can be done using _suricatta_ dsl:
 
@@ -618,8 +609,7 @@ GROUP BY can be used to create unique groups of data, to form aggregations, to r
 ----
 
 
-The HAVING clause
-^^^^^^^^^^^^^^^^^
+==== The HAVING clause
 
 The HAVING clause is used to further restrict aggregated data. Let see an example:
 
@@ -634,8 +624,7 @@ The HAVING clause is used to further restrict aggregated data. Let see an exampl
 ;; => "select name, count(*) from book group by name having (count(*) > ?)"
 ----
 
-The ORDER BY clause
-^^^^^^^^^^^^^^^^^^^
+==== The ORDER BY clause
 
 Here an example of how specify the ordering to the query:
 
@@ -684,8 +673,7 @@ uses `ASC` for sort fields that comes without explicit ordering direction.
 ----
 
 
-The LIMIT and OFFSET clauses
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== The LIMIT and OFFSET clauses
 
 Let see some examples of how to apply limit and offset to your queries with _suricatta_:
 
@@ -700,8 +688,7 @@ Let see some examples of how to apply limit and offset to your queries with _sur
 ----
 
 
-The FOR UPDATE clause
-^^^^^^^^^^^^^^^^^^^^^
+==== The FOR UPDATE clause
 
 For inter-process synchronisation and other reasons, you may choose to use the SELECT .. FOR UPDATE
 clause to indicate to the database, that a set of cells or records should be locked by a
@@ -727,8 +714,7 @@ given transaction for subsequent updates. Let see an example of how use it with 
 ;; => "select * from book for update of \"name\""
 ----
 
-The UNION and UNION ALL clause
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== The UNION and UNION ALL clause
 
 These operators combine two results into one. UNION removes all duplicate records resulting from this combination and UNION ALL preserves all results as they are.
 
@@ -757,8 +743,7 @@ These operators combine two results into one. UNION removes all duplicate record
 ----
 
 
-The INSERT statement
-~~~~~~~~~~~~~~~~~~~~
+=== The INSERT statement
 
 The INSERT statement is used to insert new records into a database table.
 
@@ -773,8 +758,7 @@ The INSERT statement is used to insert new records into a database table.
 ----
 
 
-The UPDATE statement
-~~~~~~~~~~~~~~~~~~~~
+=== The UPDATE statement
 
 The UPDATE statement is used to modify one or several pre-existing records in a database table.
 
@@ -841,8 +825,7 @@ The UPDATE statement is used to modify one or several pre-existing records in a 
 ----
 
 
-The DELETE statement
-~~~~~~~~~~~~~~~~~~~~
+=== The DELETE statement
 
 .Simple example of delete statement with one condition
 [source, clojure]
@@ -853,12 +836,10 @@ The DELETE statement
 ;; => "delete from t1 where (id = 1)"
 ----
 
-The DDL statements
-~~~~~~~~~~~~~~~~~~
+=== The DDL statements
 
 
-The TRUNCATE statement
-^^^^^^^^^^^^^^^^^^^^^^
+==== The TRUNCATE statement
 
 [source, clojure]
 ----
@@ -868,8 +849,7 @@ The TRUNCATE statement
 ----
 
 
-The CREATE TABLE statement
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== The CREATE TABLE statement
 
 [source, clojure]
 (-> (dsl/create-table :t1)
@@ -881,8 +861,7 @@ NOTE: at this moment, the add-column function doest not permit the way to setup
 default value for a field in table creation statement.
 
 
-The DROP TABLE statement
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== The DROP TABLE statement
 
 .Drop table example
 [source, clojure]
@@ -893,8 +872,7 @@ The DROP TABLE statement
 ----
 
 
-The ALTER TABLE statement
-^^^^^^^^^^^^^^^^^^^^^^^^^
+==== The ALTER TABLE statement
 
 Alter statements are used mainly for add, modify or delete columns from table.
 
@@ -927,8 +905,7 @@ Alter statements are used mainly for add, modify or delete columns from table.
 
 
 [[create-index]]
-The CREATE INDEX statement
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== The CREATE INDEX statement
 
 .Create simple on field
 [source, clojure]
@@ -950,8 +927,7 @@ The CREATE INDEX statement
 
 
 [[drop-index]]
-The DROP INDEX statement
-^^^^^^^^^^^^^^^^^^^^^^^^
+==== The DROP INDEX statement
 
 .Drop index
 [source, clojure]
@@ -962,8 +938,7 @@ The DROP INDEX statement
 ----
 
 
-The CREATE SEQUENCE statement
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== The CREATE SEQUENCE statement
 
 [source, clojure]
 ----
@@ -973,8 +948,7 @@ The CREATE SEQUENCE statement
 ----
 
 
-The ALTER SEQUENCE statement
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== The ALTER SEQUENCE statement
 
 .Restart sequence
 [source, clojure]
@@ -993,8 +967,7 @@ The ALTER SEQUENCE statement
 ----
 
 
-The DROP SEQUENCE statement
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== The DROP SEQUENCE statement
 
 .Drop sequence
 [source, clojure]
@@ -1013,11 +986,9 @@ The DROP SEQUENCE statement
 ----
 
 
-Table Expressions
-~~~~~~~~~~~~~~~~~
+=== Table Expressions
 
-The VALUES() table constructor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== The VALUES() table constructor
 
 Some databases allow for expressing in-memory temporary tables using a `values()`.
 
@@ -1034,8 +1005,7 @@ Some databases allow for expressing in-memory temporary tables using a `values()
 
 WARNING: `suricatta.dsl/row` is defined as macro and only accept literals.
 
-Nested SELECTs
-^^^^^^^^^^^^^^
+==== Nested SELECTs
 
 .Using nested select in where clause
 [source, clojure]
@@ -1072,11 +1042,9 @@ Nested SELECTs
 ----
 
 
-Advanced usage
---------------
+== Advanced usage
 
-Extending with custom types
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Extending with custom types
 
 
 Since 0.2.0 version, suricatta comes with extending with custom (or vendor specific)
@@ -1086,19 +1054,16 @@ compatible types, and other the backwards conversion.
 TODO
 
 
-FAQ
----
+== FAQ
 
-Why I should use suricatta instead of clojure.jdbc or java.jdbc?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Why I should use suricatta instead of clojure.jdbc or java.jdbc?
 
 Unlike any jdbc library, _suricatta_ works in slightly higher level. It hides a lot of
 idiosyncrasies of jdbc under much *simpler, cleaner and less error prone api*, with better
 resource management.
 
 
-Why an other dsl? Is yet another?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Why an other dsl? Is yet another?
 
 In first instance _suricatta_ is not a dsl library, is a sql toolkit, and one part of the
 toolkit is a dsl.
@@ -1108,8 +1073,7 @@ _suricatta_'s dsl is make SQL composable, allowing use all or almost all vendor 
 sql constructions.
 
 
-That use cases have suricatta?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== That use cases have suricatta?
 
 The _suricatta_ library is very flexible and it can be used in very different ways:
 
@@ -1120,8 +1084,7 @@ The _suricatta_ library is very flexible and it can be used in very different wa
   executing queries.
 
 
-Is a korma-clone?
-~~~~~~~~~~~~~~~~~
+=== Is a korma-clone?
 
 Not, is not korma clone. Because it works very different, and it has different philosophy.
 
@@ -1129,8 +1092,7 @@ _suricatta_ has cleaner differentiation between dsl and query execution/fetching
 to be a replacement of Korma. It intends be a replacement to raw jdbc access to the database.
 
 
-Is required buy JOOQ comercial license?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Is required buy JOOQ comercial license?
 
 Not, _suricatta_ works and tested with opensource (Apache 2.0 licensed) version of JOOQ.
 
@@ -1138,8 +1100,7 @@ I have plans to make _suricatta_ work with enterprise version of JOOQ for users 
 "enterprise" databases in a future. In any case, that will not affect the open source version.
 
 
-Can I store safely queries builded by DSL in a var, they are immutable?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Can I store safely queries builded by DSL in a var, they are immutable?
 
 Yes. Unlike JOOQ DSL interface that has mutable api, _suricatta_ exposes immutable
 api for building queries.
@@ -1147,11 +1108,9 @@ api for building queries.
 Queries builded by _suricatta_ can be safely shared through different threads.
 
 
-How to Contribute?
-------------------
+== How to Contribute?
 
-Philosophy
-~~~~~~~~~~
+=== Philosophy
 
 Five most important rules:
 
@@ -1164,8 +1123,7 @@ Five most important rules:
 All contributions to _suricatta_ should keep these important rules in mind.
 
 
-Procedure
-~~~~~~~~~
+=== Procedure
 
 **suricatta** unlike Clojure and other Clojure contrib libs, does not have many
 restrictions for contributions. Just follow the following steps depending on the
@@ -1182,14 +1140,12 @@ situation:
 - Open new issue with the new feature proposal.
 - If it is accepted, follow the same steps as "bugfix".
 
-
-License
-~~~~~~~
+=== License
 
 _suricatta_ is licensed under BSD (2-Clause) license:
 
 ----
-Copyright (c) 2014, Andrey Antukh
+Copyright (c) 2014-2015, Andrey Antukh <niwi@niwi.be>
 
 All rights reserved.
 
