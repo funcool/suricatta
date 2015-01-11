@@ -176,7 +176,7 @@ a context instance:
   (do-something-with ctx))
 ----
 
-You can found more information and documentation about hikari-cp 
+You can found more information and documentation about hikari-cp
 here: https://github.com/tomekw/hikari-cp
 
 
