@@ -4,10 +4,6 @@
 
 High level sql toolkit for clojure (backed by jooq library)
 
-## Download
-
-[![Clojars Project](http://clojars.org/suricatta/latest-version.svg)](http://clojars.org/suricatta)
-
 ## Quick Start ##
 
 Put suricatta on your dependency list:
@@ -33,6 +29,10 @@ Connect to the database and execute a query:
   (sc/fetch ctx "select x from system_range(1, 2);"))
 ;; => [{:x 1} {:x 2}]
 ```
+
+## Latest Version
+
+[![Clojars Project](http://clojars.org/suricatta/latest-version.svg)](http://clojars.org/suricatta)
 
 
 ## Documentation ##
