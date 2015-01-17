@@ -13,7 +13,7 @@ High level sql toolkit for clojure (backed by jooq library)
 Put suricatta on your dependency list:
 
 ```clojure
-[suricatta "0.2.0]
+[suricatta "0.2.0"]
 [com.h2database/h2 "1.3.176"] ;; For this example only
 ```
 
