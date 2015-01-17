@@ -389,6 +389,64 @@ transducer:
 ----
 
 
+=== Custom types
+
+Since 0.2.0 version, suricatta comes with support for extending self with custom
+(or vendor specific) types support. It consist in two protocols, one for convert
+user definet types to jooq/jdbc compatible types, and other the backwards conversion.
+
+.Let see an example for adapt clojure persistent map interface to postgresql json file.
+[source, clojure]
+----
+(require '[suricatta.proto :as proto])
+(require '[cheshire.core :as json])
+(import 'org.postgresql.util.PGobject)
+
+(extend-protocol proto/IParamType
+  clojure.lang.IPersistentMap
+  (render [self]
+    (str "'" (json/generate-string self) "'::json"))
+  (bind [self stmt index]
+    (let [obj (doto (PGobject.)
+                (.setType "json")
+                (.setValue (json/generate-string self)))]
+      (.setObject stmt index obj))))
+----
+
+The *render* function responsibility is return a safe string representation of type and is used
+mainly for rendering inline sql. And the *bind* function is responble of bind make a arbitrary
+transformations and bind the transformed value to the prepared statement.
+
+.Now let see the backward conversion example.
+[source, clojure]
+----
+(extend-protocol proto/ISQLType
+  PGobject
+  (convert [self]
+    (let [type (.getType self)]
+      (condp = type
+        "json" (json/parse-string (.getValue self) true)))))
+----
+
+Now having defined the two way conversions, you can use the clojure hash-map for pass
+it as value to the query and it automatically handled with conversions that are
+you previously defined.
+
+.Insert and query example using postgresql json fields.
+[source, clojure]
+----
+;; Create table
+(sc/execute *ctx* "create table t1 (k json)")
+
+;; Insert a json value
+(sc/execute *ctx* ["insert into t1 (k) values (?)" {:foo 1}])
+
+;; Query a table with json value
+(sc/fetch *ctx* ["select * from t1"])
+;; => [{:k {:foo 1}}]
+----
+
+
 == SQL Building and Formatting
 
 This section intends to explain the usage of sql building library, the lightweight layer on
@@ -1040,18 +1098,6 @@ WARNING: `suricatta.dsl/row` is defined as macro and only accept literals.
     (fmt/get-sql))
 ;; => "select fullname, (select count(*) from book where (book.authorid = author.id)) "books" from author"
 ----
-
-
-== Advanced usage
-
-=== Extending with custom types
-
-
-Since 0.2.0 version, suricatta comes with extending with custom (or vendor specific)
-types support. It consist in two protocols, one for convert user definet types to jooq/jdbc
-compatible types, and other the backwards conversion.
-
-TODO
 
 
 == FAQ
