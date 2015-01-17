@@ -11,6 +11,7 @@ Date: 2015-01-17
 - Fix inconsistencies when connection is created from datasource.
 - Add suport for csv and json as export format.
 - Delegate connection creation to clojure.jdbc.
+- Add support for extending self with custom types.
 
 Backward incompatible changes:
 
