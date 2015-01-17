@@ -1,6 +1,8 @@
 = Changelog
 
-== 0.2.0-SNAPSHOT
+== 0.2.0
+
+Date: 2015-01-17
 
 - Add support for CREATE/ALTER/DROP INDEX on dsl.
 - Add support for CREATE/ALTER/DROP SEQUENCE on dsl.
@@ -8,6 +10,7 @@
 - Add support for CREATE TABLE on dsl.
 - Fix inconsistencies when connection is created from datasource.
 - Add suport for csv and json as export format.
+- Delegate connection creation to clojure.jdbc.
 
 Backward incompatible changes:
 
