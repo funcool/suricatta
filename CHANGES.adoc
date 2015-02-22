@@ -1,5 +1,12 @@
 = Changelog
 
+== 0.2.1
+
+- Update JOOQ to 3.5.2
+- Update clojure.jdbc to 0.4.0
+- Update cats to 0.3.2
+
+
 == 0.2.0
 
 Date: 2015-01-17
