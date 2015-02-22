@@ -1,6 +1,6 @@
 = suricatta documentation
 Andrey Antukh, <niwi@niwi.be>
-0.2.0
+0.2.1
 :toc: left
 :numbered:
 :source-highlighter: pygments
@@ -48,7 +48,7 @@ vector on your *_project.clj_* file:
 ._on project.clj_
 [source,clojure]
 ----
-[suricatta "0.2.0"]
+[suricatta "0.2.1"]
 ----
 
 
@@ -58,7 +58,7 @@ If you are using gradle, this is a dependency line for gradle dsl:
 
 [source,groovy]
 ----
-compile "suricatta:suricatta:0.2.0"
+compile "suricatta:suricatta:0.2.1"
 ----
 
 
