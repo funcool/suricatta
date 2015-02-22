@@ -1,4 +1,4 @@
-(defproject suricatta "0.2.0"
+(defproject suricatta "0.2.1"
   :description "High level sql toolkit for clojure (backed by jooq library)"
   :url "https://github.com/niwibe/suricatta"
   :license {:name "BSD (2-Clause)"
