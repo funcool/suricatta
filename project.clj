@@ -3,11 +3,10 @@
   :url "https://github.com/niwibe/suricatta"
   :license {:name "BSD (2-Clause)"
             :url "http://opensource.org/licenses/BSD-2-Clause"}
-
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.jooq/jooq "3.5.1"]
-                 [cats "0.2.0" :exclusions [org.clojure/clojure]]
-                 [clojure.jdbc "0.4.0-beta1"]
+                 [org.jooq/jooq "3.5.2"]
+                 [cats "0.3.2" :exclusions [org.clojure/clojure]]
+                 [clojure.jdbc "0.4.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
 
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
