@@ -73,6 +73,8 @@
   ([ctx q] (proto/fetch q ctx {}))
   ([ctx q opts] (proto/fetch q ctx opts)))
 
+(def fetch-one (comp first fetch))
+
 (defn query
   "Mark a query for reuse the prepared statement.
 
