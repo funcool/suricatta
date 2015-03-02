@@ -204,6 +204,9 @@ Let see an example of how execute a query and fetch results:
 (require '[suricatta.core :as sc])
 (sc/fetch ctx "select x from generate_series(1,3) as x")
 ;; => [{:x 1} {:x 2} {:x 3}]
+
+(sc/fetch-one ctx "select x from generate_series(1,1) as x")
+;; => {:x 1}
 ----
 
 [NOTE]
