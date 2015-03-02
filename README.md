@@ -4,7 +4,7 @@
 
 High level sql toolkit for clojure (backed by jooq library)
 
-## Download
+## Latest Version
 
 [![Clojars Project](http://clojars.org/suricatta/latest-version.svg)](http://clojars.org/suricatta)
 
