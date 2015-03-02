@@ -4,6 +4,13 @@
 
 Date: not released yet
 
+== 0.2.1
+
+Date: 2015-03-03
+
+- Update jooq to 3.5.3
+- Add fetch-one function (thanks to @jespino)
+
 
 == 0.2.0
 
