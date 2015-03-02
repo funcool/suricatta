@@ -4,7 +4,7 @@
   :license {:name "BSD (2-Clause)"
             :url "http://opensource.org/licenses/BSD-2-Clause"}
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.jooq/jooq "3.5.2"]
+                 [org.jooq/jooq "3.5.3"]
                  [cats "0.3.2" :exclusions [org.clojure/clojure]]
                  [clojure.jdbc "0.4.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]]

@@ -83,6 +83,10 @@
       (.setArray stmt index arr))))
 
 (extend-protocol proto/ISQLType
+  (Class/forName "[Ljava.lang.Long;")
+  (convert [self]
+    (into [] self))
+
   java.sql.Array
   (convert [self]
     (into [] (.getArray self))))
