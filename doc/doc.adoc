@@ -64,8 +64,7 @@ compile "suricatta:suricatta:0.3.0-SNAPSHOT"
 
 === Get the Code
 
-_suricatta_ is open source and is entirely developed on
-link:https://github.com/niwibe/suricatta[github].
+_suricatta_ is open source and you can found the source on link:https://github.com/niwibe/suricatta[github].
 
 You can clone the public repository with this command:
 
