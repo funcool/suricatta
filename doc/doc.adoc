@@ -1,6 +1,6 @@
 = suricatta documentation
 Andrey Antukh, <niwi@niwi.be>
-0.3.0-SNAPSHOT
+0.3.0
 :toc: left
 :numbered:
 :source-highlighter: pygments
@@ -48,7 +48,7 @@ vector on your *_project.clj_* file:
 ._on project.clj_
 [source,clojure]
 ----
-[suricatta "0.3.0-SNAPSHOT"]
+[suricatta "0.3.0"]
 ----
 
 
@@ -58,7 +58,7 @@ If you are using gradle, this is a dependency line for gradle dsl:
 
 [source,groovy]
 ----
-compile "suricatta:suricatta:0.3.0-SNAPSHOT"
+compile "suricatta:suricatta:0.3.0"
 ----
 
 
@@ -343,7 +343,6 @@ Let start importing necessary namespaces:
 ----
 (require '[clojure.core.async :refer [go <! into]])
 (require '[suricatta.async :as sca])
-(require '[cats.monad.exception :as exc])
 ----
 
 Functions found on suricatta.async ns (`execute` and `fetch` are almost identical to sync ones
@@ -372,6 +371,10 @@ found on suricatta.core with the exception that they return channels.
 ;; "Result: #<Success [{:n 1} {:n 2}]>"
 ----
 
+As you can observe, the return value is some kind of wrapper, if you do not worry about it, just
+deref it with `deref` function or with `@` reader macro for access to its value. If a exception
+is returned, the deref operation will raise that exception.
+
 Fetch function also supports a `:chan` parameter on opts, that allows pass own channel with
 transducer:
 
@@ -379,7 +382,7 @@ transducer:
 [source, clojure]
 ----
 (let [c (chan 1 (comp
-                 (map exc/from-success)
+                 (map deref)
                  (mapcat identity)))
       res (sca/fetch *ctx* "select * from foo order by n" {:chan c})]
   (println "Result1: " (<!! res))
