@@ -7,6 +7,7 @@ Andrey Antukh, <niwi@niwi.be>
 :pygments-style: friendly
 :sectlinks:
 
+
 == Introduction
 
 _suricatta_ is a high level sql toolkit for clojure (backed by fantastic
@@ -48,7 +49,7 @@ vector on your *_project.clj_* file:
 ._on project.clj_
 [source,clojure]
 ----
-[suricatta "0.3.0"]
+[funcool/suricatta "0.3.0"]
 ----
 
 
@@ -58,7 +59,7 @@ If you are using gradle, this is a dependency line for gradle dsl:
 
 [source,groovy]
 ----
-compile "suricatta:suricatta:0.3.0"
+compile "funcool:suricatta:0.3.0"
 ----
 
 
@@ -70,7 +71,7 @@ You can clone the public repository with this command:
 
 [source,text]
 ----
-git clone https://github.com/niwibe/suricatta
+git clone https://github.com/funcool/suricatta
 ----
 
 
@@ -89,7 +90,7 @@ You can create it **context** from:
 
 - hash-map dbspec format (plain connection params).
 - datasource instance (connection pool).
-- link:http://niwibe.github.io/clojure.jdbc[clojure.jdbc] connection instance.
+- link:http://funcool.github.io/clojure.jdbc/latest/[clojure.jdbc] connection instance.
 
 .This is a default aspect of one dbspec.
 [source,clojure]
@@ -334,7 +335,7 @@ behavior is really desidered because you only can execute one query on same time
 connection.
 
 _surricata_ has one agent bound to connection that handles the async execution, exposes
-_core.async_ asynchronous api and uses link:https://github.com/niwibe/cats[cats library] for
+_core.async_ asynchronous api and uses link:https://github.com/funcool/cats[cats library] for
 error handling (error as value).
 
 Let start importing necessary namespaces:

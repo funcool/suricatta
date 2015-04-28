@@ -1,20 +1,20 @@
-# suricatta
+# suricatta #
 
-[![Travis Badge](https://img.shields.io/travis/niwibe/suricatta.svg?style=flat)](https://travis-ci.org/niwibe/suricatta "Travis Badge")
+[![Travis Badge](https://img.shields.io/travis/funcool/suricatta.svg?style=flat)](https://travis-ci.org/funcool/suricatta "Travis Badge")
 
 High level sql toolkit for clojure (backed by jooq library)
 
 ## Latest Version
 
-[![Clojars Project](http://clojars.org/suricatta/latest-version.svg)](http://clojars.org/suricatta)
+[![Clojars Project](http://clojars.org/funcool/suricatta/latest-version.svg)](http://clojars.org/funcool/suricatta)
 
 ## Quick Start ##
 
 Put suricatta on your dependency list:
 
 ```clojure
-[suricatta "0.2.1"]
-[com.h2database/h2 "1.3.176"] ;; For this example only
+[funcool/suricatta "0.3.0"]
+[com.h2database/h2 "1.4.187"] ;; For this example only
 ```
 
 Define a valid dbspec hashmap:
@@ -34,7 +34,8 @@ Connect to the database and execute a query:
 ;; => [{:x 1} {:x 2}]
 ```
 
+
 ## Documentation ##
 
-- Latest stable documentation: http://niwibe.github.io/suricatta/latest/
-- Development documentation: http://niwibe.github.io/suricatta/devel/
+- Latest stable documentation: http://funcool.github.io/suricatta/latest/
+- Development documentation: http://funcool.github.io/suricatta/devel/
