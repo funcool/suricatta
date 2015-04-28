@@ -151,7 +151,7 @@
                 (dsl/from :book)
                 (dsl/for-update :name))]
       (is (= (fmt/get-sql q)
-             "select name from book for update of \"name\""))))
+             "select name from book for update of name"))))
 
   (testing "union two selects"
     (let [q (dsl/union
@@ -254,7 +254,7 @@
     (let [q (-> (dsl/update :t1)
                 (dsl/set {:id 2 :name "foo"}))]
       (is (= (fmt/get-sql q)
-             "update t1 set name = ?, id = ?"))))
+             "update t1 set id = ?, name = ?"))))
 
   (testing "Update statement without condition"
     (let [q (-> (dsl/update :t1)
