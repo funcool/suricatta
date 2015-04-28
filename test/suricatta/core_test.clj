@@ -112,7 +112,7 @@
 
   (testing "Fetching query asynchronously and transducer"
     (let [xform (comp
-                 (map exc/from-success)
+                 (map deref)
                  (mapcat identity))
           ch (sca/fetch *ctx* "select * from foo order by n" {:chan (chan 1 xform)})
           result (<!! ch)]
