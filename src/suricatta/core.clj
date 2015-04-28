@@ -45,7 +45,7 @@
   ([dbspec] (context dbspec {}))
   ([dbspec opts]
    (let [^Connection connection (-> (jdbc.core/connection dbspec opts)
-                                    (jdbc.proto/get-connection))
+                                    (jdbc.proto/connection))
          ^SQLDialect dialect (if (:dialect dbspec)
                                (impl/translate-dialect (:dialect dbspec))
                                (JDBCUtils/dialect connection))
