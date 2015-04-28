@@ -1,8 +1,14 @@
 = Changelog
 
-== 0.3.0-SNAPSHOT
+== 0.3.0
 
-Date: not released yet
+Date: 2015-04-28
+
+- Update to the next major release of cats that simplifies usage of return values of async api.
+- Update to the next major release of clojure.jdbc that introduces some improvements and bugfixes
+  on connection management.
+- Update to the next major release of jooq, that also introduces improvements an a lot of bug fixes.
+
 
 == 0.2.2
 
