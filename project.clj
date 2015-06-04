@@ -14,6 +14,6 @@
                    :dependencies [[org.clojure/clojure "1.7.0-beta2"]
                                   [postgresql "9.3-1102.jdbc41"]
                                   [com.h2database/h2 "1.4.187"]
-                                  [cheshire "5.4.0"]]}}
+                                  [cheshire "5.5.0"]]}}
   :java-source-paths ["src/java"])
 
