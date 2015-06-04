@@ -1,6 +1,6 @@
 = suricatta documentation
 Andrey Antukh, <niwi@niwi.be>
-0.3.0
+0.3.1
 :toc: left
 :numbered:
 :source-highlighter: pygments
@@ -49,7 +49,7 @@ vector on your *_project.clj_* file:
 ._on project.clj_
 [source,clojure]
 ----
-[funcool/suricatta "0.3.0"]
+[funcool/suricatta "0.3.1"]
 ----
 
 
@@ -59,7 +59,7 @@ If you are using gradle, this is a dependency line for gradle dsl:
 
 [source,groovy]
 ----
-compile "funcool:suricatta:0.3.0"
+compile "funcool:suricatta:0.3.1"
 ----
 
 
