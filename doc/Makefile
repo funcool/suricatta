@@ -1,3 +1,3 @@
 all: doc
 doc:
-	asciidoctor -o index.html doc.adoc
+	asciidoctor -a docinfo -a stylesheet! -o index.html doc.adoc

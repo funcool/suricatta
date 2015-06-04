@@ -2,7 +2,7 @@
 Andrey Antukh, <niwi@niwi.be>
 0.3.1
 :toc: left
-:numbered:
+:!numbered:
 :source-highlighter: pygments
 :pygments-style: friendly
 :sectlinks:
@@ -46,7 +46,6 @@ _suricatta_ is tested with these platforms:
 The simplest way to use _suricatta_ in a clojure project, is by including it in the dependency
 vector on your *_project.clj_* file:
 
-._on project.clj_
 [source,clojure]
 ----
 [funcool/suricatta "0.3.1"]
@@ -82,7 +81,7 @@ This section intends to explain the usage of a sql execution part of the library
 
 === Connecting to database
 
-_suricatta_, unlike other database libraries, uses a concept of *context instead of *connection*.
+_suricatta_, unlike other database libraries, uses a concept of *context* instead of *connection*.
 A **context** has the resposibility of jdbc connection resource management, transaction isolation
 flags and sql rendering dialect.
 
