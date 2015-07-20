@@ -22,6 +22,6 @@ branches:
 notifications:
   email:
     recipients:
-      - niwi@niwi.be
+      - niwi@niwi.nz
     on_success: change
     on_failure: change
