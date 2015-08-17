@@ -6,7 +6,7 @@
 
   :dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
                  [org.jooq/jooq "3.6.2"]
-                 [funcool/cats "0.6.0"]
+                 [funcool/cats "0.6.1"]
                  [funcool/clojure.jdbc "0.6.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
 

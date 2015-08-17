@@ -4,7 +4,7 @@
 
 Date: Unreleased
 
-- Update cats dependency to the last version (0.6.0)
+- Update cats dependency to the last version (0.6.1)
 - Update clojure default version to 1.7.0
 - Update clojure.jdbc version to the last version (0.6.0)
 
