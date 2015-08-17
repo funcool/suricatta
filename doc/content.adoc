@@ -60,18 +60,6 @@ compile "funcool:suricatta:0.3.1"
 ----
 
 
-=== Get the Code
-
-_suricatta_ is open source and you can found the source on link:https://github.com/niwibe/suricatta[github].
-
-You can clone the public repository with this command:
-
-[source,text]
-----
-git clone https://github.com/funcool/suricatta
-----
-
-
 == SQL Execution
 
 This section intends to explain the usage of a sql execution part of the library.
@@ -1157,7 +1145,7 @@ api for building queries.
 Queries builded by _suricatta_ can be safely shared through different threads.
 
 
-== How to Contribute?
+== Developers Guide
 
 === Philosophy
 
@@ -1172,29 +1160,40 @@ Five most important rules:
 All contributions to _suricatta_ should keep these important rules in mind.
 
 
-=== Procedure
+=== Contributing
 
-**suricatta** unlike Clojure and other Clojure contrib libs, does not have many
-restrictions for contributions. Just follow the following steps depending on the
-situation:
+Unlike Clojure and other Clojure contributed libraries _suricatta_ does not have many
+restrictions for contributions. Just open an issue or pull request.
 
-**Bugfix**:
 
-- Fork the GitHub repo.
-- Fix a bug/typo on a new branch.
-- Make a pull-request to master.
+=== Source Code
 
-**New feature**:
+_suricatta_ is open source and can be found on
+link:https://github.com/funcool/suricatta[github].
 
-- Open new issue with the new feature proposal.
-- If it is accepted, follow the same steps as "bugfix".
+You can clone the public repository with this command:
+
+[source,text]
+----
+git clone https://github.com/funcool/suricatta
+----
+
+
+=== Run tests
+
+For running tests just execute this:
+
+[source, text]
+----
+lein test
+----
 
 === License
 
 _suricatta_ is licensed under BSD (2-Clause) license:
 
 ----
-Copyright (c) 2014-2015, Andrey Antukh <niwi@niwi.nz>
+Copyright (c) 2014-2015 Andrey Antukh <niwi@niwi.nz>
 
 All rights reserved.
 
