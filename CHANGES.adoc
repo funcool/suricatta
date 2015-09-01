@@ -13,10 +13,12 @@ Date: Unreleased
 
 Date: 2015-04-28
 
-- Update to the next major release of cats that simplifies usage of return values of async api.
-- Update to the next major release of clojure.jdbc that introduces some improvements and bugfixes
-  on connection management.
-- Update to the next major release of jooq, that also introduces improvements an a lot of bug fixes.
+- Update to the next major release of cats that simplifies usage of return values
+  of async api.
+- Update to the next major release of clojure.jdbc that introduces some improvements
+  and bugfixes on connection management.
+- Update to the next major release of jooq, that also introduces improvements an a
+  lot of bug fixes.
 
 
 == 0.2.2
