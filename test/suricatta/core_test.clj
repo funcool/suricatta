@@ -1,6 +1,5 @@
 (ns suricatta.core-test
   (:require [clojure.test :refer :all]
-            [clojure.core.async :refer [<!! chan]]
             [suricatta.core :as sc]
             [suricatta.dsl :as dsl]
             [suricatta.async :as sca]
@@ -102,21 +101,12 @@
   (sc/execute *ctx* "create table foo (n int)")
 
   (testing "Execute query asynchronously"
-    (let [result (<!! (sca/execute *ctx* "insert into foo (n) values (1), (2)"))]
+    (let [result @(sca/execute *ctx* "insert into foo (n) values (1), (2)")]
       (is (= result (exc/success 2)))))
 
   (testing "Fetching query asynchronously"
-    (let [ch      (sca/fetch *ctx* "select * from foo order by n")
-          result (<!! ch)]
+    (let [result @(sca/fetch *ctx* "select * from foo order by n")]
       (is (= result (exc/success [{:n 1} {:n 2}])))))
-
-  (testing "Fetching query asynchronously and transducer"
-    (let [xform (comp
-                 (map deref)
-                 (mapcat identity))
-          ch (sca/fetch *ctx* "select * from foo order by n" {:chan (chan 1 xform)})
-          result (<!! ch)]
-      (is (= result {:n 1}))))
 )
 
 (deftest transactions
