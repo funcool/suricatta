@@ -39,7 +39,7 @@
 
 (extend-protocol proto/IRenderer
   org.jooq.Query
-  (get-sql [q type dialect]
+  (-get-sql [q type dialect]
     (let [^Configuration conf (DefaultConfiguration.)
           ^DSLContext context (DSL/using conf)]
       (when dialect
@@ -50,17 +50,17 @@
         :indexed (.render context q)
         :inlined (.renderInlined context q))))
 
-  (get-bind-values [q]
+  (-get-bind-values [q]
     (let [^Configuration conf (DefaultConfiguration.)
           ^DSLContext context (DSL/using conf)]
       (.extractBindValues context q)))
 
   suricatta.types.Deferred
-  (get-sql [self type dialect]
-    (proto/get-sql @self type dialect))
+  (-get-sql [self type dialect]
+    (proto/-get-sql @self type dialect))
 
-  (get-bind-values [self]
-    (proto/get-bind-values @self)))
+  (-get-bind-values [self]
+    (proto/-get-bind-values @self)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Api
@@ -69,14 +69,14 @@
 (defn get-sql
   "Renders a query sql into string."
   ([q]
-     (proto/get-sql q nil nil))
+   (proto/-get-sql q nil nil))
   ([q {:keys [type dialect] :as opts}]
-     (proto/get-sql q type dialect)))
+   (proto/-get-sql q type dialect)))
 
 (defn get-bind-values
   "Get bind values from query"
   [q]
-  (proto/get-bind-values q))
+  (proto/-get-bind-values q))
 
 (defn sqlvec
   "Get sql with bind values in a `sqlvec` format."

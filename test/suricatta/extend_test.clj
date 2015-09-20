@@ -33,11 +33,11 @@
 
 (extend-protocol proto/IParamType
   MyJson
-  (render [self]
+  (-render [self]
     (str "'"
          (generate-string (.-data self))
          "'::json"))
-  (bind [self stmt index]
+  (-bind [self stmt index]
     (let [obj (doto (PGobject.)
                 (.setType "json")
                 (.setValue (generate-string (.-data self))))]
@@ -45,7 +45,7 @@
 
 (extend-protocol proto/ISQLType
   PGobject
-  (convert [self]
+  (-convert [self]
     (let [type (.getType self)]
       (condp = type
         "json" (parse-string (.getValue self) true)))))
@@ -71,12 +71,12 @@
 
 (extend-protocol proto/IParamType
   MyArray
-  (render [self]
+  (-render [self]
     (let [items (->> (map str (.-data self))
                      (interpose ","))]
       (str "'{" (apply str items) "}'::bigint[]")))
 
-  (bind [self stmt index]
+  (-bind [self stmt index]
     (let [con (.getConnection stmt)
           arr (into-array Long (.-data self))
           arr (.createArrayOf con "bigint" arr)]
@@ -84,11 +84,11 @@
 
 (extend-protocol proto/ISQLType
   (Class/forName "[Ljava.lang.Long;")
-  (convert [self]
+  (-convert [self]
     (into [] self))
 
   java.sql.Array
-  (convert [self]
+  (-convert [self]
     (into [] (.getArray self))))
 
 (deftest inserting-arrays

@@ -27,8 +27,7 @@
   (:refer-clojure :exclude [val group-by and or not name set update])
   (:require [suricatta.core :as core]
             [suricatta.impl :as impl]
-            [suricatta.types :as types :refer [defer]]
-            [suricatta.proto :as proto])
+            [suricatta.types :as types :refer [defer]])
   (:import org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
            org.jooq.util.postgres.PostgresDataType
@@ -127,30 +126,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol ISortField
-  (sort-field* [_] "Sort field constructor"))
+  (-sort-field [_] "Sort field constructor"))
 
 (defprotocol ITable
-  (table* [_] "Table constructor."))
+  (-table [_] "Table constructor."))
 
 (defprotocol IName
-  (name* [_] "Name constructor (mainly used with CTE)"))
+  (-name [_] "Name constructor (mainly used with CTE)"))
 
 (defprotocol ITableCoerce
-  (as-table* [_ params] "Table alias constructor"))
+  (-as-table [_ params] "Table alias constructor"))
 
 (defprotocol IFieldCoerce
-  (as-field* [_ params] "Field alias constructor"))
+  (-as-field [_ params] "Field alias constructor"))
 
 (defprotocol ICondition
-  (condition* [_] "Condition constructor"))
+  (-condition [_] "Condition constructor"))
 
 (defprotocol IVal
-  (val* [_] "Val constructor"))
+  (-val [_] "Val constructor"))
 
 (defprotocol IDeferred
   "Protocol mainly defined for uniform unwrapping
   deferred queries."
-  (unwrap* [_] "Unwrap the object"))
+  (-unwrap [_] "Unwrap the object"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol Implementations
@@ -179,22 +178,22 @@
 
 (extend-protocol ISortField
   java.lang.String
-  (sort-field* ^org.jooq.SortField [s]
+  (-sort-field ^org.jooq.SortField [s]
     (-> (DSL/field s)
         (.asc)))
 
   clojure.lang.Keyword
-  (sort-field* ^org.jooq.SortField [kw]
-    (sort-field* (clojure.core/name kw)))
+  (-sort-field ^org.jooq.SortField [kw]
+    (-sort-field (clojure.core/name kw)))
 
   org.jooq.Field
-  (sort-field* ^org.jooq.SortField [f] (.asc f))
+  (-sort-field ^org.jooq.SortField [f] (.asc f))
 
   org.jooq.SortField
-  (sort-field* ^org.jooq.SortField [v] v)
+  (-sort-field ^org.jooq.SortField [v] v)
 
   clojure.lang.PersistentVector
-  (sort-field* ^org.jooq.SortField [v]
+  (-sort-field ^org.jooq.SortField [v]
     (let [^org.jooq.Field field (field* (first v))
           ^org.jooq.SortField field (case (second v)
                                       :asc (.asc field)
@@ -207,84 +206,84 @@
 
 (extend-protocol ITable
   java.lang.String
-  (table* [s] (DSL/table s))
+  (-table [s] (DSL/table s))
 
   clojure.lang.Keyword
-  (table* [kw] (table* (clojure.core/name kw)))
+  (-table [kw] (-table (clojure.core/name kw)))
 
   org.jooq.Table
-  (table* [t] t)
+  (-table [t] t)
 
   org.jooq.TableLike
-  (table* [t] (.asTable t))
+  (-table [t] (.asTable t))
 
   suricatta.types.Deferred
-  (table* [t] @t))
+  (-table [t] @t))
 
 (extend-protocol IName
   java.lang.String
-  (name* [s]
+  (-name [s]
     (-> (into-array String [s])
         (DSL/name)))
 
   clojure.lang.Keyword
-  (name* [kw] (name* (clojure.core/name kw))))
+  (-name [kw] (-name (clojure.core/name kw))))
 
 (extend-protocol ICondition
   java.lang.String
-  (condition* [s] (DSL/condition s))
+  (-condition [s] (DSL/condition s))
 
   org.jooq.Condition
-  (condition* [c] c)
+  (-condition [c] c)
 
   clojure.lang.PersistentVector
-  (condition* [v]
+  (-condition [v]
     (let [sql    (first v)
           params (rest v)]
-      (->> (map unwrap* params)
+      (->> (map -unwrap params)
            (into-array Object)
            (DSL/condition sql)))))
 
 (extend-protocol IVal
   Object
-  (val* [v] (DSL/val v)))
+  (-val [v] (DSL/val v)))
 
 (extend-protocol IFieldCoerce
   org.jooq.FieldLike
-  (as-field* [n args]
+  (-as-field [n args]
     (let [^String alias (first args)]
       (.asField n alias)))
 
   suricatta.types.Deferred
-  (as-field* [n args] (as-field* @n args)))
+  (-as-field [n args] (-as-field @n args)))
 
 (extend-protocol ITableCoerce
   org.jooq.Name
-  (as-table* [^org.jooq.Name n args]
+  (-as-table [^org.jooq.Name n args]
     (.as n ^String (first args)))
 
   org.jooq.DerivedColumnList
-  (as-table* [n args]
+  (-as-table [n args]
     (.as n (first args)))
 
   org.jooq.TableLike
-  (as-table* [n args]
+  (-as-table [n args]
     (let [^String alias (first args)]
       (->> (into-array String (rest args))
            (.asTable n alias))))
 
   suricatta.types.Deferred
-  (as-table* [t args]
-    (as-table* @t args)))
+  (-as-table [t args]
+    (-as-table @t args)))
 
 (extend-protocol IDeferred
   Object
-  (unwrap* [self]
+  (-unwrap [self]
     (impl/wrap-if-need self))
 
   suricatta.types.Deferred
-  (unwrap* [self]
-    (unwrap* @self)))
+  (-unwrap [self]
+    (-unwrap @self)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common DSL functions
@@ -294,15 +293,15 @@
   "Coerce querypart to table expression."
   [o & args]
   (defer
-    (->> (map unwrap* args)
-         (as-table* o))))
+    (->> (map -unwrap args)
+         (-as-table o))))
 
 (defn as-field
   "Coerce querypart to field expression."
   [o & args]
   (defer
-    (->> (map unwrap* args)
-         (as-field* o))))
+    (->> (map -unwrap args)
+         (-as-field o))))
 
 (defn field
   "Create a field instance."
@@ -315,13 +314,13 @@
 
 (defn val
   [v]
-  (val* v))
+  (-val v))
 
 (defn table
   "Create a table instance."
   [data & [{:keys [alias] :as opts}]]
   (defer
-    (let [f (table* data)]
+    (let [f (-table data)]
       (if alias
         (.as f (clojure.core/name alias))
         f))))
@@ -330,7 +329,7 @@
   "Start select statement."
   [& fields]
   (defer
-    (let [fields (map unwrap* fields)]
+    (let [fields (map -unwrap fields)]
       (cond
        (instance? org.jooq.WithStep (first fields))
        (.select (first fields)
@@ -345,7 +344,7 @@
   "Start select statement."
   [& fields]
   (defer
-    (->> (map (comp field unwrap*) fields)
+    (->> (map (comp field -unwrap) fields)
          (into-array org.jooq.Field)
          (DSL/selectDistinct))))
 
@@ -353,7 +352,7 @@
   "Helper for create select * from <table>
   statement directly (without specify fields)"
   [t]
-  (-> (table* t)
+  (-> (-table t)
       (DSL/selectFrom)))
 
 (defn select-count
@@ -372,7 +371,7 @@
   "Creates from clause."
   [f & tables]
   (defer
-    (->> (map table* tables)
+    (->> (map -table tables)
          (into-array org.jooq.TableLike)
          (.from @f))))
 
@@ -385,46 +384,46 @@
 (defn cross-join
   [step tlike]
   (defer
-    (let [t (table* (unwrap* tlike))
-          step (unwrap* step)]
+    (let [t (-table (-unwrap tlike))
+          step (-unwrap step)]
       (.crossJoin step t))))
 
 (defn full-outer-join
   [step tlike]
   (defer
-    (let [t (table* (unwrap* tlike))
-          step (unwrap* step)]
+    (let [t (-table (-unwrap tlike))
+          step (-unwrap step)]
       (.fullOuterJoin step t))))
 
 (defn left-outer-join
   [step tlike]
   (defer
-    (let [t (table* (unwrap* tlike))
-          step (unwrap* step)]
+    (let [t (-table (-unwrap tlike))
+          step (-unwrap step)]
       (.leftOuterJoin step t))))
 
 (defn right-outer-join
   [step tlike]
   (defer
-    (let [t (table* (unwrap* tlike))
-          step (unwrap* step)]
+    (let [t (-table (-unwrap tlike))
+          step (-unwrap step)]
       (.rightOuterJoin step t))))
 
-(defmulti on (comp class unwrap* first vector))
+(defmulti on (comp class -unwrap first vector))
 
 (defmethod on org.jooq.SelectOnStep
   [step & clauses]
   (defer
-    (->> (map condition* clauses)
+    (->> (map -condition clauses)
          (into-array org.jooq.Condition)
-         (.on (unwrap* step)))))
+         (.on (-unwrap step)))))
 
 (defmethod on org.jooq.TableOnStep
   [step & clauses]
   (defer
-    (->> (map condition* clauses)
+    (->> (map -condition clauses)
          (into-array org.jooq.Condition)
-         (.on (unwrap* step)))))
+         (.on (-unwrap step)))))
 
 (defn where
   "Create where clause with variable number
@@ -432,7 +431,7 @@
   with `and` logical operator)."
   [q & clauses]
   (defer
-    (->> (map condition* clauses)
+    (->> (map -condition clauses)
          (into-array org.jooq.Condition)
          (.where @q))))
 
@@ -445,7 +444,7 @@
 (defn group-by
   [q & fields]
   (defer
-    (->> (map (comp field* unwrap*) fields)
+    (->> (map (comp field* -unwrap) fields)
          (into-array org.jooq.GroupField)
          (.groupBy @q))))
 
@@ -455,14 +454,14 @@
   with `and` logical operator)."
   [q & clauses]
   (defer
-    (->> (map condition* clauses)
+    (->> (map -condition clauses)
          (into-array org.jooq.Condition)
          (.having @q))))
 
 (defn order-by
   [q & clauses]
   (defer
-    (->> (map sort-field* clauses)
+    (->> (map -sort-field clauses)
          (into-array org.jooq.SortField)
          (.orderBy @q))))
 
@@ -517,7 +516,7 @@
 (defn and
   "Logican operator `and`."
   [& conditions]
-  (let [conditions (map condition* conditions)]
+  (let [conditions (map -condition conditions)]
     (reduce (fn [acc v] (.and acc v))
             (first conditions)
             (rest conditions))))
@@ -525,7 +524,7 @@
 (defn or
   "Logican operator `or`."
   [& conditions]
-  (let [conditions (map condition* conditions)]
+  (let [conditions (map -condition conditions)]
     (reduce (fn [acc v] (.or acc v))
             (first conditions)
             (rest conditions))))
@@ -542,13 +541,13 @@
 (defn name
   [v]
   (defer
-    (name* v)))
+    (-name v)))
 
 (defn with
   "Create a WITH clause"
   [& tables]
   (defer
-    (->> (map table* tables)
+    (->> (map -table tables)
          (into-array org.jooq.CommonTableExpression)
          (DSL/with))))
 
@@ -562,7 +561,7 @@
 
 (defmacro row
   [& values]
-  `(DSL/row ~@(map (fn [x#] `(unwrap* ~x#)) values)))
+  `(DSL/row ~@(map (fn [x#] `(-unwrap ~x#)) values)))
 
 (defn values
   [& rows]
@@ -577,14 +576,14 @@
 (defn insert-into
   [t]
   (defer
-    (DSL/insertInto (table* t))))
+    (DSL/insertInto (-table t))))
 
 (defn insert-values
   [t values]
   (defer
     (-> (fn [acc [k v]]
-          (.set acc (field* k) (unwrap* v)))
-        (reduce (unwrap* t) values)
+          (.set acc (field* k) (-unwrap v)))
+        (reduce (-unwrap t) values)
         (.newRecord))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -595,20 +594,20 @@
   "Returns empty UPDATE statement."
   [t]
   (defer
-    (DSL/update (table* t))))
+    (DSL/update (-table t))))
 
 (defn set
   "Attach values to the UPDATE statement."
   ([t kv]
    (defer
-     (let [t (unwrap* t)]
+     (let [t (-unwrap t)]
        (reduce (fn [acc [k v]]
                  (.set t (field* k) v))
                t kv))))
   ([t k v]
    (defer
-     (let [v (unwrap* v)
-           t (unwrap* t)]
+     (let [v (-unwrap v)
+           t (-unwrap t)]
        (if (instance? org.jooq.Row k)
          (.set t k v)
          (.set t (field* k) v))))))
@@ -620,7 +619,7 @@
 (defn delete
   [t]
   (defer
-    (DSL/delete (table* t))))
+    (DSL/delete (-table t))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DDL
@@ -629,36 +628,36 @@
 (defn truncate
   [t]
   (defer
-    (DSL/truncate (table* t))))
+    (DSL/truncate (-table t))))
 
 (defn alter-table
   "Creates new and empty alter table expression."
   [name]
   (defer
-    (-> (unwrap* name)
-        (table*)
+    (-> (-unwrap name)
+        (-table)
         (DSL/alterTable))))
 
 (defn create-table
   [name]
   (defer
-    (-> (unwrap* name)
-        (table*)
+    (-> (-unwrap name)
+        (-table)
         (DSL/createTable))))
 
 (defn drop-table
   "Drop table statement constructor."
   [t]
   (defer
-    (DSL/dropTable (table* t))))
+    (DSL/dropTable (-table t))))
 
 ;; Columns functions
-(defmulti add-column (comp class unwrap* first vector))
+(defmulti add-column (comp class -unwrap first vector))
 
 (defmethod add-column org.jooq.AlterTableStep
   [step name & [{:keys [default] :as opts}]]
   (defer
-    (let [step (unwrap* step)
+    (let [step (-unwrap step)
           name (field* name)
           type (make-datatype opts)
           step (.add step name type)]
@@ -669,7 +668,7 @@
 (defmethod add-column org.jooq.CreateTableAsStep
   [step name & [{:keys [default] :as opts}]]
   (defer
-    (let [step (unwrap* step)
+    (let [step (-unwrap step)
           name (field* name)
           type (make-datatype opts)
           type (.defaulted type true)]
@@ -678,7 +677,7 @@
 (defn alter-column
   [step name & [{:keys [type default null length] :as opts}]]
   (defer
-    (let [step (-> (unwrap* step)
+    (let [step (-> (-unwrap step)
                    (.alter (field* name)))]
       (when (clojure.core/and (clojure.core/or null length) (clojure.core/not type))
         (throw (IllegalArgumentException.
@@ -693,7 +692,7 @@
   "Drop column from alter table step."
   [step name & [type]]
   (defer
-    (let [step (-> (unwrap* step)
+    (let [step (-> (-unwrap step)
                    (.drop (field* name)))]
       (case type
         :cascade (.cascade step)
@@ -706,9 +705,9 @@
   [step table field & extrafields]
   (defer
     (let [fields (->> (concat [field] extrafields)
-                      (map (comp field* unwrap*))
+                      (map (comp field* -unwrap))
                       (into-array org.jooq.Field))]
-      (.on (unwrap* step) (table* table) fields))))
+      (.on (-unwrap step) (-table table) fields))))
 
 (defn create-index
   [indexname]

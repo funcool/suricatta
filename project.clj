@@ -5,10 +5,11 @@
             :url "http://opensource.org/licenses/BSD-2-Clause"}
 
   :dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
-                 [org.jooq/jooq "3.6.2"]
-                 [funcool/cats "1.0.0-SNAPSHOT"]
-                 [funcool/clojure.jdbc "0.6.0"]
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
+                 [org.jooq/jooq "3.6.3"]
+                 [funcool/promissum "0.3.1"]
+                 [funcool/cats "1.0.0"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [funcool/clojure.jdbc "0.6.1"]]
 
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
   :profiles {:dev {:global-vars {*warn-on-reflection* true}

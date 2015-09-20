@@ -1,4 +1,4 @@
-;; Copyright (c) 2014-2015, Andrey Antukh <niwi@niwi.nz>
+;; Copyright (c) 2014-2015 Andrey Antukh <niwi@niwi.nz>
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
@@ -25,30 +25,26 @@
 (ns suricatta.async
   (:require [suricatta.core :as sc]
             [cats.monad.exception :as exc]
-            [clojure.core.async :refer [<! >! go chan put! close!]]))
+            [promissum.core :as p]))
 
 (defn execute
   "Execute a query asynchronously returning a channel."
   ([ctx q]
    (execute ctx q {}))
   ([ctx q opts]
-   (let [c   (or (:chan opts) (chan))
-         act (.-act ctx)]
-     (send-off act (fn [_]
-                     (put! c (exc/try-on (sc/execute ctx q)))
-                     (close! c)))
-     c)))
-
+   (let [act (.-act ctx)
+         fun #(% (exc/try-on (sc/execute ctx q)))]
+     (p/promise
+      (fn [deliver]
+        (send-off act (fn [_] (fun deliver))))))))
 
 (defn fetch
   "Execute a query asynchronously returning a channel."
   ([ctx q]
    (fetch ctx q {}))
   ([ctx q opts]
-   (let [c (or (:chan opts) (chan))
-         act (.-act ctx)
-         opts (dissoc opts :chan)]
-     (send-off act (fn [_]
-                     (put! c (exc/try-on (sc/fetch ctx q opts)))
-                     (close! c)))
-     c)))
+   (let [act (.-act ctx)
+         fun #(% (exc/try-on (sc/fetch ctx q opts)))]
+     (p/promise
+      (fn [deliver]
+        (send-off act (fn [_] (fun deliver))))))))

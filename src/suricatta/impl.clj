@@ -68,12 +68,12 @@
   (suricatta.impl.ParamWrapper.
    (reify suricatta.impl.IParam
      (render [_ ^RenderContext ctx]
-       (let [^String sql (proto/render value)]
+       (let [^String sql (proto/-render value)]
          (.sql ctx sql)))
      (bind [_ ^BindContext ctx]
        (let [^PreparedStetement stmt (.statement ctx)
              index (.nextIndex ctx)]
-         (proto/bind value stmt index))))))
+         (proto/-bind value stmt index))))))
 
 (defn wrap-if-need
   [obj]
@@ -87,31 +87,31 @@
 
 (extend-protocol proto/IExecute
   java.lang.String
-  (execute [^String sql ^Context ctx]
-    (let [^DSLContext context (proto/get-context ctx)]
+  (-execute [^String sql ^Context ctx]
+    (let [^DSLContext context (proto/-get-context ctx)]
       (.execute context sql)))
 
   org.jooq.Query
-  (execute [^Query query ^Context ctx]
-    (let [^DSLContext context (proto/get-context ctx)]
+  (-execute [^Query query ^Context ctx]
+    (let [^DSLContext context (proto/-get-context ctx)]
       (.execute context query)))
 
   clojure.lang.PersistentVector
-  (execute [^PersistentVector sqlvec ^Context ctx]
-    (let [^DSLContext context (proto/get-context ctx)
+  (-execute [^PersistentVector sqlvec ^Context ctx]
+    (let [^DSLContext context (proto/-get-context ctx)
           ^Query query        (->> (into-array Object (map wrap-if-need (rest sqlvec)))
                                    (.query context (first sqlvec)))]
       (.execute context query)))
 
   suricatta.types.Deferred
-  (execute [deferred ctx]
-    (proto/execute @deferred ctx))
+  (-execute [deferred ctx]
+    (proto/-execute @deferred ctx))
 
   suricatta.types.Query
-  (execute [query ctx]
+  (-execute [query ctx]
     (let [^DSLContext context (if (nil? ctx)
-                                (proto/get-context query)
-                                (proto/get-context ctx))
+                                (proto/-get-context query)
+                                (proto/-get-context ctx))
           ^ResultQuery query  (.-query query)]
       (.execute context query))))
 
@@ -126,7 +126,7 @@
                    value (.getValue record i)]
                [(keyword (.toLowerCase (.getName field)))
                 (if (satisfies? proto/ISQLType value)
-                  (proto/convert value)
+                  (proto/-convert value)
                   value)]))))
 
 (defn- result-record->row
@@ -134,7 +134,7 @@
   (into [] (for [^int i (range (.size record))]
              (let [value (.getValue record i)]
                (if (satisfies? proto/ISQLType value)
-                  (proto/convert value)
+                  (proto/-convert value)
                   value)))))
 
 (defn- result->vector
@@ -154,34 +154,34 @@
 
 (extend-protocol proto/IFetch
   String
-  (fetch [^String sql ^Context ctx opts]
-    (let [^DSLContext context (proto/get-context ctx)
+  (-fetch [^String sql ^Context ctx opts]
+    (let [^DSLContext context (proto/-get-context ctx)
           ^Result result (.fetch context sql)]
       (result->vector result opts)))
 
   PersistentVector
-  (fetch [^PersistentVector sqlvec ^Context ctx opts]
-    (let [^DSLContext context (proto/get-context ctx)
+  (-fetch [^PersistentVector sqlvec ^Context ctx opts]
+    (let [^DSLContext context (proto/-get-context ctx)
           ^ResultQuery query (->> (into-array Object (map wrap-if-need (rest sqlvec)))
                                   (.resultQuery context (first sqlvec)))]
       (-> (.fetch context query)
           (result->vector opts))))
 
   org.jooq.ResultQuery
-  (fetch [^ResultQuery query ^Context ctx opts]
-    (let [^DSLContext context (proto/get-context ctx)]
+  (-fetch [^ResultQuery query ^Context ctx opts]
+    (let [^DSLContext context (proto/-get-context ctx)]
       (-> (.fetch context query)
           (result->vector opts))))
 
   suricatta.types.Deferred
-  (fetch [deferred ctx opts]
-    (proto/fetch @deferred ctx opts))
+  (-fetch [deferred ctx opts]
+    (proto/-fetch @deferred ctx opts))
 
   suricatta.types.Query
-  (fetch [query ctx opts]
+  (-fetch [query ctx opts]
     (let [^DSLContext context (if (nil? ctx)
-                                (proto/get-context query)
-                                (proto/get-context ctx))
+                                (proto/-get-context query)
+                                (proto/-get-context ctx))
           ^ResultQuery query  (.-query query)]
       (-> (.fetch context query)
           (result->vector opts)))))
@@ -192,29 +192,29 @@
 
 (extend-protocol proto/IFetchLazy
   java.lang.String
-  (fetch-lazy [^String query ^Context ctx opts]
-    (let [^DSLContext context (proto/get-context ctx)
+  (-fetch-lazy [^String query ^Context ctx opts]
+    (let [^DSLContext context (proto/-get-context ctx)
           ^ResultQuery query  (.resultQuery context query)]
       (.fetchSize query (get opts :fetch-size 60))
       (.fetchLazy context query)))
 
   clojure.lang.PersistentVector
-  (fetch-lazy [^PersistentVector sqlvec ^Context ctx opts]
-    (let [^DSLContext context (proto/get-context ctx)
+  (-fetch-lazy [^PersistentVector sqlvec ^Context ctx opts]
+    (let [^DSLContext context (proto/-get-context ctx)
           ^ResultQuery query (->> (into-array Object (rest sqlvec))
                                   (.resultQuery context (first sqlvec)))]
       (.fetchSize query (get opts :fetch-size 100))
       (.fetchLazy context query)))
 
   org.jooq.ResultQuery
-  (fetch-lazy [^ResultQuery query ^Context ctx opts]
-    (let [^DSLContext context (proto/get-context ctx)]
+  (-fetch-lazy [^ResultQuery query ^Context ctx opts]
+    (let [^DSLContext context (proto/-get-context ctx)]
       (.fetchSize query (get opts :fetch-size 100))
       (.fetchLazy context query)))
 
   suricatta.types.Deferred
-  (fetch-lazy [deferred ctx opts]
-    (proto/fetch-lazy @deferred ctx opts)))
+  (-fetch-lazy [deferred ctx opts]
+    (proto/-fetch-lazy @deferred ctx opts)))
 
 (defn cursor->lazyseq
   [^Cursor cursor {:keys [format mapfn] :or {format :record}}]
@@ -233,17 +233,17 @@
 
 (extend-protocol proto/IQuery
   java.lang.String
-  (query [sql ctx]
-    (let [^DSLContext context (proto/get-context ctx)
-          ^Configuration conf (proto/get-configuration ctx)
+  (-query [sql ctx]
+    (let [^DSLContext context (proto/-get-context ctx)
+          ^Configuration conf (proto/-get-config ctx)
           ^ResultQuery query  (-> (.resultQuery context sql)
                                   (.keepStatement true))]
       (types/->query query conf)))
 
   PersistentVector
-  (query [sqlvec ctx]
-    (let [^DSLContext context (proto/get-context ctx)
-          ^Configuration conf (proto/get-configuration ctx)
+  (-query [sqlvec ctx]
+    (let [^DSLContext context (proto/-get-context ctx)
+          ^Configuration conf (proto/-get-config ctx)
           ^ResultQuery query  (->> (into-array Object (rest sqlvec))
                                    (.resultQuery context (first sqlvec)))]
       (-> (doto query
@@ -259,7 +259,7 @@
                               nullstring quotechar separator]
                        :or {format :csv commit :none ignore-rows 0
                             nullstring "" quotechar \" separator \,}}]
-  (let [^DSLContext context (proto/get-context ctx)
+  (let [^DSLContext context (proto/-get-context ctx)
         step (.loadInto context (DSL/table (name tablename)))
         step (condp = commit
                :none (.commitNone step)
