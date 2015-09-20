@@ -23,7 +23,7 @@ It consists in four modules:
 
 == Project Maturity
 
-Since _suricatta_ is a young project there can be some API breakage.
+Since _suricatta_ is a young project there may be some API breakage.
 
 
 == Install
@@ -41,7 +41,7 @@ _suricatta_ is tested with these platforms:
 
 === Leiningen
 
-The simplest way to use _suricatta_ in a clojure project, is by including it in the dependency
+The simplest way to use _suricatta_ in a clojure project is by including it in the dependency
 vector on your *_project.clj_* file:
 
 [source,clojure]
@@ -62,7 +62,7 @@ compile "funcool:suricatta:0.3.1"
 
 == SQL Execution
 
-This section intends to explain the usage of a sql execution part of the library.
+This section explains the usage of the sql execution part of the library.
 
 
 === Connecting to database
@@ -71,11 +71,11 @@ _suricatta_, unlike other database libraries, uses a concept of *context* instea
 A **context** has the resposibility of jdbc connection resource management, transaction isolation
 flags and sql rendering dialect.
 
-You can create it **context** from:
+You can create a **context** from:
 
-- hash-map dbspec format (plain connection params).
-- datasource instance (connection pool).
-- link:http://funcool.github.io/clojure.jdbc/latest/[clojure.jdbc] connection instance.
+- a hash-map dbspec format (plain connection params).
+- a datasource instance (connection pool).
+- a link:http://funcool.github.io/clojure.jdbc/latest/[clojure.jdbc] connection instance.
 
 .This is a default aspect of one dbspec.
 [source,clojure]
@@ -113,17 +113,16 @@ You can create it **context** from:
   (do-something ctx))
 ----
 
-NOTE: when closing the _suricatta_ context, the wrapped connection
-also will be closed.
+NOTE: when closing the _suricatta_ context, the wrapped connection will also be closed.
 
 
 ==== Create Context from DataSource.
 
-DataSource is the preferd way to connect to the database in production enviroments, and
-is usually used for implement connection pools.
+DataSource is the preferd way to connect to the database in production enviroments and
+is usually used to implement connection pools.
 
-In our case we will use *hikaricp* as datasource with connection pool. Let start adding new dependency
-entry on your _project.clj_:
+In our case we will use *hikaricp* as a datasource with a connection pool. Lets start by adding hikari's dependency
+entry to your _project.clj_:
 
 [source, clojure]
 ----
@@ -167,7 +166,7 @@ here: https://github.com/tomekw/hikari-cp
 
 === Executing queries
 
-_suricatta_ has clear separation between queries that can return result, and queries that cannot.
+_suricatta_ has a clear separation between queries that can return a result, and queries that can't.
 
 .Example using `suricatta.core/execute` function.
 [source, clojure]
@@ -182,7 +181,7 @@ cases it returns a number of affected rows.
 
 === Fetching results
 
-Let see an example of how execute a query and fetch results:
+Let see an example of how to execute a query and fetch results:
 
 [source, clojure]
 ----
@@ -196,8 +195,8 @@ Let see an example of how execute a query and fetch results:
 
 [NOTE]
 ====
-_suricatta_ gives you the power of use the raw sql queries without
-any restrictions (unlike jdbc). As great example, _suricatta_ does
+_suricatta_ gives you the power of raw sql queries without
+any restrictions (unlike jdbc). As a great example, _suricatta_ does
 not have special syntax for queries with `RETURNING` clause:
 
 [source, clojure]
@@ -244,7 +243,7 @@ lightweight abstraction over complex transaction api.
                        (sc/fetch ctx "select id, name from book for update")))
 ----
 
-Additionally to `atomic-apply` high order functiom, _suricatta_ comes with convenient macro offering
+Additionally to `atomic-apply` high order functiom, _suricatta_ has a convenient macro offering
 lightweight sugar sytax for atomic blocks:
 
 .Execute a query in a transaction block using sugar syntax macro.
@@ -256,8 +255,8 @@ lightweight sugar sytax for atomic blocks:
 
 You can nest atomic usage as deep as you want, subtransactions are fully supported.
 
-If a exception is raised inside atomic context the transaction will be aborted. Also, in
-some circumstances, you probable want an explicit rollback, for it, the _suricatta_ library
+If an exception is raised inside atomic context the transaction will be aborted. Also, in
+some circumstances, you probably want an explicit rollback, for which the _suricatta_ library
 exposes a `suricatta.core/set-rollback!` function.
 
 .Explicit rollback example
@@ -268,24 +267,22 @@ exposes a `suricatta.core/set-rollback!` function.
   (sc/set-rollback! ctx))
 ----
 
-The `set-rollback!` function only marks the current transaction for rollback. It not aborts
-the execution. And it is aware of subtransactions, if it is used in a subtransaction, only
+The `set-rollback!` function only marks the current transaction for rollback. It does not abort
+the execution, and it is aware of subtransactions. If it is used in a subtransaction, only
 the subtransaction will be marked for rollback, not the entire transaction.
 
 
 === Lazy result fetching
 
-The _suricatta_ library also comes with lazy fetching support. In this case, it tries instead
-of fetching all results in memory, fetch in small groups, allowing lower memory usage.
+The _suricatta_ library also comes with lazy fetching support. When lazy fetching support is enabled, instead
+of fetching all results in memory, suricatta will fetch results in small groups, allowing lower memory usage.
 
-Lazy fetching has few quirks:
+Lazy fetching has a few quirks:
 
-- It some databases it requires run in one transaction, like _PostgreSQL_, because it uses a server
-  side cursors for make it possible.
-- Requires explicit resource management, because for make possible lazy fetching, a connection and
-  internal resultset should be mantained open until fetching is finished.
+- In some databases, like _PostgreSQL_, it requires the entire fetch to occur in one transaction because it uses  server side cursors.
+- Lazy fetching requires explicit resource management, because a connection and an internal resultset must be mantained open until fetching is finished.
 
-To use lazy fetch is realy easy, because suricatta exposes it like simple lazy sequence. Let
+Using lazy fetch is realy easy, because suricatta exposes it as a simple lazy sequence. Let's
 see one example:
 
 .Example executing large query and fetching elemens in groups of 10.
@@ -304,26 +301,25 @@ see one example:
 ;; ...
 ----
 
-The third parameter of `sc/fetch-lazy` function is optional and the default fetch size
-currently has value of 100.
+The third parameter of `sc/fetch-lazy` function is the optional default fetch size (currently 100.)
 
 
 === Async interface
 
-It is well known that jdbc does not support proper way handle queries in asynchronous manner.
-The other hand, exists one well known way to handle with it: using a shared thread pool for execute
+It is well known that jdbc does not support a proper way to handle queries in an asynchronous manner.
+On the other hand, there exists one well known way to handle with it: using a shared thread pool to execute
 queries asynchronously.
 
-Clojure comes with good abstractions for execute things asynchronously: agents. Agents
-in clojure uses a shared execution pool and guarantes that things are executed serially. That
-behavior is really desidered because you only can execute one query on same time using the same
+Clojure comes with a good abstraction to execute things asynchronously: agents. Agents
+in clojure use a shared execution pool and guarantes that things are executed serially. This
+behavior is really desirable because you only can execute one query at a time using the same
 connection.
 
-_surricata_ has one agent bound to connection that handles the async execution, exposes
+_surricata_ has one agent bound to the connection that handles the async execution, exposes a
 _core.async_ asynchronous api and uses link:https://github.com/funcool/cats[cats library] for
 error handling (error as value).
 
-Let start importing necessary namespaces:
+Lets start importing some necessary namespaces:
 
 [source, clojure]
 ----
@@ -357,11 +353,11 @@ found on suricatta.core with the exception that they return channels.
 ;; "Result: #<Success [{:n 1} {:n 2}]>"
 ----
 
-As you can observe, the return value is some kind of wrapper, if you do not worry about it, just
-deref it with `deref` function or with `@` reader macro for access to its value. If a exception
+As you can see, the return value is a wrapper, just
+deref it with the `deref` function or with `@` reader macro for access to its value. If an exception
 is returned, the deref operation will raise that exception.
 
-Fetch function also supports a `:chan` parameter on opts, that allows pass own channel with
+Fetch function also supports a `:chan` parameter on opts, that allows you to pass your own channel with a
 transducer:
 
 .Example fetching results from query using channel with transducer.
@@ -382,9 +378,9 @@ transducer:
 
 === Custom types
 
-Since 0.2.0 version, suricatta comes with support for extending self with custom
-(or vendor specific) types support. It consist in two protocols, one for convert
-user definet types to jooq/jdbc compatible types, and other the backwards conversion.
+Since 0.2.0 version, suricatta comes with support for extension with custom
+(or vendor specific) types support. It consist in two protocols, one for converting
+user defined types to jooq/jdbc compatible types, and other for backwards conversion.
 
 .Let see an example for adapt clojure persistent map interface to postgresql json file.
 [source, clojure]
@@ -404,9 +400,12 @@ user definet types to jooq/jdbc compatible types, and other the backwards conver
       (.setObject stmt index obj))))
 ----
 
-The *render* function responsibility is return a safe string representation of type and is used
+(Not for funcool, I'm unclear what this is saying.)
+<unclear>
+The *render* function responsibility is return a safe string representation of the type and is used
 mainly for rendering inline sql. And the *bind* function is responble of bind make a arbitrary
-transformations and bind the transformed value to the prepared statement.
+transformations and bind the transformed value to the prepared statement. 
+</unclear>
 
 .Now let see the backward conversion example.
 [source, clojure]
@@ -419,9 +418,8 @@ transformations and bind the transformed value to the prepared statement.
         "json" (json/parse-string (.getValue self) true)))))
 ----
 
-Now having defined the two way conversions, you can use the clojure hash-map for pass
-it as value to the query and it automatically handled with conversions that are
-you previously defined.
+Now having defined the two way conversions, you can pass the clojure hash-map as a
+value to the query and it is automatically converted. 
 
 .Insert and query example using postgresql json fields.
 [source, clojure]
@@ -458,7 +456,7 @@ And functions related to formating sql into string or sqlvec format in `suricatt
 ----
 
 
-Object instances retured by dsl api are fully compatible with sql executing api. Let see an example:
+Object instances retured by dsl api are fully compatible with the sql executing api. Let see an example:
 
 [source, clojure]
 ----
@@ -492,8 +490,8 @@ Would generate SQL like this:
 select id, name from dual
 ----
 
-The rendering result depends of used dialect. You can specify an other dialect
-passing `:dialect` option to `get-sql` function of `suricatta.format` namespace:
+The rendering result depends on the dialect used. You can specify a different dialect by
+passing the `:dialect` option to the `get-sql` function of `suricatta.format` namespace:
 
 [source, clojure]
 ----
@@ -505,7 +503,7 @@ passing `:dialect` option to `get-sql` function of `suricatta.format` namespace:
 
 ==== Select DISTINCT
 
-You can add distinct keyword using special select function:
+You can add the distinct keyword by using a special select function:
 
 [source, clojure]
 ----
@@ -517,7 +515,7 @@ You can add distinct keyword using special select function:
 
 ==== Select *
 
-You can ommit fields on `select` function for use the "SELECT *" form:
+You can ommit fields on `select` function to use the "SELECT *" sql form:
 
 [source, clojure]
 ----
@@ -530,7 +528,7 @@ You can ommit fields on `select` function for use the "SELECT *" form:
 
 ==== The FROM clause
 
-Simple select sql with form clause:
+A simple sql "select ... from" clause:
 
 [source, clojure]
 ----
@@ -540,7 +538,7 @@ Simple select sql with form clause:
 ;; => "select book.id, book.name from book"
 ----
 
-Also, sql form clause supports specify any number of tables:
+Also, the sql from clause supports any number of tables:
 
 [source, clojure]
 ----
@@ -550,7 +548,7 @@ Also, sql form clause supports specify any number of tables:
 ;; => "select 1 from book, article"
 ----
 
-Also, you can specify alias for each table:
+Also, you can specify an alias for each table:
 
 [source, clojure]
 ----
@@ -564,7 +562,7 @@ Also, you can specify alias for each table:
 
 ==== The JOIN clause
 
-_suricata_ comes with complete dsl for making join clauses. Let see one simple example:
+_suricata_ comes with a complete dsl for making join clauses. Let see one simple example:
 
 [source, clojure]
 ----
@@ -576,7 +574,7 @@ _suricata_ comes with complete dsl for making join clauses. Let see one simple e
 ;; => "select name from book join author on (book.author_id = book.id)"
 ----
 
-Also, join clause can be applied to table expression:
+Also, join clause can be applied to table expressions:
 
 [source, clojure]
 ----
@@ -591,7 +589,7 @@ Also, join clause can be applied to table expression:
 
 ==== The WHERE clause
 
-The WHERE clause can be used for JOIN or filter predicates, in order to restrict the data returned
+The WHERE clause can be used to JOIN or filter predicates in order to restrict the data returned
 by the query:
 
 [source, clojure]
@@ -603,7 +601,7 @@ by the query:
 ;; => "select name from book where (book.age > 100)"
 ----
 
-Build where clause with multiple conditions:
+Building a where clause with multiple conditions:
 
 [source, clojure]
 ----
@@ -616,7 +614,7 @@ Build where clause with multiple conditions:
 ----
 
 
-Bind parameters instead of inline them on conditions:
+Bind parameters instead of inlining them on conditions:
 
 [source, clojure]
 ----
@@ -645,7 +643,7 @@ Different kind of joins are suported with that functions: `dsl/full-outer-join`,
 
 ==== The GROUP BY clause
 
-GROUP BY can be used to create unique groups of data, to form aggregations, to remove duplicates and for other reasons. Let see an example of how it can be done using _suricatta_ dsl:
+GROUP BY can be used to create unique groups of data, to form aggregations, to remove duplicates and for other reasons. Let see an example of how it can be done using the _suricatta_ dsl:
 
 [source, clojure]
 ----
@@ -675,7 +673,7 @@ The HAVING clause is used to further restrict aggregated data. Let see an exampl
 
 ==== The ORDER BY clause
 
-Here an example of how specify the ordering to the query:
+Here's an example of how specify the ordering to the query:
 
 .Ordering by field with implicit sort direction
 [source, clojure]
@@ -687,7 +685,7 @@ Here an example of how specify the ordering to the query:
 ;; => "select name from book order by name asc"
 ----
 
-In previous example we have specified order field without order direction, _surricata_ automatically
+In previous example we specified the order field without order direction. _surricata_ automatically
 uses `ASC` for sort fields that comes without explicit ordering direction.
 
 .Specify sort direction explicitly
@@ -724,7 +722,7 @@ uses `ASC` for sort fields that comes without explicit ordering direction.
 
 ==== The LIMIT and OFFSET clauses
 
-Let see some examples of how to apply limit and offset to your queries with _suricatta_:
+Let see some examples of how to apply `limit` and `offset` to your queries with _suricatta_:
 
 [source, clojure]
 ----
@@ -923,7 +921,7 @@ default value for a field in table creation statement.
 
 ==== The ALTER TABLE statement
 
-Alter statements are used mainly for add, modify or delete columns from table.
+Alter statements are used mainly to add, modify or delete columns from table.
 
 .Add new column
 [source, clojure]
@@ -1039,7 +1037,7 @@ Alter statements are used mainly for add, modify or delete columns from table.
 
 ==== The VALUES() table constructor
 
-Some databases allow for expressing in-memory temporary tables using a `values()`.
+Some databases allow expressing in-memory temporary tables using a `values()` syntax.
 
 .Select from `values()` example
 [source, clojure]
@@ -1052,7 +1050,7 @@ Some databases allow for expressing in-memory temporary tables using a `values()
 ;; => "select f1, f2 from (values(1, 2), (3, 4)) as \"t1\" (\"f1\", \"f2\")"
 ----
 
-WARNING: `suricatta.dsl/row` is defined as macro and only accept literals.
+WARNING: `suricatta.dsl/row` is defined as a macro and only accepts literals.
 
 ==== Nested SELECTs
 
@@ -1095,22 +1093,21 @@ WARNING: `suricatta.dsl/row` is defined as macro and only accept literals.
 
 === Why I should use suricatta instead of clojure.jdbc or java.jdbc?
 
-Unlike any jdbc library, _suricatta_ works in slightly higher level. It hides a lot of
-idiosyncrasies of jdbc under much *simpler, cleaner and less error prone api*, with better
+Unlike any jdbc library, _suricatta_ works at a slightly higher level. It hides a lot of
+idiosyncrasies of jdbc under a much *simpler, cleaner and less error prone api*, with better
 resource management.
 
 
-=== Why an other dsl? Is yet another?
+=== Why another dsl? Is it just another dsl?
 
-In first instance _suricatta_ is not a dsl library, is a sql toolkit, and one part of the
+First _suricatta_ is not a dsl library, it's a sql toolkit, and one part of the
 toolkit is a dsl.
 
-Secondly, _suricatta_'s dsl don't intends to be a sql abstraction. The real purpose of
-_suricatta_'s dsl is make SQL composable, allowing use all or almost all vendor specific
+Secondly, _suricatta_'s dsl's don't intends to be a sql abstraction. The real purpose of
+_suricatta_'s dsl is make SQL composable while still allowing use all or almost all vendor specific
 sql constructions.
 
-
-=== That use cases have suricatta?
+=== What are some suricatta use cases?
 
 The _suricatta_ library is very flexible and it can be used in very different ways:
 
@@ -1121,35 +1118,35 @@ The _suricatta_ library is very flexible and it can be used in very different wa
   executing queries.
 
 
-=== Is a korma-clone?
+=== Is it a korma-clone?
 
-Not, is not korma clone. Because it works very different, and it has different philosophy.
+Nope, it's not korma clone, because it works very different, and it has a different philosophy.
 
-_suricatta_ has cleaner differentiation between dsl and query execution/fetching. It not intends
-to be a replacement of Korma. It intends be a replacement to raw jdbc access to the database.
+_suricatta_ has cleaner differentiation between dsl and query execution/fetching. It doesn't intend
+to be a replacement of Korma, it intends be a replacement to raw jdbc access to the database.
 
 
-=== Is required buy JOOQ comercial license?
+=== Is a JOOQ comercial license requried?
 
-Not, _suricatta_ works and tested with opensource (Apache 2.0 licensed) version of JOOQ.
+Not, _suricatta_ works and is tested with the opensource (Apache 2.0 licensed) version of JOOQ.
 
-I have plans to make _suricatta_ work with enterprise version of JOOQ for users that want use
-"enterprise" databases in a future. In any case, that will not affect the open source version.
+I have plans to make _suricatta_ work with enterprise version of JOOQ for users that want to use
+"enterprise" databases in the future. In any case, that will not affect the open source version.
 
 
 === Can I store safely queries builded by DSL in a var, they are immutable?
 
-Yes. Unlike JOOQ DSL interface that has mutable api, _suricatta_ exposes immutable
+Yes. Unlike JOOQ DSL interface which has a mutable api, _suricatta_ exposes an immutable
 api for building queries.
 
-Queries builded by _suricatta_ can be safely shared through different threads.
+Queries built with _suricatta_ can be safely shared through different threads.
 
 
 == Developers Guide
 
 === Philosophy
 
-Five most important rules:
+The five most important rules are:
 
 - Beautiful is better than ugly.
 - Explicit is better than implicit.
@@ -1180,8 +1177,6 @@ git clone https://github.com/funcool/suricatta
 
 
 === Run tests
-
-For running tests just execute this:
 
 [source, text]
 ----
