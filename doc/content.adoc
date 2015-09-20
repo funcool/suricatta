@@ -416,7 +416,7 @@ the value as parameter to the underlying prepared statement.
 ----
 
 Now having defined the two way conversions, you can pass the clojure hash-map as a
-value to the query and it is automatically converted. 
+value to the query and it is automatically converted.
 
 .Insert and query example using postgresql json fields.
 [source, clojure]
