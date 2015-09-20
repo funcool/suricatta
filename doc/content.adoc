@@ -391,9 +391,9 @@ user defined types to jooq/jdbc compatible types, and other for backwards conver
 
 (extend-protocol proto/IParamType
   clojure.lang.IPersistentMap
-  (render [self]
+  (-render [self]
     (str "'" (json/generate-string self) "'::json"))
-  (bind [self stmt index]
+  (-bind [self stmt index]
     (let [obj (doto (PGobject.)
                 (.setType "json")
                 (.setValue (json/generate-string self)))]
@@ -409,7 +409,7 @@ the value as parameter to the underlying prepared statement.
 ----
 (extend-protocol proto/ISQLType
   PGobject
-  (convert [self]
+  (-convert [self]
     (let [type (.getType self)]
       (condp = type
         "json" (json/parse-string (.getValue self) true)))))
