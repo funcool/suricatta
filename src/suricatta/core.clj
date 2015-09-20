@@ -118,10 +118,9 @@
         cause       (atom nil)]
     (reify org.jooq.TransactionContext
       (configuration [_] conf)
-      ;; jOOQ 3.5.x
-      ;; (settings [_] (.settings conf))
-      ;; (dialect [_] (.dialect conf))
-      ;; (family [_] (.family (.dialect conf)))
+      (settings [_] (.settings conf))
+      (dialect [_] (.dialect conf))
+      (family [_] (.family (.dialect conf)))
       (transaction [_] @transaction)
       (transaction [self t] (reset! transaction t) self)
       (cause [_] @cause)
