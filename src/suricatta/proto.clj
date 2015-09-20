@@ -1,4 +1,4 @@
-;; Copyright (c) 2014-2015, Andrey Antukh <niwi@niwi.be>
+;; Copyright (c) 2014-2015 Andrey Antukh <niwi@niwi.be>
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
@@ -24,31 +24,31 @@
 
 (ns suricatta.proto)
 
-(defprotocol IContext
-  (get-context [_] "Get context with attached configuration")
-  (get-configuration [_] "Get attached configuration."))
+(defprotocol IContextHolder
+  (-get-context [_] "Get jooq context with attached configuration")
+  (-get-config [_] "Get attached configuration."))
 
 (defprotocol IExecute
-  (execute [q ctx] "Execute a query and return a number of rows affected."))
+  (-execute [q ctx] "Execute a query and return a number of rows affected."))
 
 (defprotocol IFetch
-  (fetch [q ctx opts] "Fetch eagerly results executing query."))
+  (-fetch [q ctx opts] "Fetch eagerly results executing query."))
 
 (defprotocol IFetchLazy
-  (fetch-lazy [q ctx opts] "Fetch lazy results executing query."))
+  (-fetch-lazy [q ctx opts] "Fetch lazy results executing query."))
 
 (defprotocol IRenderer
-  (get-sql [_ type dialect] "Render a query sql into a string.")
-  (get-bind-values [_] "Get query bind values."))
+  (-get-sql [_ type dialect] "Render a query sql into a string.")
+  (-get-bind-values [_] "Get query bind values."))
 
 (defprotocol IQuery
-  (query [_ ctx] "Build a query."))
+  (-query [_ ctx] "Build a query."))
 
 ;; Custom data types binding protocols
 
 (defprotocol IParamType
-  (render [_] "Render param value as inline sql")
-  (bind [_ stmt index] "Bind param value to the statement."))
+  (-render [_] "Render param value as inline sql")
+  (-bind [_ stmt index] "Bind param value to the statement."))
 
 (defprotocol ISQLType
-  (convert [_] "Convert sql type to user type."))
+  (-convert [_] "Convert sql type to user type."))

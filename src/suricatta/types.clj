@@ -36,11 +36,10 @@
 ;; Context
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftype Context [^Configuration conf
-                  ^Agent act]
-  proto/IContext
-  (get-context [_] (DSL/using conf))
-  (get-configuration [_] conf)
+(deftype Context [^Configuration conf ^Agent act]
+  proto/IContextHolder
+  (-get-context [_] (DSL/using conf))
+  (-get-config [_] conf)
 
   java.io.Closeable
   (close [_]
@@ -51,12 +50,14 @@
 
 (defn ->context
   "Context instance constructor."
-  [^Configuration conf]
-  (Context. conf (agent 0)))
+  ([^Configuration conf]
+   (Context. conf (agent 0)))
+  ([^Configuration conf act]
+   (Context. conf act)))
 
 (defn context?
   [ctx]
-  (satisfies? proto/IContext ctx))
+  (instance? Context ctx))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Deferred Computation (without caching the result unlike delay)
@@ -84,9 +85,9 @@
   (close [_]
     (.close query))
 
-  proto/IContext
-  (get-context [_] (DSL/using conf))
-  (get-configuration [_] conf))
+  proto/IContextHolder
+  (-get-context [_] (DSL/using conf))
+  (-get-config [_] conf))
 
 (defn ->query
   [query conf]

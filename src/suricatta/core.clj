@@ -60,8 +60,8 @@
 
 (defn execute
   "Execute a query and return a number of rows affected."
-  ([q] (proto/execute q nil))
-  ([ctx q] (proto/execute q ctx)))
+  ([q] (proto/-execute q nil))
+  ([ctx q] (proto/-execute q ctx)))
 
 (defn fetch
   "Fetch eagerly results executing a query.
@@ -69,9 +69,9 @@
   This function returns a vector of records (default) or
   rows (depending on specified opts). Resources are relased
   inmediatelly without specific explicit action for it."
-  ([q] (proto/fetch q nil {}))
-  ([ctx q] (proto/fetch q ctx {}))
-  ([ctx q opts] (proto/fetch q ctx opts)))
+  ([q] (proto/-fetch q nil {}))
+  ([ctx q] (proto/-fetch q ctx {}))
+  ([ctx q opts] (proto/-fetch q ctx opts)))
 
 (def fetch-one (comp first fetch))
 
@@ -83,7 +83,7 @@
   longer needed. In almost all cases you should not
   need use this function."
   [ctx querylike]
-  (proto/query querylike ctx))
+  (proto/-query querylike ctx))
 
 (defn fetch-lazy
   "Fetch lazily results executing a query.
@@ -91,8 +91,8 @@
   This function returns a cursor instead of result.
   You should explicitly close the cursor at the end of
   iteration for release resources."
-  ([ctx q] (proto/fetch-lazy q ctx {}))
-  ([ctx q opts] (proto/fetch-lazy q ctx {})))
+  ([ctx q] (proto/-fetch-lazy q ctx {}))
+  ([ctx q opts] (proto/-fetch-lazy q ctx {})))
 
 (defn cursor->lazyseq
   "Transform a cursor in a lazyseq.
@@ -131,7 +131,7 @@
   "Execute a function in one transaction
   or subtransaction."
   [ctx func & args]
-  (let [^Configuration conf (.derive (proto/get-configuration ctx))
+  (let [^Configuration conf (.derive (proto/-get-config ctx))
         ^TransactionContext txctx (transaction-context conf)
         ^TransactionProvider provider (.transactionProvider conf)]
     (doto conf
@@ -164,6 +164,6 @@
   the execution of current function, it only
   marks the current transaction for rollback."
   [ctx]
-  (let [^Configuration conf (proto/get-configuration ctx)]
+  (let [^Configuration conf (proto/-get-config ctx)]
     (.data conf "suricatta.rollback" true)
     ctx))
