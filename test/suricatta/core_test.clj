@@ -2,7 +2,6 @@
   (:require [clojure.test :refer :all]
             [suricatta.core :as sc]
             [suricatta.dsl :as dsl]
-            [suricatta.async :as sca]
             [suricatta.format :refer [get-sql get-bind-values sqlvec] :as fmt]
             [jdbc.core :as jdbc]
             [cats.monad.exception :as exc])
@@ -96,18 +95,6 @@
                                       :format :csv}))
     (let [result (sc/fetch *ctx* "select * from foo1")]
       (is (= [{:a 1, :b 2} {:a 3, :b 4}] result)))))
-
-(deftest async-support
-  (sc/execute *ctx* "create table foo (n int)")
-
-  (testing "Execute query asynchronously"
-    (let [result @(sca/execute *ctx* "insert into foo (n) values (1), (2)")]
-      (is (= result (exc/success 2)))))
-
-  (testing "Fetching query asynchronously"
-    (let [result @(sca/fetch *ctx* "select * from foo order by n")]
-      (is (= result (exc/success [{:n 1} {:n 2}])))))
-)
 
 (deftest transactions
   (testing "Execute in a transaction"

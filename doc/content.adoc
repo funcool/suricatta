@@ -16,7 +16,6 @@ link:http://www.jooq.org/[jooq library])
 It consists in four modules:
 
 - *suricatta.core*: api for executing queries.
-- *suricatta.async*: asynchronous api for executing queries using *core.async*.
 - *suricatta.dsl*: lightweight dsl for idiomatic and composable sql building.
 - *suricatta.format*: sql rendering functions.
 
@@ -302,78 +301,6 @@ see one example:
 ----
 
 The third parameter of `sc/fetch-lazy` function is the optional default fetch size (currently 100.)
-
-
-=== Async interface
-
-It is well known that jdbc does not support a proper way to handle queries in an asynchronous manner.
-On the other hand, there exists one well known way to handle with it: using a shared thread pool to execute
-queries asynchronously.
-
-Clojure comes with a good abstraction to execute things asynchronously: agents. Agents
-in clojure use a shared execution pool and guarantes that things are executed serially. This
-behavior is really desirable because you only can execute one query at a time using the same
-connection.
-
-_surricata_ has one agent bound to the connection that handles the async execution, exposes a
-_core.async_ asynchronous api and uses link:https://github.com/funcool/cats[cats library] for
-error handling (error as value).
-
-Lets start importing some necessary namespaces:
-
-[source, clojure]
-----
-(require '[clojure.core.async :refer [go <! into]])
-(require '[suricatta.async :as sca])
-----
-
-Functions found on suricatta.async ns (`execute` and `fetch` are almost identical to sync ones
-found on suricatta.core with the exception that they return channels.
-
-.Example executing a query using async interface.
-[source, clojure]
-----
-(go
-  (with-open [ctx (sc/context dbspec)]
-    (let [sql    "insert into foo (n) values (1), (2)"
-          result (<! (sca/execute ctx sql))]
-      result)))
-----
-
-.Example fetching results from query using async interface.
-[source, clojure]
-----
-(go
-  (with-open [ctx (sc/context dbspec)]
-    (let [sql "select * from foo order by n"
-          ch  (sca/fetch ctx sql)]
-      (println "Result: " (<! ch)))))
-
-;; That will print to stdout:
-;; "Result: #<Success [{:n 1} {:n 2}]>"
-----
-
-As you can see, the return value is a wrapper, just
-deref it with the `deref` function or with `@` reader macro for access to its value. If an exception
-is returned, the deref operation will raise that exception.
-
-Fetch function also supports a `:chan` parameter on opts, that allows you to pass your own channel with a
-transducer:
-
-.Example fetching results from query using channel with transducer.
-[source, clojure]
-----
-(let [c (chan 1 (comp
-                 (map deref)
-                 (mapcat identity)))
-      res (sca/fetch *ctx* "select * from foo order by n" {:chan c})]
-  (println "Result1: " (<!! res))
-  (println "Result2: " (<!! res)))
-
-;; That prints to stdout:
-;; "Result1: {:n 1}"
-;; "Result2: {:n 2}"
-----
 
 
 === Custom types
@@ -1090,9 +1017,53 @@ WARNING: `suricatta.dsl/row` is defined as a macro and only accepts literals.
 
 === Why I should use suricatta instead of clojure.jdbc or java.jdbc?
 
-Unlike any jdbc library, _suricatta_ works at a slightly higher level. It hides a lot of
-idiosyncrasies of jdbc under a much *simpler, cleaner and less error prone api*, with better
-resource management.
+Unlike any jdbc library, _suricatta_ works at a slightly higher level. It hides a
+lot of idiosyncrasies of jdbc under a much *simpler, cleaner and less error prone
+api*, with better resource management.
+
+
+=== Where is the async support?
+
+In previous version _suricatta_ it had come with asynchronous support using
+core.async channels as response but since the version 0.4.0 it is removed because
+core.async is not a proper abstraction for represent a promise.
+
+In the jvm world, the proper promise abstraction is introduced in JDK8 so using
+that abstraction will force people use JDK8, something that I don't want to do at
+this moment.
+
+The great news is that async support is stil very easy implement, so you can do
+it in your own code base defining two additional functions. Here a code snippet
+for it:
+
+[source, clojure]
+----
+(require '[suricatta.core :as sc]
+         '[cats.monad.exception :as exc]
+         '[promissum.core :as p])
+
+(defn execute
+  "Execute a query asynchronously returning a CompletableFuture."
+  ([ctx q]
+   (execute ctx q {}))
+  ([ctx q opts]
+   (let [act (.-act ctx)
+         fun #(% (exc/try-on (sc/execute ctx q)))]
+     (p/promise
+      (fn [deliver]
+        (send-off act (fn [_] (fun deliver))))))))
+
+(defn fetch
+  "Execute a query asynchronously returning a CompletableFuture."
+  ([ctx q]
+   (fetch ctx q {}))
+  ([ctx q opts]
+   (let [act (.-act ctx)
+         fun #(% (exc/try-on (sc/fetch ctx q opts)))]
+     (p/promise
+      (fn [deliver]
+        (send-off act (fn [_] (fun deliver))))))))
+----
 
 
 === Why another dsl? Is it just another dsl?
