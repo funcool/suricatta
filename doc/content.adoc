@@ -400,12 +400,9 @@ user defined types to jooq/jdbc compatible types, and other for backwards conver
       (.setObject stmt index obj))))
 ----
 
-(Not for funcool, I'm unclear what this is saying.)
-<unclear>
-The *render* function responsibility is return a safe string representation of the type and is used
-mainly for rendering inline sql. And the *bind* function is responble of bind make a arbitrary
-transformations and bind the transformed value to the prepared statement. 
-</unclear>
+The `render` function is responsible of transform the value into a sql string that can be
+directly inlined into the final sql. And the `bind` function is responsable to properly bind
+the value as parameter to the underlying prepared statement.
 
 .Now let see the backward conversion example.
 [source, clojure]
