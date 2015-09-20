@@ -1066,14 +1066,14 @@ for it:
 ----
 
 
-=== Why another dsl? Is it just another dsl?
+=== Why another dsl? Is it just yet another dsl?
 
 First _suricatta_ is not a dsl library, it's a sql toolkit, and one part of the
 toolkit is a dsl.
 
-Secondly, _suricatta_'s dsl's don't intends to be a sql abstraction. The real purpose of
-_suricatta_'s dsl is make SQL composable while still allowing use all or almost all vendor specific
-sql constructions.
+Secondly, _suricatta_'s dsl's don't intends to be a sql abstraction. The real
+purpose of _suricatta_'s dsl is make SQL composable while still allowing use all or
+almost all vendor specific sql constructions.
 
 === What are some suricatta use cases?
 
@@ -1082,30 +1082,34 @@ The _suricatta_ library is very flexible and it can be used in very different wa
 - You can build queries with _suricatta_ and execute them with _clojure.jdbc_.
 - You can use _suricatta_ for executing queries with string-based sql.
 - You can combine the _suricatta_ library with _clojure.jdbc_.
-- And obviously, you can forget jdbc and use _suricatta_ for both purposes, building and/or
-  executing queries.
+- And obviously, you can forget jdbc and use _suricatta_ for both purposes, building
+  and/or executing queries.
 
 
 === Is it a korma-clone?
 
-Nope, it's not korma clone, because it works very different, and it has a different philosophy.
+Nope, it's not korma clone, because it works very different, and it has a different
+philosophy.
 
-_suricatta_ has cleaner differentiation between dsl and query execution/fetching. It doesn't intend
-to be a replacement of Korma, it intends be a replacement to raw jdbc access to the database.
+_suricatta_ has cleaner differentiation between dsl and query execution/fetching.
+It doesn't intend to be a replacement of Korma, it intends be a replacement to raw
+jdbc access to the database.
 
 
 === Is a JOOQ comercial license requried?
 
-Not, _suricatta_ works and is tested with the opensource (Apache 2.0 licensed) version of JOOQ.
+Not, _suricatta_ works and is tested with the opensource (Apache 2.0 licensed)
+version of JOOQ.
 
-I have plans to make _suricatta_ work with enterprise version of JOOQ for users that want to use
-"enterprise" databases in the future. In any case, that will not affect the open source version.
+I have plans to make _suricatta_ work with enterprise version of JOOQ for users
+that want to use "enterprise" databases in the future. In any case, that will not
+affect the open source version.
 
 
 === Can I store safely queries builded by DSL in a var, they are immutable?
 
-Yes. Unlike JOOQ DSL interface which has a mutable api, _suricatta_ exposes an immutable
-api for building queries.
+Yes. Unlike JOOQ DSL interface which has a mutable api, _suricatta_ exposes an
+immutable api for building queries.
 
 Queries built with _suricatta_ can be safely shared through different threads.
 
