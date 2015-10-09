@@ -7,7 +7,8 @@ Date: Unreleased
 - Update cats dependency to the last version (1.0.0)
 - Update clojure default version to 1.7.0
 - Update clojure.jdbc version to the last version (0.6.1)
-- Update jOOQ version to 3.6.3
+- BREAKING CHANGE: Update jOOQ version to 3.7.0 that
+  now requires jdk8.
 - BREAKING CHANGE: all protocols functions are renamed to
   the `-functionname` naming style.
 - BREAKING CHANGE: async interface is removed.
