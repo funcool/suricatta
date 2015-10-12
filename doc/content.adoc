@@ -34,7 +34,6 @@ This section covers the _suricatta_ library installing process and its requireme
 
 _suricatta_ is tested with these platforms:
 
-- JDK7
 - JDK8
 
 
