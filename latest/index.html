@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.2">
-<meta name="author" content="Andrey Antukh, &lt;niwi@niwi.be&gt;">
+<meta name="author" content="Andrey Antukh, &lt;niwi@niwi.nz&gt;">
 <title>suricatta documentation</title>
 <style>
 .listingblock .pygments .hll { background-color: #ffffcc }
@@ -79,8 +79,8 @@
 <div id="header">
 <h1>suricatta documentation</h1>
 <div class="details">
-<span id="author" class="author">Andrey Antukh, &lt;niwi@niwi.be&gt;</span><br>
-<span id="revdate">0.3.1</span>
+<span id="author" class="author">Andrey Antukh, &lt;niwi@niwi.nz&gt;</span><br>
+<span id="revdate">0.4.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -92,7 +92,6 @@
 <li><a href="#_requirements">Requirements</a></li>
 <li><a href="#_leiningen">Leiningen</a></li>
 <li><a href="#_gradle">Gradle</a></li>
-<li><a href="#_get_the_code">Get the Code</a></li>
 </ul>
 </li>
 <li><a href="#_sql_execution">SQL Execution</a>
@@ -104,7 +103,6 @@
 <li><a href="#_reusing_query_statement">Reusing query statement</a></li>
 <li><a href="#_transactions">Transactions</a></li>
 <li><a href="#_lazy_result_fetching">Lazy result fetching</a></li>
-<li><a href="#_async_interface">Async interface</a></li>
 <li><a href="#_custom_types">Custom types</a></li>
 </ul>
 </li>
@@ -121,17 +119,20 @@
 <li><a href="#_faq">FAQ</a>
 <ul class="sectlevel2">
 <li><a href="#_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc">Why I should use suricatta instead of clojure.jdbc or java.jdbc?</a></li>
-<li><a href="#_why_an_other_dsl_is_yet_another">Why an other dsl? Is yet another?</a></li>
-<li><a href="#_that_use_cases_have_suricatta">That use cases have suricatta?</a></li>
-<li><a href="#_is_a_korma_clone">Is a korma-clone?</a></li>
-<li><a href="#_is_required_buy_jooq_comercial_license">Is required buy JOOQ comercial license?</a></li>
+<li><a href="#_where_is_the_async_support">Where is the async support?</a></li>
+<li><a href="#_why_another_dsl_is_it_just_yet_another_dsl">Why another dsl? Is it just yet another dsl?</a></li>
+<li><a href="#_what_are_some_suricatta_use_cases">What are some suricatta use cases?</a></li>
+<li><a href="#_is_it_a_korma_clone">Is it a korma-clone?</a></li>
+<li><a href="#_is_a_jooq_comercial_license_requried">Is a JOOQ comercial license requried?</a></li>
 <li><a href="#_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable">Can I store safely queries builded by DSL in a var, they are immutable?</a></li>
 </ul>
 </li>
-<li><a href="#_how_to_contribute">How to Contribute?</a>
+<li><a href="#_developers_guide">Developers Guide</a>
 <ul class="sectlevel2">
 <li><a href="#_philosophy">Philosophy</a></li>
-<li><a href="#_procedure">Procedure</a></li>
+<li><a href="#_contributing">Contributing</a></li>
+<li><a href="#_source_code">Source Code</a></li>
+<li><a href="#_run_tests">Run tests</a></li>
 <li><a href="#_license">License</a></li>
 </ul>
 </li>
@@ -155,9 +156,6 @@
 <p><strong>suricatta.core</strong>: api for executing queries.</p>
 </li>
 <li>
-<p><strong>suricatta.async</strong>: asynchronous api for executing queries using <strong>core.async</strong>.</p>
-</li>
-<li>
 <p><strong>suricatta.dsl</strong>: lightweight dsl for idiomatic and composable sql building.</p>
 </li>
 <li>
@@ -171,7 +169,7 @@
 <h2 id="_project_maturity"><a class="link" href="#_project_maturity">Project Maturity</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Since <em>suricatta</em> is a young project there can be some API breakage.</p>
+<p>Since <em>suricatta</em> is a young project there may be some API breakage.</p>
 </div>
 </div>
 </div>
@@ -189,9 +187,6 @@
 <div class="ulist">
 <ul>
 <li>
-<p>JDK7</p>
-</li>
-<li>
 <p>JDK8</p>
 </li>
 </ul>
@@ -200,12 +195,12 @@
 <div class="sect2">
 <h3 id="_leiningen"><a class="link" href="#_leiningen">Leiningen</a></h3>
 <div class="paragraph">
-<p>The simplest way to use <em>suricatta</em> in a clojure project, is by including it in the dependency
+<p>The simplest way to use <em>suricatta</em> in a clojure project is by including it in the dependency
 vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">funcool/suricatta</span> <span class="tok-s">&quot;0.3.1&quot;</span><span class="tok-p">]</span></code></pre>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">funcool/suricatta</span> <span class="tok-s">&quot;0.4.0&quot;</span><span class="tok-p">]</span></code></pre>
 </div>
 </div>
 </div>
@@ -216,21 +211,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="groovy"><span class="tok-n">compile</span> <span class="tok-s2">&quot;funcool:suricatta:0.3.1&quot;</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_get_the_code"><a class="link" href="#_get_the_code">Get the Code</a></h3>
-<div class="paragraph">
-<p><em>suricatta</em> is open source and you can found the source on <a href="https://github.com/niwibe/suricatta">github</a>.</p>
-</div>
-<div class="paragraph">
-<p>You can clone the public repository with this command:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="text">git clone https://github.com/funcool/suricatta</code></pre>
+<pre class="pygments highlight"><code data-lang="groovy"><span class="tok-n">compile</span> <span class="tok-s2">&quot;funcool:suricatta:0.4.0&quot;</span></code></pre>
 </div>
 </div>
 </div>
@@ -240,7 +221,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 <h2 id="_sql_execution"><a class="link" href="#_sql_execution">SQL Execution</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section intends to explain the usage of a sql execution part of the library.</p>
+<p>This section explains the usage of the sql execution part of the library.</p>
 </div>
 <div class="sect2">
 <h3 id="_connecting_to_database"><a class="link" href="#_connecting_to_database">Connecting to database</a></h3>
@@ -250,18 +231,18 @@ A <strong>context</strong> has the resposibility of jdbc connection resource man
 flags and sql rendering dialect.</p>
 </div>
 <div class="paragraph">
-<p>You can create it <strong>context</strong> from:</p>
+<p>You can create a <strong>context</strong> from:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>hash-map dbspec format (plain connection params).</p>
+<p>a hash-map dbspec format (plain connection params).</p>
 </li>
 <li>
-<p>datasource instance (connection pool).</p>
+<p>a datasource instance (connection pool).</p>
 </li>
 <li>
-<p><a href="http://funcool.github.io/clojure.jdbc/latest/">clojure.jdbc</a> connection instance.</p>
+<p>a <a href="http://funcool.github.io/clojure.jdbc/latest/">clojure.jdbc</a> connection instance.</p>
 </li>
 </ul>
 </div>
@@ -309,8 +290,7 @@ flags and sql rendering dialect.</p>
 <div class="title">Note</div>
 </td>
 <td class="content">
-when closing the <em>suricatta</em> context, the wrapped connection
-also will be closed.
+when closing the <em>suricatta</em> context, the wrapped connection will also be closed.
 </td>
 </tr>
 </table>
@@ -319,12 +299,12 @@ also will be closed.
 <div class="sect3">
 <h4 id="_create_context_from_datasource"><a class="link" href="#_create_context_from_datasource">Create Context from DataSource.</a></h4>
 <div class="paragraph">
-<p>DataSource is the preferd way to connect to the database in production enviroments, and
-is usually used for implement connection pools.</p>
+<p>DataSource is the preferd way to connect to the database in production enviroments and
+is usually used to implement connection pools.</p>
 </div>
 <div class="paragraph">
-<p>In our case we will use <strong>hikaricp</strong> as datasource with connection pool. Let start adding new dependency
-entry on your <em>project.clj</em>:</p>
+<p>In our case we will use <strong>hikaricp</strong> as a datasource with a connection pool. Lets start by adding hikari&#8217;s dependency
+entry to your <em>project.clj</em>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -373,7 +353,7 @@ here: <a href="https://github.com/tomekw/hikari-cp" class="bare">https://github.
 <div class="sect2">
 <h3 id="_executing_queries"><a class="link" href="#_executing_queries">Executing queries</a></h3>
 <div class="paragraph">
-<p><em>suricatta</em> has clear separation between queries that can return result, and queries that cannot.</p>
+<p><em>suricatta</em> has a clear separation between queries that can return a result, and queries that can&#8217;t.</p>
 </div>
 <div class="listingblock">
 <div class="title">Example using <code>suricatta.core/execute</code> function.</div>
@@ -390,7 +370,7 @@ cases it returns a number of affected rows.</p>
 <div class="sect2">
 <h3 id="_fetching_results"><a class="link" href="#_fetching_results">Fetching results</a></h3>
 <div class="paragraph">
-<p>Let see an example of how execute a query and fetch results:</p>
+<p>Let see an example of how to execute a query and fetch results:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -410,8 +390,8 @@ cases it returns a number of affected rows.</p>
 </td>
 <td class="content">
 <div class="paragraph">
-<p><em>suricatta</em> gives you the power of use the raw sql queries without
-any restrictions (unlike jdbc). As great example, <em>suricatta</em> does
+<p><em>suricatta</em> gives you the power of raw sql queries without
+any restrictions (unlike jdbc). As a great example, <em>suricatta</em> does
 not have special syntax for queries with <code>RETURNING</code> clause:</p>
 </div>
 <div class="listingblock">
@@ -465,7 +445,7 @@ lightweight abstraction over complex transaction api.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Additionally to <code>atomic-apply</code> high order functiom, <em>suricatta</em> comes with convenient macro offering
+<p>Additionally to <code>atomic-apply</code> high order functiom, <em>suricatta</em> has a convenient macro offering
 lightweight sugar sytax for atomic blocks:</p>
 </div>
 <div class="listingblock">
@@ -479,8 +459,8 @@ lightweight sugar sytax for atomic blocks:</p>
 <p>You can nest atomic usage as deep as you want, subtransactions are fully supported.</p>
 </div>
 <div class="paragraph">
-<p>If a exception is raised inside atomic context the transaction will be aborted. Also, in
-some circumstances, you probable want an explicit rollback, for it, the <em>suricatta</em> library
+<p>If an exception is raised inside atomic context the transaction will be aborted. Also, in
+some circumstances, you probably want an explicit rollback, for which the <em>suricatta</em> library
 exposes a <code>suricatta.core/set-rollback!</code> function.</p>
 </div>
 <div class="listingblock">
@@ -492,34 +472,32 @@ exposes a <code>suricatta.core/set-rollback!</code> function.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>The <code>set-rollback!</code> function only marks the current transaction for rollback. It not aborts
-the execution. And it is aware of subtransactions, if it is used in a subtransaction, only
+<p>The <code>set-rollback!</code> function only marks the current transaction for rollback. It does not abort
+the execution, and it is aware of subtransactions. If it is used in a subtransaction, only
 the subtransaction will be marked for rollback, not the entire transaction.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_lazy_result_fetching"><a class="link" href="#_lazy_result_fetching">Lazy result fetching</a></h3>
 <div class="paragraph">
-<p>The <em>suricatta</em> library also comes with lazy fetching support. In this case, it tries instead
-of fetching all results in memory, fetch in small groups, allowing lower memory usage.</p>
+<p>The <em>suricatta</em> library also comes with lazy fetching support. When lazy fetching support is enabled, instead
+of fetching all results in memory, suricatta will fetch results in small groups, allowing lower memory usage.</p>
 </div>
 <div class="paragraph">
-<p>Lazy fetching has few quirks:</p>
+<p>Lazy fetching has a few quirks:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>It some databases it requires run in one transaction, like <em>PostgreSQL</em>, because it uses a server
-side cursors for make it possible.</p>
+<p>In some databases, like <em>PostgreSQL</em>, it requires the entire fetch to occur in one transaction because it uses  server side cursors.</p>
 </li>
 <li>
-<p>Requires explicit resource management, because for make possible lazy fetching, a connection and
-internal resultset should be mantained open until fetching is finished.</p>
+<p>Lazy fetching requires explicit resource management, because a connection and an internal resultset must be mantained open until fetching is finished.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>To use lazy fetch is realy easy, because suricatta exposes it like simple lazy sequence. Let
+<p>Using lazy fetch is realy easy, because suricatta exposes it as a simple lazy sequence. Let&#8217;s
 see one example:</p>
 </div>
 <div class="listingblock">
@@ -539,95 +517,15 @@ see one example:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>The third parameter of <code>sc/fetch-lazy</code> function is optional and the default fetch size
-currently has value of 100.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_async_interface"><a class="link" href="#_async_interface">Async interface</a></h3>
-<div class="paragraph">
-<p>It is well known that jdbc does not support proper way handle queries in asynchronous manner.
-The other hand, exists one well known way to handle with it: using a shared thread pool for execute
-queries asynchronously.</p>
-</div>
-<div class="paragraph">
-<p>Clojure comes with good abstractions for execute things asynchronously: agents. Agents
-in clojure uses a shared execution pool and guarantes that things are executed serially. That
-behavior is really desidered because you only can execute one query on same time using the same
-connection.</p>
-</div>
-<div class="paragraph">
-<p><em>surricata</em> has one agent bound to connection that handles the async execution, exposes
-<em>core.async</em> asynchronous api and uses <a href="https://github.com/funcool/cats">cats library</a> for
-error handling (error as value).</p>
-</div>
-<div class="paragraph">
-<p>Let start importing necessary namespaces:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">clojure.core.async</span> <span class="tok-ss">:refer</span> <span class="tok-p">[</span><span class="tok-nv">go</span> <span class="tok-nv">&lt;!</span> <span class="tok-nv">into</span><span class="tok-p">]])</span>
-<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.async</span> <span class="tok-ss">:as</span> <span class="tok-nv">sca</span><span class="tok-p">])</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Functions found on suricatta.async ns (<code>execute</code> and <code>fetch</code> are almost identical to sync ones
-found on suricatta.core with the exception that they return channels.</p>
-</div>
-<div class="listingblock">
-<div class="title">Example executing a query using async interface.</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">go</span>
-  <span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-nf">sc/context</span> <span class="tok-nv">dbspec</span><span class="tok-p">)]</span>
-    <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">sql</span>    <span class="tok-s">&quot;insert into foo (n) values (1), (2)&quot;</span>
-          <span class="tok-nv">result</span> <span class="tok-p">(</span><span class="tok-nf">&lt;!</span> <span class="tok-p">(</span><span class="tok-nf">sca/execute</span> <span class="tok-nv">ctx</span> <span class="tok-nv">sql</span><span class="tok-p">))]</span>
-      <span class="tok-nv">result</span><span class="tok-p">)))</span></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">Example fetching results from query using async interface.</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">go</span>
-  <span class="tok-p">(</span><span class="tok-nb">with-open </span><span class="tok-p">[</span><span class="tok-nv">ctx</span> <span class="tok-p">(</span><span class="tok-nf">sc/context</span> <span class="tok-nv">dbspec</span><span class="tok-p">)]</span>
-    <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">sql</span> <span class="tok-s">&quot;select * from foo order by n&quot;</span>
-          <span class="tok-nv">ch</span>  <span class="tok-p">(</span><span class="tok-nf">sca/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-nv">sql</span><span class="tok-p">)]</span>
-      <span class="tok-p">(</span><span class="tok-nb">println </span><span class="tok-s">&quot;Result: &quot;</span> <span class="tok-p">(</span><span class="tok-nf">&lt;!</span> <span class="tok-nv">ch</span><span class="tok-p">)))))</span>
-
-<span class="tok-c1">;; That will print to stdout:</span>
-<span class="tok-c1">;; &quot;Result: #&lt;Success [{:n 1} {:n 2}]&gt;&quot;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>As you can observe, the return value is some kind of wrapper, if you do not worry about it, just
-deref it with <code>deref</code> function or with <code>@</code> reader macro for access to its value. If a exception
-is returned, the deref operation will raise that exception.</p>
-</div>
-<div class="paragraph">
-<p>Fetch function also supports a <code>:chan</code> parameter on opts, that allows pass own channel with
-transducer:</p>
-</div>
-<div class="listingblock">
-<div class="title">Example fetching results from query using channel with transducer.</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">c</span> <span class="tok-p">(</span><span class="tok-nf">chan</span> <span class="tok-mi">1</span> <span class="tok-p">(</span><span class="tok-nf">comp</span>
-                 <span class="tok-p">(</span><span class="tok-nb">map </span><span class="tok-nv">deref</span><span class="tok-p">)</span>
-                 <span class="tok-p">(</span><span class="tok-nb">mapcat </span><span class="tok-nv">identity</span><span class="tok-p">)))</span>
-      <span class="tok-nv">res</span> <span class="tok-p">(</span><span class="tok-nf">sca/fetch</span> <span class="tok-nv">*ctx*</span> <span class="tok-s">&quot;select * from foo order by n&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:chan</span> <span class="tok-nv">c</span><span class="tok-p">})]</span>
-  <span class="tok-p">(</span><span class="tok-nb">println </span><span class="tok-s">&quot;Result1: &quot;</span> <span class="tok-p">(</span><span class="tok-nf">&lt;!!</span> <span class="tok-nv">res</span><span class="tok-p">))</span>
-  <span class="tok-p">(</span><span class="tok-nb">println </span><span class="tok-s">&quot;Result2: &quot;</span> <span class="tok-p">(</span><span class="tok-nf">&lt;!!</span> <span class="tok-nv">res</span><span class="tok-p">)))</span>
-
-<span class="tok-c1">;; That prints to stdout:</span>
-<span class="tok-c1">;; &quot;Result1: {:n 1}&quot;</span>
-<span class="tok-c1">;; &quot;Result2: {:n 2}&quot;</span></code></pre>
-</div>
+<p>The third parameter of <code>sc/fetch-lazy</code> function is the optional default fetch size (currently 100.)</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_custom_types"><a class="link" href="#_custom_types">Custom types</a></h3>
 <div class="paragraph">
-<p>Since 0.2.0 version, suricatta comes with support for extending self with custom
-(or vendor specific) types support. It consist in two protocols, one for convert
-user definet types to jooq/jdbc compatible types, and other the backwards conversion.</p>
+<p>Since 0.2.0 version, suricatta comes with support for extension with custom
+(or vendor specific) types support. It consist in two protocols, one for converting
+user defined types to jooq/jdbc compatible types, and other for backwards conversion.</p>
 </div>
 <div class="listingblock">
 <div class="title">Let see an example for adapt clojure persistent map interface to postgresql json file.</div>
@@ -638,9 +536,9 @@ user definet types to jooq/jdbc compatible types, and other the backwards conver
 
 <span class="tok-p">(</span><span class="tok-nf">extend-protocol</span> <span class="tok-nv">proto/IParamType</span>
   <span class="tok-nv">clojure.lang.IPersistentMap</span>
-  <span class="tok-p">(</span><span class="tok-nf">render</span> <span class="tok-p">[</span><span class="tok-nv">self</span><span class="tok-p">]</span>
+  <span class="tok-p">(</span><span class="tok-nf">-render</span> <span class="tok-p">[</span><span class="tok-nv">self</span><span class="tok-p">]</span>
     <span class="tok-p">(</span><span class="tok-nb">str </span><span class="tok-s">&quot;&#39;&quot;</span> <span class="tok-p">(</span><span class="tok-nf">json/generate-string</span> <span class="tok-nv">self</span><span class="tok-p">)</span> <span class="tok-s">&quot;&#39;::json&quot;</span><span class="tok-p">))</span>
-  <span class="tok-p">(</span><span class="tok-nf">bind</span> <span class="tok-p">[</span><span class="tok-nv">self</span> <span class="tok-nv">stmt</span> <span class="tok-nv">index</span><span class="tok-p">]</span>
+  <span class="tok-p">(</span><span class="tok-nf">-bind</span> <span class="tok-p">[</span><span class="tok-nv">self</span> <span class="tok-nv">stmt</span> <span class="tok-nv">index</span><span class="tok-p">]</span>
     <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">obj</span> <span class="tok-p">(</span><span class="tok-nb">doto </span><span class="tok-p">(</span><span class="tok-nf">PGobject.</span><span class="tok-p">)</span>
                 <span class="tok-p">(</span><span class="tok-nf">.setType</span> <span class="tok-s">&quot;json&quot;</span><span class="tok-p">)</span>
                 <span class="tok-p">(</span><span class="tok-nf">.setValue</span> <span class="tok-p">(</span><span class="tok-nf">json/generate-string</span> <span class="tok-nv">self</span><span class="tok-p">)))]</span>
@@ -648,25 +546,24 @@ user definet types to jooq/jdbc compatible types, and other the backwards conver
 </div>
 </div>
 <div class="paragraph">
-<p>The <strong>render</strong> function responsibility is return a safe string representation of type and is used
-mainly for rendering inline sql. And the <strong>bind</strong> function is responble of bind make a arbitrary
-transformations and bind the transformed value to the prepared statement.</p>
+<p>The <code>render</code> function is responsible of transform the value into a sql string that can be
+directly inlined into the final sql. And the <code>bind</code> function is responsable to properly bind
+the value as parameter to the underlying prepared statement.</p>
 </div>
 <div class="listingblock">
 <div class="title">Now let see the backward conversion example.</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">extend-protocol</span> <span class="tok-nv">proto/ISQLType</span>
   <span class="tok-nv">PGobject</span>
-  <span class="tok-p">(</span><span class="tok-nf">convert</span> <span class="tok-p">[</span><span class="tok-nv">self</span><span class="tok-p">]</span>
+  <span class="tok-p">(</span><span class="tok-nf">-convert</span> <span class="tok-p">[</span><span class="tok-nv">self</span><span class="tok-p">]</span>
     <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">type</span> <span class="tok-p">(</span><span class="tok-nf">.getType</span> <span class="tok-nv">self</span><span class="tok-p">)]</span>
       <span class="tok-p">(</span><span class="tok-nf">condp</span> <span class="tok-nb">= </span><span class="tok-nv">type</span>
         <span class="tok-s">&quot;json&quot;</span> <span class="tok-p">(</span><span class="tok-nf">json/parse-string</span> <span class="tok-p">(</span><span class="tok-nf">.getValue</span> <span class="tok-nv">self</span><span class="tok-p">)</span> <span class="tok-nv">true</span><span class="tok-p">)))))</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Now having defined the two way conversions, you can use the clojure hash-map for pass
-it as value to the query and it automatically handled with conversions that are
-you previously defined.</p>
+<p>Now having defined the two way conversions, you can pass the clojure hash-map as a
+value to the query and it is automatically converted.</p>
 </div>
 <div class="listingblock">
 <div class="title">Insert and query example using postgresql json fields.</div>
@@ -709,7 +606,7 @@ top of <code>jooq</code> dsl.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Object instances retured by dsl api are fully compatible with sql executing api. Let see an example:</p>
+<p>Object instances retured by dsl api are fully compatible with the sql executing api. Let see an example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -745,8 +642,8 @@ top of <code>jooq</code> dsl.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>The rendering result depends of used dialect. You can specify an other dialect
-passing <code>:dialect</code> option to <code>get-sql</code> function of <code>suricatta.format</code> namespace:</p>
+<p>The rendering result depends on the dialect used. You can specify a different dialect by
+passing the <code>:dialect</code> option to the <code>get-sql</code> function of <code>suricatta.format</code> namespace:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -759,7 +656,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 <div class="sect3">
 <h4 id="_select_distinct"><a class="link" href="#_select_distinct">Select DISTINCT</a></h4>
 <div class="paragraph">
-<p>You can add distinct keyword using special select function:</p>
+<p>You can add the distinct keyword by using a special select function:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -772,7 +669,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 <div class="sect3">
 <h4 id="_select"><a class="link" href="#_select">Select *</a></h4>
 <div class="paragraph">
-<p>You can ommit fields on <code>select</code> function for use the "SELECT *" form:</p>
+<p>You can ommit fields on <code>select</code> function to use the "SELECT *" sql form:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -786,7 +683,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 <div class="sect3">
 <h4 id="_the_from_clause"><a class="link" href="#_the_from_clause">The FROM clause</a></h4>
 <div class="paragraph">
-<p>Simple select sql with form clause:</p>
+<p>A simple sql "select &#8230;&#8203; from" clause:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -797,7 +694,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 </div>
 </div>
 <div class="paragraph">
-<p>Also, sql form clause supports specify any number of tables:</p>
+<p>Also, the sql from clause supports any number of tables:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -808,7 +705,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 </div>
 </div>
 <div class="paragraph">
-<p>Also, you can specify alias for each table:</p>
+<p>Also, you can specify an alias for each table:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -823,7 +720,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 <div class="sect3">
 <h4 id="_the_join_clause"><a class="link" href="#_the_join_clause">The JOIN clause</a></h4>
 <div class="paragraph">
-<p><em>suricata</em> comes with complete dsl for making join clauses. Let see one simple example:</p>
+<p><em>suricata</em> comes with a complete dsl for making join clauses. Let see one simple example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -836,7 +733,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 </div>
 </div>
 <div class="paragraph">
-<p>Also, join clause can be applied to table expression:</p>
+<p>Also, join clause can be applied to table expressions:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -852,7 +749,7 @@ passing <code>:dialect</code> option to <code>get-sql</code> function of <code>s
 <div class="sect3">
 <h4 id="_the_where_clause"><a class="link" href="#_the_where_clause">The WHERE clause</a></h4>
 <div class="paragraph">
-<p>The WHERE clause can be used for JOIN or filter predicates, in order to restrict the data returned
+<p>The WHERE clause can be used to JOIN or filter predicates in order to restrict the data returned
 by the query:</p>
 </div>
 <div class="listingblock">
@@ -865,7 +762,7 @@ by the query:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Build where clause with multiple conditions:</p>
+<p>Building a where clause with multiple conditions:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -878,7 +775,7 @@ by the query:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Bind parameters instead of inline them on conditions:</p>
+<p>Bind parameters instead of inlining them on conditions:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -910,7 +807,7 @@ by the query:</p>
 <div class="sect3">
 <h4 id="_the_group_by_clause"><a class="link" href="#_the_group_by_clause">The GROUP BY clause</a></h4>
 <div class="paragraph">
-<p>GROUP BY can be used to create unique groups of data, to form aggregations, to remove duplicates and for other reasons. Let see an example of how it can be done using <em>suricatta</em> dsl:</p>
+<p>GROUP BY can be used to create unique groups of data, to form aggregations, to remove duplicates and for other reasons. Let see an example of how it can be done using the <em>suricatta</em> dsl:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -943,7 +840,7 @@ by the query:</p>
 <div class="sect3">
 <h4 id="_the_order_by_clause"><a class="link" href="#_the_order_by_clause">The ORDER BY clause</a></h4>
 <div class="paragraph">
-<p>Here an example of how specify the ordering to the query:</p>
+<p>Here&#8217;s an example of how specify the ordering to the query:</p>
 </div>
 <div class="listingblock">
 <div class="title">Ordering by field with implicit sort direction</div>
@@ -956,7 +853,7 @@ by the query:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>In previous example we have specified order field without order direction, <em>surricata</em> automatically
+<p>In previous example we specified the order field without order direction. <em>surricata</em> automatically
 uses <code>ASC</code> for sort fields that comes without explicit ordering direction.</p>
 </div>
 <div class="listingblock">
@@ -994,7 +891,7 @@ uses <code>ASC</code> for sort fields that comes without explicit ordering direc
 <div class="sect3">
 <h4 id="_the_limit_and_offset_clauses"><a class="link" href="#_the_limit_and_offset_clauses">The LIMIT and OFFSET clauses</a></h4>
 <div class="paragraph">
-<p>Let see some examples of how to apply limit and offset to your queries with <em>suricatta</em>:</p>
+<p>Let see some examples of how to apply <code>limit</code> and <code>offset</code> to your queries with <em>suricatta</em>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1212,7 +1109,7 @@ default value for a field in table creation statement.
 <div class="sect3">
 <h4 id="_the_alter_table_statement"><a class="link" href="#_the_alter_table_statement">The ALTER TABLE statement</a></h4>
 <div class="paragraph">
-<p>Alter statements are used mainly for add, modify or delete columns from table.</p>
+<p>Alter statements are used mainly to add, modify or delete columns from table.</p>
 </div>
 <div class="listingblock">
 <div class="title">Add new column</div>
@@ -1328,7 +1225,7 @@ default value for a field in table creation statement.
 <div class="sect3">
 <h4 id="_the_values_table_constructor"><a class="link" href="#_the_values_table_constructor">The VALUES() table constructor</a></h4>
 <div class="paragraph">
-<p>Some databases allow for expressing in-memory temporary tables using a <code>values()</code>.</p>
+<p>Some databases allow expressing in-memory temporary tables using a <code>values()</code> syntax.</p>
 </div>
 <div class="listingblock">
 <div class="title">Select from <code>values()</code> example</div>
@@ -1348,7 +1245,7 @@ default value for a field in table creation statement.
 <div class="title">Warning</div>
 </td>
 <td class="content">
-<code>suricatta.dsl/row</code> is defined as macro and only accept literals.
+<code>suricatta.dsl/row</code> is defined as a macro and only accepts literals.
 </td>
 </tr>
 </table>
@@ -1400,25 +1297,72 @@ default value for a field in table creation statement.
 <div class="sect2">
 <h3 id="_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc"><a class="link" href="#_why_i_should_use_suricatta_instead_of_clojure_jdbc_or_java_jdbc">Why I should use suricatta instead of clojure.jdbc or java.jdbc?</a></h3>
 <div class="paragraph">
-<p>Unlike any jdbc library, <em>suricatta</em> works in slightly higher level. It hides a lot of
-idiosyncrasies of jdbc under much <strong>simpler, cleaner and less error prone api</strong>, with better
-resource management.</p>
+<p>Unlike any jdbc library, <em>suricatta</em> works at a slightly higher level. It hides a
+lot of idiosyncrasies of jdbc under a much <strong>simpler, cleaner and less error prone
+api</strong>, with better resource management.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_why_an_other_dsl_is_yet_another"><a class="link" href="#_why_an_other_dsl_is_yet_another">Why an other dsl? Is yet another?</a></h3>
+<h3 id="_where_is_the_async_support"><a class="link" href="#_where_is_the_async_support">Where is the async support?</a></h3>
 <div class="paragraph">
-<p>In first instance <em>suricatta</em> is not a dsl library, is a sql toolkit, and one part of the
+<p>In previous version <em>suricatta</em> it had come with asynchronous support using
+core.async channels as response but since the version 0.4.0 it is removed because
+core.async is not a proper abstraction for represent a promise.</p>
+</div>
+<div class="paragraph">
+<p>In the jvm world, the proper promise abstraction is introduced in JDK8 so using
+that abstraction will force people use JDK8, something that I don&#8217;t want to do at
+this moment.</p>
+</div>
+<div class="paragraph">
+<p>The great news is that async support is stil very easy implement, so you can do
+it in your own code base defining two additional functions. Here a code snippet
+for it:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">sc</span><span class="tok-p">]</span>
+         <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">cats.monad.exception</span> <span class="tok-ss">:as</span> <span class="tok-nv">exc</span><span class="tok-p">]</span>
+         <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">promissum.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">p</span><span class="tok-p">])</span>
+
+<span class="tok-p">(</span><span class="tok-kd">defn </span><span class="tok-nv">execute</span>
+  <span class="tok-s">&quot;Execute a query asynchronously returning a CompletableFuture.&quot;</span>
+  <span class="tok-p">([</span><span class="tok-nv">ctx</span> <span class="tok-nv">q</span><span class="tok-p">]</span>
+   <span class="tok-p">(</span><span class="tok-nf">execute</span> <span class="tok-nv">ctx</span> <span class="tok-nv">q</span> <span class="tok-p">{}))</span>
+  <span class="tok-p">([</span><span class="tok-nv">ctx</span> <span class="tok-nv">q</span> <span class="tok-nv">opts</span><span class="tok-p">]</span>
+   <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">act</span> <span class="tok-p">(</span><span class="tok-nf">.-act</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
+         <span class="tok-nv">fun</span> <span class="tok-o">#</span><span class="tok-p">(</span><span class="tok-nf">%</span> <span class="tok-p">(</span><span class="tok-nf">exc/try-on</span> <span class="tok-p">(</span><span class="tok-nf">sc/execute</span> <span class="tok-nv">ctx</span> <span class="tok-nv">q</span><span class="tok-p">)))]</span>
+     <span class="tok-p">(</span><span class="tok-nf">p/promise</span>
+      <span class="tok-p">(</span><span class="tok-k">fn </span><span class="tok-p">[</span><span class="tok-nv">deliver</span><span class="tok-p">]</span>
+        <span class="tok-p">(</span><span class="tok-nb">send-off </span><span class="tok-nv">act</span> <span class="tok-p">(</span><span class="tok-k">fn </span><span class="tok-p">[</span><span class="tok-nv">_</span><span class="tok-p">]</span> <span class="tok-p">(</span><span class="tok-nf">fun</span> <span class="tok-nv">deliver</span><span class="tok-p">))))))))</span>
+
+<span class="tok-p">(</span><span class="tok-kd">defn </span><span class="tok-nv">fetch</span>
+  <span class="tok-s">&quot;Execute a query asynchronously returning a CompletableFuture.&quot;</span>
+  <span class="tok-p">([</span><span class="tok-nv">ctx</span> <span class="tok-nv">q</span><span class="tok-p">]</span>
+   <span class="tok-p">(</span><span class="tok-nf">fetch</span> <span class="tok-nv">ctx</span> <span class="tok-nv">q</span> <span class="tok-p">{}))</span>
+  <span class="tok-p">([</span><span class="tok-nv">ctx</span> <span class="tok-nv">q</span> <span class="tok-nv">opts</span><span class="tok-p">]</span>
+   <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">act</span> <span class="tok-p">(</span><span class="tok-nf">.-act</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
+         <span class="tok-nv">fun</span> <span class="tok-o">#</span><span class="tok-p">(</span><span class="tok-nf">%</span> <span class="tok-p">(</span><span class="tok-nf">exc/try-on</span> <span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-nv">q</span> <span class="tok-nv">opts</span><span class="tok-p">)))]</span>
+     <span class="tok-p">(</span><span class="tok-nf">p/promise</span>
+      <span class="tok-p">(</span><span class="tok-k">fn </span><span class="tok-p">[</span><span class="tok-nv">deliver</span><span class="tok-p">]</span>
+        <span class="tok-p">(</span><span class="tok-nb">send-off </span><span class="tok-nv">act</span> <span class="tok-p">(</span><span class="tok-k">fn </span><span class="tok-p">[</span><span class="tok-nv">_</span><span class="tok-p">]</span> <span class="tok-p">(</span><span class="tok-nf">fun</span> <span class="tok-nv">deliver</span><span class="tok-p">))))))))</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_another_dsl_is_it_just_yet_another_dsl"><a class="link" href="#_why_another_dsl_is_it_just_yet_another_dsl">Why another dsl? Is it just yet another dsl?</a></h3>
+<div class="paragraph">
+<p>First <em>suricatta</em> is not a dsl library, it&#8217;s a sql toolkit, and one part of the
 toolkit is a dsl.</p>
 </div>
 <div class="paragraph">
-<p>Secondly, <em>suricatta</em>'s dsl don&#8217;t intends to be a sql abstraction. The real purpose of
-<em>suricatta</em>'s dsl is make SQL composable, allowing use all or almost all vendor specific
-sql constructions.</p>
+<p>Secondly, <em>suricatta</em>'s dsl&#8217;s don&#8217;t intends to be a sql abstraction. The real
+purpose of <em>suricatta</em>'s dsl is make SQL composable while still allowing use all or
+almost all vendor specific sql constructions.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_that_use_cases_have_suricatta"><a class="link" href="#_that_use_cases_have_suricatta">That use cases have suricatta?</a></h3>
+<h3 id="_what_are_some_suricatta_use_cases"><a class="link" href="#_what_are_some_suricatta_use_cases">What are some suricatta use cases?</a></h3>
 <div class="paragraph">
 <p>The <em>suricatta</em> library is very flexible and it can be used in very different ways:</p>
 </div>
@@ -1434,51 +1378,55 @@ sql constructions.</p>
 <p>You can combine the <em>suricatta</em> library with <em>clojure.jdbc</em>.</p>
 </li>
 <li>
-<p>And obviously, you can forget jdbc and use <em>suricatta</em> for both purposes, building and/or
-executing queries.</p>
+<p>And obviously, you can forget jdbc and use <em>suricatta</em> for both purposes, building
+and/or executing queries.</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_is_a_korma_clone"><a class="link" href="#_is_a_korma_clone">Is a korma-clone?</a></h3>
+<h3 id="_is_it_a_korma_clone"><a class="link" href="#_is_it_a_korma_clone">Is it a korma-clone?</a></h3>
 <div class="paragraph">
-<p>Not, is not korma clone. Because it works very different, and it has different philosophy.</p>
+<p>Nope, it&#8217;s not korma clone, because it works very different, and it has a different
+philosophy.</p>
 </div>
 <div class="paragraph">
-<p><em>suricatta</em> has cleaner differentiation between dsl and query execution/fetching. It not intends
-to be a replacement of Korma. It intends be a replacement to raw jdbc access to the database.</p>
+<p><em>suricatta</em> has cleaner differentiation between dsl and query execution/fetching.
+It doesn&#8217;t intend to be a replacement of Korma, it intends be a replacement to raw
+jdbc access to the database.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_is_required_buy_jooq_comercial_license"><a class="link" href="#_is_required_buy_jooq_comercial_license">Is required buy JOOQ comercial license?</a></h3>
+<h3 id="_is_a_jooq_comercial_license_requried"><a class="link" href="#_is_a_jooq_comercial_license_requried">Is a JOOQ comercial license requried?</a></h3>
 <div class="paragraph">
-<p>Not, <em>suricatta</em> works and tested with opensource (Apache 2.0 licensed) version of JOOQ.</p>
+<p>Not, <em>suricatta</em> works and is tested with the opensource (Apache 2.0 licensed)
+version of JOOQ.</p>
 </div>
 <div class="paragraph">
-<p>I have plans to make <em>suricatta</em> work with enterprise version of JOOQ for users that want use
-"enterprise" databases in a future. In any case, that will not affect the open source version.</p>
+<p>I have plans to make <em>suricatta</em> work with enterprise version of JOOQ for users
+that want to use "enterprise" databases in the future. In any case, that will not
+affect the open source version.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable"><a class="link" href="#_can_i_store_safely_queries_builded_by_dsl_in_a_var_they_are_immutable">Can I store safely queries builded by DSL in a var, they are immutable?</a></h3>
 <div class="paragraph">
-<p>Yes. Unlike JOOQ DSL interface that has mutable api, <em>suricatta</em> exposes immutable
-api for building queries.</p>
+<p>Yes. Unlike JOOQ DSL interface which has a mutable api, <em>suricatta</em> exposes an
+immutable api for building queries.</p>
 </div>
 <div class="paragraph">
-<p>Queries builded by <em>suricatta</em> can be safely shared through different threads.</p>
+<p>Queries built with <em>suricatta</em> can be safely shared through different threads.</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_how_to_contribute"><a class="link" href="#_how_to_contribute">How to Contribute?</a></h2>
+<h2 id="_developers_guide"><a class="link" href="#_developers_guide">Developers Guide</a></h2>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_philosophy"><a class="link" href="#_philosophy">Philosophy</a></h3>
 <div class="paragraph">
-<p>Five most important rules:</p>
+<p>The five most important rules are:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1504,40 +1452,33 @@ api for building queries.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_procedure"><a class="link" href="#_procedure">Procedure</a></h3>
+<h3 id="_contributing"><a class="link" href="#_contributing">Contributing</a></h3>
 <div class="paragraph">
-<p><strong>suricatta</strong> unlike Clojure and other Clojure contrib libs, does not have many
-restrictions for contributions. Just follow the following steps depending on the
-situation:</p>
+<p>Unlike Clojure and other Clojure contributed libraries <em>suricatta</em> does not have many
+restrictions for contributions. Just open an issue or pull request.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_source_code"><a class="link" href="#_source_code">Source Code</a></h3>
 <div class="paragraph">
-<p><strong>Bugfix</strong>:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Fork the GitHub repo.</p>
-</li>
-<li>
-<p>Fix a bug/typo on a new branch.</p>
-</li>
-<li>
-<p>Make a pull-request to master.</p>
-</li>
-</ul>
+<p><em>suricatta</em> is open source and can be found on
+<a href="https://github.com/funcool/suricatta">github</a>.</p>
 </div>
 <div class="paragraph">
-<p><strong>New feature</strong>:</p>
+<p>You can clone the public repository with this command:</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>Open new issue with the new feature proposal.</p>
-</li>
-<li>
-<p>If it is accepted, follow the same steps as "bugfix".</p>
-</li>
-</ul>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="text">git clone https://github.com/funcool/suricatta</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_run_tests"><a class="link" href="#_run_tests">Run tests</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="text">lein test</code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1547,7 +1488,7 @@ situation:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>Copyright (c) 2014-2015, Andrey Antukh &lt;niwi@niwi.nz&gt;
+<pre>Copyright (c) 2014-2015 Andrey Antukh &lt;niwi@niwi.nz&gt;
 
 All rights reserved.
 
@@ -1579,7 +1520,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-07-06 08:45:32 EEST
+Last updated 2015-10-12 11:36:34 EEST
 </div>
 </div>
 </body>
