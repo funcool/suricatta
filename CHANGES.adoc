@@ -2,7 +2,7 @@
 
 == 0.4.0
 
-Date: Unreleased
+Date: 2015-10-12
 
 - Update cats dependency to the last version (1.0.0)
 - Update clojure default version to 1.7.0
