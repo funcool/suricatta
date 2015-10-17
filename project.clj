@@ -3,7 +3,7 @@
   :url "https://github.com/funcool/suricatta"
   :license {:name "BSD (2-Clause)"
             :url "http://opensource.org/licenses/BSD-2-Clause"}
-  :dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
+  :dependencies [[org.clojure/clojure "1.8.0-beta1" :scope "provided"]
                  [org.jooq/jooq "3.7.0"]]
 
   :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"]
