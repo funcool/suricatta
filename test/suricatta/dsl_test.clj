@@ -2,8 +2,7 @@
   (:require [clojure.test :refer :all]
             [suricatta.core :refer :all]
             [suricatta.dsl :as dsl]
-            [suricatta.format :as fmt]
-            [jdbc.core :as jdbc]))
+            [suricatta.format :as fmt]))
 
 (def dbspec {:subprotocol "h2"
              :subname "mem:"})

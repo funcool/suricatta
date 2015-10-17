@@ -28,6 +28,9 @@
   (-get-context [_] "Get jooq context with attached configuration")
   (-get-config [_] "Get attached configuration."))
 
+(defprotocol IConnectionFactory
+  (-connection [_] "Create a jdbc connection."))
+
 (defprotocol IExecute
   (-execute [q ctx] "Execute a query and return a number of rows affected."))
 

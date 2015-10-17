@@ -26,9 +26,7 @@
   "High level sql toolkit for Clojure"
   (:require [suricatta.types :as types]
             [suricatta.proto :as proto]
-            [suricatta.impl :as impl]
-            jdbc.core
-            jdbc.proto)
+            [suricatta.impl :as impl])
   (:import org.jooq.DSLContext
            org.jooq.SQLDialect
            org.jooq.TransactionContext
@@ -44,8 +42,7 @@
   "Context constructor."
   ([dbspec] (context dbspec {}))
   ([dbspec opts]
-   (let [^Connection connection (-> (jdbc.core/connection dbspec opts)
-                                    (jdbc.proto/connection))
+   (let [^Connection connection (impl/make-connection dbspec opts)
          ^SQLDialect dialect (if (:dialect dbspec)
                                (impl/translate-dialect (:dialect dbspec))
                                (JDBCUtils/dialect connection))

@@ -2,9 +2,7 @@
   (:require [clojure.test :refer :all]
             [suricatta.core :as sc]
             [suricatta.dsl :as dsl]
-            [suricatta.format :refer [get-sql get-bind-values sqlvec] :as fmt]
-            [jdbc.core :as jdbc]
-            [cats.monad.exception :as exc])
+            [suricatta.format :refer [get-sql get-bind-values sqlvec] :as fmt])
   (:import org.jooq.impl.DSL
            org.jooq.util.postgres.PostgresDataType))
 

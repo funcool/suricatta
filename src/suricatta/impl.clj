@@ -24,7 +24,9 @@
 
 (ns suricatta.impl
   (:require [suricatta.types :as types :refer [defer]]
-            [suricatta.proto :as proto])
+            [suricatta.proto :as proto]
+            [clojure.string :as str]
+            [clojure.walk :as walk])
   (:import org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
            org.jooq.tools.jdbc.JDBCUtils
@@ -39,10 +41,17 @@
            org.jooq.BindContext
            org.jooq.Configuration
            clojure.lang.PersistentVector
+           java.net.URI
+           java.util.Properties
            java.sql.Connection
            java.sql.PreparedStatement
+           java.sql.DriverManager
            javax.sql.DataSource
            suricatta.types.Context))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ^SQLDialect translate-dialect
   "Translate keyword dialect name to proper
@@ -60,6 +69,14 @@
       :h2         SQLDialect/H2
       :sqlite     SQLDialect/SQLITE
       SQLDialect/SQL99)))
+
+(def ^{:doc "Transaction isolation levels" :static true}
+  +isolation-levels+
+  {:none             Connection/TRANSACTION_NONE
+   :read-uncommitted Connection/TRANSACTION_READ_UNCOMMITTED
+   :read-committed   Connection/TRANSACTION_READ_COMMITTED
+   :repeatable-read  Connection/TRANSACTION_REPEATABLE_READ
+   :serializable     Connection/TRANSACTION_SERIALIZABLE})
 
 (defn make-param-impl
   "Wraps a value that implements IParamType
@@ -80,6 +97,123 @@
   (if (satisfies? proto/IParamType obj)
     (make-param-impl obj)
     obj))
+
+(defn- querystring->map
+  "Given a URI instance, return its querystring as
+  plain map with parsed keys and values."
+  [^URI uri]
+  (let [^String query (.getQuery uri)]
+    (->> (for [^String kvs (.split query "&")] (into [] (.split kvs "=")))
+         (into {})
+         (walk/keywordize-keys))))
+
+(defn- map->properties
+  "Convert hash-map to java.utils.Properties instance. This method is used
+  internally for convert dbspec map to properties instance, but it can
+  be usefull for other purposes."
+  [data]
+  (let [p (Properties.)]
+    (dorun (map (fn [[k v]] (.setProperty p (name k) (str v))) (seq data)))
+    p))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Connection management
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn make-connection
+  [dbspec opts]
+  (let [^Connection conn (proto/-connection dbspec)
+        opts (merge (when (map? dbspec) dbspec) opts)]
+
+    ;; Set readonly flag if it found on the options map
+    (some->> (:read-only opts)
+             (.setReadOnly conn))
+
+    ;; Set the concrete isolation level if it found
+    ;; on the options map
+    (some->> (:isolation-level opts)
+             (get +isolation-levels+)
+             (.setTransactionIsolation conn))
+
+    ;; Set the schema if it found on the options map
+    (some->> (:schema opts)
+             (.setSchema conn))
+
+    conn))
+
+(declare uri->dbspec)
+(declare dbspec->connection)
+
+(extend-protocol proto/IConnectionFactory
+  java.sql.Connection
+  (-connection [it] it)
+
+  javax.sql.DataSource
+  (-connection [it]
+    (.getConnection it))
+
+  clojure.lang.IPersistentMap
+  (-connection [dbspec]
+    (dbspec->connection dbspec))
+
+  java.net.URI
+  (-connection [uri]
+    (-> (uri->dbspec uri)
+        (dbspec->connection)))
+
+  java.lang.String
+  (-connection [uri]
+    (let [uri (URI. uri)]
+      (proto/-connection uri))))
+
+(defn dbspec->connection
+  "Create a connection instance from dbspec."
+  [{:keys [subprotocol subname user password
+           name vendor host port datasource classname]
+    :as dbspec}]
+  (cond
+    (and name vendor)
+    (let [host   (or host "127.0.0.1")
+          port   (if port (str ":" port) "")
+          dbspec (-> (dissoc dbspec :name :vendor :host :port)
+                     (assoc :subprotocol vendor
+                            :subname (str "//" host port "/" name)))]
+      (dbspec->connection dbspec))
+
+    (and subprotocol subname)
+    (let [url (format "jdbc:%s:%s" subprotocol subname)
+          options (dissoc dbspec :subprotocol :subname)]
+
+      (when classname
+        (Class/forName classname))
+
+      (DriverManager/getConnection url (map->properties options)))
+
+    ;; NOTE: only for legacy dbspec format compatibility
+    (and datasource)
+    (proto/-connection datasource)
+
+    :else
+    (throw (IllegalArgumentException. "Invalid dbspec format"))))
+
+(defn uri->dbspec
+  "Parses a dbspec as uri into a plain dbspec. This function
+  accepts `java.net.URI` or `String` as parameter."
+  [^URI uri]
+  (let [host (.getHost uri)
+        port (.getPort uri)
+        path (.getPath uri)
+        scheme (.getScheme uri)
+        userinfo (.getUserInfo uri)]
+    (merge
+      {:subname (if (pos? port)
+                 (str "//" host ":" port path)
+                 (str "//" host path))
+       :subprotocol scheme}
+      (when userinfo
+        (let [[user password] (str/split userinfo #":")]
+          {:user user :password password}))
+      (querystring->map uri))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IExecute implementation
