@@ -10,12 +10,16 @@
            org.jooq.BindContext
            org.jooq.impl.DSL))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Connection setup
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (def dbspec {:subprotocol "postgresql"
              :subname "//127.0.0.1/test"})
 
 (def ^:dynamic *ctx*)
 
-(defn my-fixture
+(defn setup-connection-fixture
   [end]
   (with-open [ctx (sc/context dbspec)]
     (sc/atomic ctx
@@ -23,7 +27,11 @@
         (end)
         (sc/set-rollback! ctx)))))
 
-(use-fixtures :each my-fixture)
+(use-fixtures :each setup-connection-fixture)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Tests Data
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftype MyJson [data])
 
@@ -50,18 +58,6 @@
       (condp = type
         "json" (parse-string (.getValue self) true)))))
 
-(deftest inserting-json
-  (sc/execute *ctx* "create table t1 (k json)")
-  (sc/execute *ctx* ["insert into t1 (k) values (?)" (myjson {:foo 1})])
-  (let [result (sc/fetch *ctx* ["select * from t1"])
-        result1 (first result)]
-    (is (= (:k result1) {:foo 1}))))
-
-(deftest render-json
-  (let [q (-> (dsl/insert-into :t1)
-              (dsl/insert-values {:data (myjson {:foo 1})}))]
-    (is (= (fmt/get-sql q {:dialect :pgsql :type :inlined})
-           "insert into t1 (data) values ('{\"foo\":1}'::json)"))))
 
 (deftype MyArray [data])
 
@@ -91,14 +87,32 @@
   (-convert [self]
     (into [] (.getArray self))))
 
-(deftest inserting-arrays
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Tests Code
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(deftest inserting-json-test
+  (sc/execute *ctx* "create table t1 (k json)")
+  (sc/execute *ctx* ["insert into t1 (k) values (?)" (myjson {:foo 1})])
+
+  (let [result (sc/fetch *ctx* ["select * from t1"])
+        result1 (first result)]
+    (is (= (:k result1) {:foo 1}))))
+
+(deftest render-json-test
+  (let [q (-> (dsl/insert-into :t1)
+              (dsl/insert-values {:data (myjson {:foo 1})}))]
+    (is (= (fmt/get-sql q {:dialect :pgsql :type :inlined})
+           "insert into t1 (data) values ('{\"foo\":1}'::json)"))))
+
+(deftest inserting-arrays-test
   (sc/execute *ctx* "create table t1 (data bigint[])")
   (let [data (myintarray [1 2 3])]
     (sc/execute *ctx* ["insert into t1 (data) values (?)" data]))
   (let [result (sc/fetch *ctx* "select * from t1")]
     (is (= result [{:data [1 2 3]}]))))
 
-(deftest render-array
+(deftest render-array-test
   (let [q (-> (dsl/insert-into :t1)
               (dsl/insert-values {:data (myintarray [1 2 3])}))]
     (is (= (fmt/get-sql q {:dialect :pgsql :type :inlined})
