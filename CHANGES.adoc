@@ -1,5 +1,13 @@
 = Changelog
 
+== 0.5.0
+
+Date: 2015-10-17
+
+- Remove cats dependency.
+- Remove clojure.jdbc dependency.
+
+
 == 0.4.0
 
 Date: 2015-10-12
