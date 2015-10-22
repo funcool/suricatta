@@ -53,7 +53,7 @@
   (-get-bind-values [q]
     (let [^Configuration conf (DefaultConfiguration.)
           ^DSLContext context (DSL/using conf)]
-      (.extractBindValues context q)))
+      (into [] (.extractBindValues context q))))
 
   suricatta.types.Deferred
   (-get-sql [self type dialect]

@@ -29,6 +29,7 @@
             [clojure.walk :as walk])
   (:import org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
+           org.jooq.conf.ParamType
            org.jooq.tools.jdbc.JDBCUtils
            org.jooq.SQLDialect
            org.jooq.DSLContext
@@ -78,19 +79,30 @@
    :repeatable-read  Connection/TRANSACTION_REPEATABLE_READ
    :serializable     Connection/TRANSACTION_SERIALIZABLE})
 
+(defn inline?
+  "Return true if the current render/bind context
+  allow inline sql rendering.
+
+  This function should be used on third party
+  types/fields adapters."
+  [^org.jooq.Context context]
+  (let [^ParamType ptype (.paramType context)]
+    (or (= ptype ParamType/INLINED)
+        (= ptype ParamType/NAMED_OR_INLINED))))
+
+(def ^:private param-adapter
+  (reify suricatta.impl.IParam
+    (render [_ value ^RenderContext ctx]
+      (when-let [sql (proto/-render value ctx)]
+        (.sql ctx sql)))
+    (bind [_ value ^BindContext ctx]
+      (proto/-bind value ctx))))
+
 (defn make-param-impl
   "Wraps a value that implements IParamType
   protocol in valid jOOQ Param implementation."
   [value]
-  (suricatta.impl.ParamWrapper.
-   (reify suricatta.impl.IParam
-     (render [_ ^RenderContext ctx]
-       (let [^String sql (proto/-render value)]
-         (.sql ctx sql)))
-     (bind [_ ^BindContext ctx]
-       (let [^PreparedStetement stmt (.statement ctx)
-             index (.nextIndex ctx)]
-         (proto/-bind value stmt index))))))
+  (suricatta.impl.ParamWrapper. param-adapter value))
 
 (defn wrap-if-need
   [obj]

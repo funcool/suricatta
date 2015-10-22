@@ -50,8 +50,8 @@
 ;; Custom data types binding protocols
 
 (defprotocol IParamType
-  (-render [_] "Render param value as inline sql")
-  (-bind [_ stmt index] "Bind param value to the statement."))
+  (-render [_ rctx] "Render param value")
+  (-bind [_ bctx] "Bind param value to the statement."))
 
 (defprotocol ISQLType
   (-convert [_] "Convert sql type to user type."))

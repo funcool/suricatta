@@ -311,26 +311,38 @@ user defined types to jooq/jdbc compatible types, and other for backwards conver
 .Let see an example for adapt clojure persistent map interface to postgresql json file.
 [source, clojure]
 ----
-(require '[suricatta.proto :as proto])
-(require '[cheshire.core :as json])
+(require '[suricatta.proto :as proto]
+         '[suricatta.impl :as impl]
+         '[cheshire.core :as json])
+
 (import 'org.postgresql.util.PGobject)
 
 (extend-protocol proto/IParamType
   clojure.lang.IPersistentMap
-  (-render [self]
-    (str "'" (json/generate-string self) "'::json"))
-  (-bind [self stmt index]
-    (let [obj (doto (PGobject.)
-                (.setType "json")
-                (.setValue (json/generate-string self)))]
-      (.setObject stmt index obj))))
+  (-render [self ctx]
+    (if (impl/inline? ctx)
+      (str "'" (json/encode self) "'::json")
+      "?::json"))
+
+  (-bind [self ctx]
+    (when-not (impl/inline? ctx)
+      (let [stmt (.statement ^BindContext ctx)]
+            idx  (.nextIndex ^BindContext ctx)
+            obj (doto (PGobject.)
+                  (.setType "json")
+                  (.setValue (json/encode (.-data self))))]
+        (.setObject stmt idx obj))))
 ----
 
-The `render` function is responsible of transform the value into a sql string that can be
-directly inlined into the final sql. And the `bind` function is responsable to properly bind
-the value as parameter to the underlying prepared statement.
+The `-render` function is responsible of generate the appropiate sql for this field.
+The value should be inlined or rendered as bind ready parameter depending on the
+`inline` value that can be retrieved from the `RenderContext`.
 
-.Now let see the backward conversion example.
+The `-bind` function reponsibility is just bind the appropiate values to the
+prepared statement only if the context indicates that is not inlined.
+
+Now let see the backward conversion example:
+
 [source, clojure]
 ----
 (extend-protocol proto/ISQLType
@@ -338,10 +350,10 @@ the value as parameter to the underlying prepared statement.
   (-convert [self]
     (let [type (.getType self)]
       (condp = type
-        "json" (json/parse-string (.getValue self) true)))))
+        "json" (json/decode (.getValue self) true)))))
 ----
 
-Now having defined the two way conversions, you can pass the clojure hash-map as a
+Having defined the two way conversions, you can pass the clojure hash-map as a
 value to the query and it is automatically converted.
 
 .Insert and query example using postgresql json fields.
