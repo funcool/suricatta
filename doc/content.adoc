@@ -312,7 +312,6 @@ user defined types to jooq/jdbc compatible types, and other for backwards conver
 [source, clojure]
 ----
 (require '[suricatta.proto :as proto]
-         '[suricatta.impl :as impl]
          '[cheshire.core :as json])
 
 (import 'org.postgresql.util.PGobject)
@@ -320,18 +319,18 @@ user defined types to jooq/jdbc compatible types, and other for backwards conver
 (extend-protocol proto/IParamType
   clojure.lang.IPersistentMap
   (-render [self ctx]
-    (if (impl/inline? ctx)
+    (if (proto/-render-inline? ctx)
       (str "'" (json/encode self) "'::json")
       "?::json"))
 
   (-bind [self ctx]
-    (when-not (impl/inline? ctx)
-      (let [stmt (.statement ctx)
-            idx  (.nextIndex ctx)
+    (when-not (proto/-render-inline? ctx)
+      (let [stmt (proto/-get-statement ctx)
+            idx  (proto/-get-next-bindindex ctx)
             obj (doto (PGobject.)
                   (.setType "json")
-                  (.setValue (json/encode (.-data self))))]))))
-        (.setObject stmt idx obj))
+                  (.setValue (json/encode (.-data self))))]
+        (.setObject stmt idx obj)))))
 ----
 
 The `-render` function is responsible of generate the appropiate sql for this field.
