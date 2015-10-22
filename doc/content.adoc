@@ -326,8 +326,8 @@ user defined types to jooq/jdbc compatible types, and other for backwards conver
 
   (-bind [self ctx]
     (when-not (impl/inline? ctx)
-      (let [stmt (.statement ^BindContext ctx)]
-            idx  (.nextIndex ^BindContext ctx)
+      (let [stmt (.statement ctx)]
+            idx  (.nextIndex ctx)
             obj (doto (PGobject.)
                   (.setType "json")
                   (.setValue (json/encode (.-data self))))]
