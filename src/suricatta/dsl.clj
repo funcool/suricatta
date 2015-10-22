@@ -63,6 +63,7 @@
    :pg/char PostgresDataType/CHAR
    :pg/bytea PostgresDataType/BYTEA
    :pg/numeric PostgresDataType/NUMERIC
+   :pg/json PostgresDataType/JSON
    :maria/bigint MariaDBDataType/BIGINT
    :maria/ubigint MariaDBDataType/BIGINTUNSIGNED
    :maria/binary MariaDBDataType/BINARY
