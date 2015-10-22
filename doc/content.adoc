@@ -326,12 +326,12 @@ user defined types to jooq/jdbc compatible types, and other for backwards conver
 
   (-bind [self ctx]
     (when-not (impl/inline? ctx)
-      (let [stmt (.statement ctx)]
+      (let [stmt (.statement ctx)
             idx  (.nextIndex ctx)
             obj (doto (PGobject.)
                   (.setType "json")
-                  (.setValue (json/encode (.-data self))))]
-        (.setObject stmt idx obj))))
+                  (.setValue (json/encode (.-data self))))]))))
+        (.setObject stmt idx obj))
 ----
 
 The `-render` function is responsible of generate the appropiate sql for this field.
