@@ -138,6 +138,12 @@
     (is (= (fmt/get-sql q {:dialect :pgsql :type :inlined})
            "insert into t1 (data) values ('{\"foo\":1}'::json)"))))
 
+(deftest ddl-with-custom-datatypes-test
+  (let [q (-> (dsl/create-table :t1)
+              (dsl/add-column :title {:type "json" :null false}))]
+      (is (= (fmt/get-sql q)
+             "create table t1(title json not null)"))))
+
 (deftest inserting-arrays-test
   (sc/execute *ctx* "create table t1 (data bigint[])")
   (let [data (myintarray [1 2 3])]

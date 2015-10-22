@@ -28,8 +28,11 @@
   (:require [suricatta.core :as core]
             [suricatta.impl :as impl]
             [suricatta.types :as types :refer [defer]])
-  (:import org.jooq.impl.DSL
+  (:import org.jooq.SQLDialect
+           org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
+           org.jooq.impl.DefaultDataType
+           org.jooq.impl.SQLDataType
            org.jooq.util.postgres.PostgresDataType
            org.jooq.util.mariadb.MariaDBDataType
            org.jooq.util.mysql.MySQLDataType
@@ -119,7 +122,12 @@
               :null (.nullable dt attvalue)
               :precision (.precision dt attvalue)
               dt))
-          (get *datatypes* type)
+          (clojure.core/or
+           (get *datatypes* type)
+           (DefaultDataType.
+             SQLDialect/DEFAULT
+             SQLDataType/OTHER
+             (clojure.core/name type)))
           (into [] opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
