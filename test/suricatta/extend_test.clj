@@ -107,14 +107,6 @@
         result1 (first result)]
     (is (= (:k result1) {:foo 1}))))
 
-(deftest extract-bind-values-test
-  (let [d (myjson {:foo 1})
-        q (-> (dsl/insert-into :table)
-              (dsl/insert-values {:data d}))
-        r (fmt/get-bind-values q)]
-    (is (= (count r) 1))
-    (is (= (.data d) (.data (first r))))))
-
 (deftest inserting-json-using-dsl-test
   (sc/execute *ctx* "create table t1 (k json)")
 
@@ -124,6 +116,14 @@
 
   (let [result (sc/fetch-one *ctx* ["select * from t1"])]
     (is (= (:k result) {:foo 1}))))
+
+(deftest extract-bind-values-test
+  (let [d (myjson {:foo 1})
+        q (-> (dsl/insert-into :table)
+              (dsl/insert-values {:data d}))
+        r (fmt/get-bind-values q)]
+    (is (= (count r) 1))
+    (is (= (.data d) (.data (first r))))))
 
 (deftest render-json-test
   (let [q (-> (dsl/insert-into :t1)
