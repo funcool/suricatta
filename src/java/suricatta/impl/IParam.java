@@ -5,6 +5,6 @@ import org.jooq.BindContext;
 
 
 public interface IParam {
-  public Object render(RenderContext ctx);
-  public Object bind(BindContext ctx);
+  public Object render(Object value, RenderContext ctx);
+  public Object bind(Object value, BindContext ctx);
 }
