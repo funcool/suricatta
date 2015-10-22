@@ -79,16 +79,28 @@
    :repeatable-read  Connection/TRANSACTION_REPEATABLE_READ
    :serializable     Connection/TRANSACTION_SERIALIZABLE})
 
-(defn inline?
+(defn- render-inline?
   "Return true if the current render/bind context
   allow inline sql rendering.
 
   This function should be used on third party
   types/fields adapters."
+  {:internal true}
   [^org.jooq.Context context]
   (let [^ParamType ptype (.paramType context)]
     (or (= ptype ParamType/INLINED)
         (= ptype ParamType/NAMED_OR_INLINED))))
+
+(extend-protocol proto/IParamContext
+  RenderContext
+  (-get-statement [_] nil)
+  (-get-next-bindindex [_] nil)
+  (-render-inline? [it] (render-inline? it))
+
+  BindContext
+  (-get-statement [it] (.statement it))
+  (-get-next-bindindex [it] (.nextIndex it))
+  (-render-inline? [it] (render-inline? it)))
 
 (def ^:private param-adapter
   (reify suricatta.impl.IParam

@@ -49,9 +49,21 @@
 
 ;; Custom data types binding protocols
 
+(defprotocol IParamContext
+  "A lightweight abstraction for access
+  to the basic properties on the render/bind
+  context instances."
+  (-get-statement [_] "Get the prepared statement if it is awailable.")
+  (-get-next-bindindex [_] "Get the next bind index (WARN: side effectful)")
+  (-render-inline? [_] "Return true in case the context is setup for inline."))
+
 (defprotocol IParamType
-  (-render [_ rctx] "Render param value")
-  (-bind [_ bctx] "Bind param value to the statement."))
+  "A basic abstraction for adapt user defined
+  types to work within suricatta."
+  (-render [_ ctx] "Render the value as sql.")
+  (-bind [_ ctx] "Bind param value to the prepared statement."))
 
 (defprotocol ISQLType
+  "An abstraction for handle the backward type
+  conversion: from SQL->User."
   (-convert [_] "Convert sql type to user type."))
