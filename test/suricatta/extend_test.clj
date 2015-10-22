@@ -129,8 +129,11 @@
   (let [q (-> (dsl/insert-into :t1)
               (dsl/insert-values {:data (myjson {:foo 1})}))]
 
-    (is (= (fmt/get-sql q {:dialect :pgsql :type :indexed})
+    (is (= (fmt/get-sql q)
            "insert into t1 (data) values (?::json)"))
+
+    (is (= (fmt/get-sql q {:dialect :pgsql :type :inlined})
+           "insert into t1 (data) values ('{\"foo\":1}'::json)"))
 
     (is (= (fmt/get-sql q {:dialect :pgsql :type :inlined})
            "insert into t1 (data) values ('{\"foo\":1}'::json)"))))
