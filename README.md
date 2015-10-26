@@ -8,13 +8,14 @@ High level sql toolkit for clojure (backed by jooq library)
 
 [![Clojars Project](http://clojars.org/funcool/suricatta/latest-version.svg)](http://clojars.org/funcool/suricatta)
 
+
 ## Quick Start ##
 
 Put suricatta on your dependency list:
 
 ```clojure
-[funcool/suricatta "0.5.0"]
-[com.h2database/h2 "1.4.187"] ;; For this example only
+[funcool/suricatta "0.6.0"]
+[com.h2database/h2 "1.4.190"] ;; For this example only
 ```
 
 Define a valid dbspec hashmap:
@@ -37,5 +38,4 @@ Connect to the database and execute a query:
 
 ## Documentation ##
 
-- Latest stable documentation: http://funcool.github.io/suricatta/latest/
-- Development documentation: http://funcool.github.io/suricatta/devel/
+http://funcool.github.io/suricatta/latest/
