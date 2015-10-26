@@ -80,7 +80,7 @@
 <h1>suricatta documentation</h1>
 <div class="details">
 <span id="author" class="author">Andrey Antukh, &lt;niwi@niwi.nz&gt;</span><br>
-<span id="revdate">0.4.0</span>
+<span id="revdate">0.6.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -200,7 +200,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">funcool/suricatta</span> <span class="tok-s">&quot;0.4.0&quot;</span><span class="tok-p">]</span></code></pre>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">funcool/suricatta</span> <span class="tok-s">&quot;0.6.0&quot;</span><span class="tok-p">]</span></code></pre>
 </div>
 </div>
 </div>
@@ -211,7 +211,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="groovy"><span class="tok-n">compile</span> <span class="tok-s2">&quot;funcool:suricatta:0.4.0&quot;</span></code></pre>
+<pre class="pygments highlight"><code data-lang="groovy"><span class="tok-n">compile</span> <span class="tok-s2">&quot;funcool:suricatta:0.6.0&quot;</span></code></pre>
 </div>
 </div>
 </div>
@@ -530,39 +530,52 @@ user defined types to jooq/jdbc compatible types, and other for backwards conver
 <div class="listingblock">
 <div class="title">Let see an example for adapt clojure persistent map interface to postgresql json file.</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.proto</span> <span class="tok-ss">:as</span> <span class="tok-nv">proto</span><span class="tok-p">])</span>
-<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">cheshire.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">json</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">suricatta.proto</span> <span class="tok-ss">:as</span> <span class="tok-nv">proto</span><span class="tok-p">]</span>
+         <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">cheshire.core</span> <span class="tok-ss">:as</span> <span class="tok-nv">json</span><span class="tok-p">])</span>
+
 <span class="tok-p">(</span><span class="tok-nb">import </span><span class="tok-ss">&#39;org.postgresql.util.PGobject</span><span class="tok-p">)</span>
 
 <span class="tok-p">(</span><span class="tok-nf">extend-protocol</span> <span class="tok-nv">proto/IParamType</span>
   <span class="tok-nv">clojure.lang.IPersistentMap</span>
-  <span class="tok-p">(</span><span class="tok-nf">-render</span> <span class="tok-p">[</span><span class="tok-nv">self</span><span class="tok-p">]</span>
-    <span class="tok-p">(</span><span class="tok-nb">str </span><span class="tok-s">&quot;&#39;&quot;</span> <span class="tok-p">(</span><span class="tok-nf">json/generate-string</span> <span class="tok-nv">self</span><span class="tok-p">)</span> <span class="tok-s">&quot;&#39;::json&quot;</span><span class="tok-p">))</span>
-  <span class="tok-p">(</span><span class="tok-nf">-bind</span> <span class="tok-p">[</span><span class="tok-nv">self</span> <span class="tok-nv">stmt</span> <span class="tok-nv">index</span><span class="tok-p">]</span>
-    <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">obj</span> <span class="tok-p">(</span><span class="tok-nb">doto </span><span class="tok-p">(</span><span class="tok-nf">PGobject.</span><span class="tok-p">)</span>
-                <span class="tok-p">(</span><span class="tok-nf">.setType</span> <span class="tok-s">&quot;json&quot;</span><span class="tok-p">)</span>
-                <span class="tok-p">(</span><span class="tok-nf">.setValue</span> <span class="tok-p">(</span><span class="tok-nf">json/generate-string</span> <span class="tok-nv">self</span><span class="tok-p">)))]</span>
-      <span class="tok-p">(</span><span class="tok-nf">.setObject</span> <span class="tok-nv">stmt</span> <span class="tok-nb">index </span><span class="tok-nv">obj</span><span class="tok-p">))))</span></code></pre>
+  <span class="tok-p">(</span><span class="tok-nf">-render</span> <span class="tok-p">[</span><span class="tok-nv">self</span> <span class="tok-nv">ctx</span><span class="tok-p">]</span>
+    <span class="tok-p">(</span><span class="tok-k">if </span><span class="tok-p">(</span><span class="tok-nf">proto/-render-inline?</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
+      <span class="tok-p">(</span><span class="tok-nb">str </span><span class="tok-s">&quot;&#39;&quot;</span> <span class="tok-p">(</span><span class="tok-nf">json/encode</span> <span class="tok-nv">self</span><span class="tok-p">)</span> <span class="tok-s">&quot;&#39;::json&quot;</span><span class="tok-p">)</span>
+      <span class="tok-s">&quot;?::json&quot;</span><span class="tok-p">))</span>
+
+  <span class="tok-p">(</span><span class="tok-nf">-bind</span> <span class="tok-p">[</span><span class="tok-nv">self</span> <span class="tok-nv">ctx</span><span class="tok-p">]</span>
+    <span class="tok-p">(</span><span class="tok-nb">when-not </span><span class="tok-p">(</span><span class="tok-nf">proto/-render-inline?</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
+      <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">stmt</span> <span class="tok-p">(</span><span class="tok-nf">proto/-get-statement</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
+            <span class="tok-nv">idx</span>  <span class="tok-p">(</span><span class="tok-nf">proto/-get-next-bindindex</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
+            <span class="tok-nv">obj</span> <span class="tok-p">(</span><span class="tok-nb">doto </span><span class="tok-p">(</span><span class="tok-nf">PGobject.</span><span class="tok-p">)</span>
+                  <span class="tok-p">(</span><span class="tok-nf">.setType</span> <span class="tok-s">&quot;json&quot;</span><span class="tok-p">)</span>
+                  <span class="tok-p">(</span><span class="tok-nf">.setValue</span> <span class="tok-p">(</span><span class="tok-nf">json/encode</span> <span class="tok-p">(</span><span class="tok-nf">.-data</span> <span class="tok-nv">self</span><span class="tok-p">))))]</span>
+        <span class="tok-p">(</span><span class="tok-nf">.setObject</span> <span class="tok-nv">stmt</span> <span class="tok-nv">idx</span> <span class="tok-nv">obj</span><span class="tok-p">)))))</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The <code>render</code> function is responsible of transform the value into a sql string that can be
-directly inlined into the final sql. And the <code>bind</code> function is responsable to properly bind
-the value as parameter to the underlying prepared statement.</p>
+<p>The <code>-render</code> function is responsible of generate the appropiate sql for this field.
+The value should be inlined or rendered as bind ready parameter depending on the
+<code>inline</code> value that can be retrieved from the <code>RenderContext</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>-bind</code> function reponsibility is just bind the appropiate values to the
+prepared statement only if the context indicates that is not inlined.</p>
+</div>
+<div class="paragraph">
+<p>Now let see the backward conversion example:</p>
 </div>
 <div class="listingblock">
-<div class="title">Now let see the backward conversion example.</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">extend-protocol</span> <span class="tok-nv">proto/ISQLType</span>
   <span class="tok-nv">PGobject</span>
   <span class="tok-p">(</span><span class="tok-nf">-convert</span> <span class="tok-p">[</span><span class="tok-nv">self</span><span class="tok-p">]</span>
     <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">type</span> <span class="tok-p">(</span><span class="tok-nf">.getType</span> <span class="tok-nv">self</span><span class="tok-p">)]</span>
       <span class="tok-p">(</span><span class="tok-nf">condp</span> <span class="tok-nb">= </span><span class="tok-nv">type</span>
-        <span class="tok-s">&quot;json&quot;</span> <span class="tok-p">(</span><span class="tok-nf">json/parse-string</span> <span class="tok-p">(</span><span class="tok-nf">.getValue</span> <span class="tok-nv">self</span><span class="tok-p">)</span> <span class="tok-nv">true</span><span class="tok-p">)))))</span></code></pre>
+        <span class="tok-s">&quot;json&quot;</span> <span class="tok-p">(</span><span class="tok-nf">json/decode</span> <span class="tok-p">(</span><span class="tok-nf">.getValue</span> <span class="tok-nv">self</span><span class="tok-p">)</span> <span class="tok-nv">true</span><span class="tok-p">)))))</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Now having defined the two way conversions, you can pass the clojure hash-map as a
+<p>Having defined the two way conversions, you can pass the clojure hash-map as a
 value to the query and it is automatically converted.</p>
 </div>
 <div class="listingblock">
@@ -1520,7 +1533,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-10-12 11:36:34 EEST
+Last updated 2015-10-26 22:30:01 EET
 </div>
 </div>
 </body>
