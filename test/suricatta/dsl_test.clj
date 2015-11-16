@@ -10,7 +10,7 @@
 (deftest rendering-dialect
   (testing "Default dialect."
     (let [q (dsl/select :id :name)]
-      (is (= (fmt/get-sql q) "select id, name from dual"))))
+      (is (= (fmt/get-sql q) "select id, name"))))
 
   (testing "Specify concrete dialect"
     (let [q (dsl/select :id :name)]
