@@ -1,6 +1,6 @@
 = suricatta documentation
 Andrey Antukh, <niwi@niwi.nz>
-0.6.0
+0.6.1
 :toc: left
 :!numbered:
 :source-highlighter: pygments
@@ -20,42 +20,22 @@ It consists in four modules:
 - *suricatta.format*: sql rendering functions.
 
 
-== Project Maturity
+=== Project Maturity
 
 Since _suricatta_ is a young project there may be some API breakage.
 
 
-== Install
+=== Install
 
-This section covers the _suricatta_ library installing process and its requirements.
-
-
-=== Requirements
-
-_suricatta_ is tested with these platforms:
-
-- JDK8
-
-
-=== Leiningen
-
-The simplest way to use _suricatta_ in a clojure project is by including it in the dependency
-vector on your *_project.clj_* file:
+The simplest way to use _suricatta_ in a clojure project, is by including it in the
+dependency vector on your *_project.clj_* file:
 
 [source,clojure]
 ----
-[funcool/suricatta "0.6.0"]
+[funcool/suricatta "0.6.1"]
 ----
 
-
-=== Gradle
-
-If you are using gradle, this is a dependency line for gradle dsl:
-
-[source,groovy]
-----
-compile "funcool:suricatta:0.6.0"
-----
+_Suricatta_ is only runs with *JDK >= 8* and *Clojure >= 1.7*
 
 
 == SQL Execution
@@ -65,15 +45,16 @@ This section explains the usage of the sql execution part of the library.
 
 === Connecting to database
 
-_suricatta_, unlike other database libraries, uses a concept of *context* instead of *connection*.
-A **context** has the resposibility of jdbc connection resource management, transaction isolation
-flags and sql rendering dialect.
+_suricatta_, unlike other database libraries, uses a concept of *context* instead
+of *connection*. A **context** has the resposibility of jdbc connection resource
+management, transaction isolation flags and sql rendering dialect.
 
 You can create a **context** from:
 
 - a hash-map dbspec format (plain connection params).
 - a datasource instance (connection pool).
-- a link:http://funcool.github.io/clojure.jdbc/latest/[clojure.jdbc] connection instance.
+- a link:http://funcool.github.io/clojure.jdbc/latest/[clojure.jdbc] connection
+  instance.
 
 .This is a default aspect of one dbspec.
 [source,clojure]
@@ -116,11 +97,11 @@ NOTE: when closing the _suricatta_ context, the wrapped connection will also be 
 
 ==== Create Context from DataSource.
 
-DataSource is the preferd way to connect to the database in production enviroments and
-is usually used to implement connection pools.
+DataSource is the preferd way to connect to the database in production enviroments
+and is usually used to implement connection pools.
 
-In our case we will use *hikaricp* as a datasource with a connection pool. Lets start by adding hikari's dependency
-entry to your _project.clj_:
+In our case we will use *hikaricp* as a datasource with a connection pool. Lets
+start by adding hikari's dependency entry to your _project.clj_:
 
 [source, clojure]
 ----
@@ -164,7 +145,8 @@ here: https://github.com/tomekw/hikari-cp
 
 === Executing queries
 
-_suricatta_ has a clear separation between queries that can return a result, and queries that can't.
+_suricatta_ has a clear separation between queries that can return a result, and
+queries that can't.
 
 .Example using `suricatta.core/execute` function.
 [source, clojure]
@@ -173,8 +155,8 @@ _suricatta_ has a clear separation between queries that can return a result, and
 (sc/execute ctx "CREATE TABLE foo")
 ----
 
-The return value of `suricatta.core/execute` function depends on the query, but in almost all
-cases it returns a number of affected rows.
+The return value of `suricatta.core/execute` function depends on the query, but
+in almost all cases it returns a number of affected rows.
 
 
 === Fetching results
@@ -207,8 +189,8 @@ not have special syntax for queries with `RETURNING` clause:
 
 === Parametrized queries
 
-Like _clojure.jdbc_ and _clojure.java.jdbc_, _suricatta_ has support for parametrized
-queries in *sqlvec* format.
+Like _clojure.jdbc_ and _clojure.java.jdbc_, _suricatta_ has support for
+parametrized queries in *sqlvec* format.
 
 [source, clojure]
 ----
@@ -219,7 +201,8 @@ queries in *sqlvec* format.
 
 === Reusing query statement
 
-The above technique can be quite useful when you want to reuse expensive database resources.
+The above technique can be quite useful when you want to reuse expensive database
+resources.
 
 [source, clojure]
 ----
@@ -231,8 +214,8 @@ The above technique can be quite useful when you want to reuse expensive databas
 
 === Transactions
 
-The _suricatta_ library does not have support for low level transactions api, instead of it, offers a
-lightweight abstraction over complex transaction api.
+The _suricatta_ library does not have support for low level transactions api,
+instead of it, offers a lightweight abstraction over complex transaction api.
 
 .Execute a query in a transaction block.
 [source, clojure]
@@ -241,8 +224,8 @@ lightweight abstraction over complex transaction api.
                        (sc/fetch ctx "select id, name from book for update")))
 ----
 
-Additionally to `atomic-apply` high order functiom, _suricatta_ has a convenient macro offering
-lightweight sugar sytax for atomic blocks:
+Additionally to `atomic-apply` high order functiom, _suricatta_ has a convenient
+macro offering lightweight sugar sytax for atomic blocks:
 
 .Execute a query in a transaction block using sugar syntax macro.
 [source, clojure]
@@ -253,9 +236,9 @@ lightweight sugar sytax for atomic blocks:
 
 You can nest atomic usage as deep as you want, subtransactions are fully supported.
 
-If an exception is raised inside atomic context the transaction will be aborted. Also, in
-some circumstances, you probably want an explicit rollback, for which the _suricatta_ library
-exposes a `suricatta.core/set-rollback!` function.
+If an exception is raised inside atomic context the transaction will be aborted.
+Also, in some circumstances, you probably want an explicit rollback, for which
+the _suricatta_ library exposes a `suricatta.core/set-rollback!` function.
 
 .Explicit rollback example
 [source, clojure]
@@ -265,23 +248,27 @@ exposes a `suricatta.core/set-rollback!` function.
   (sc/set-rollback! ctx))
 ----
 
-The `set-rollback!` function only marks the current transaction for rollback. It does not abort
-the execution, and it is aware of subtransactions. If it is used in a subtransaction, only
-the subtransaction will be marked for rollback, not the entire transaction.
+The `set-rollback!` function only marks the current transaction for rollback. It
+does not abort the execution, and it is aware of subtransactions. If it is used
+in a subtransaction, only the subtransaction will be marked for rollback, not
+the entire transaction.
 
 
 === Lazy result fetching
 
-The _suricatta_ library also comes with lazy fetching support. When lazy fetching support is enabled, instead
-of fetching all results in memory, suricatta will fetch results in small groups, allowing lower memory usage.
+The _suricatta_ library also comes with lazy fetching support. When lazy fetching
+support is enabled, instead of fetching all results in memory, suricatta will
+fetch results in small groups, allowing lower memory usage.
 
 Lazy fetching has a few quirks:
 
-- In some databases, like _PostgreSQL_, it requires the entire fetch to occur in one transaction because it uses  server side cursors.
-- Lazy fetching requires explicit resource management, because a connection and an internal resultset must be mantained open until fetching is finished.
+- In some databases, like _PostgreSQL_, it requires the entire fetch to occur in
+  one transaction because it uses  server side cursors.
+- Lazy fetching requires explicit resource management, because a connection and
+  an internal resultset must be mantained open until fetching is finished.
 
-Using lazy fetch is realy easy, because suricatta exposes it as a simple lazy sequence. Let's
-see one example:
+Using lazy fetch is realy easy, because suricatta exposes it as a simple lazy
+sequence. Let's see one example:
 
 .Example executing large query and fetching elemens in groups of 10.
 [source, clojure]
@@ -299,7 +286,8 @@ see one example:
 ;; ...
 ----
 
-The third parameter of `sc/fetch-lazy` function is the optional default fetch size (currently 100.)
+The third parameter of `sc/fetch-lazy` function is the optional default fetch
+size (currently 100.)
 
 
 === Custom types
@@ -308,7 +296,7 @@ Since 0.2.0 version, suricatta comes with support for extension with custom
 (or vendor specific) types support. It consist in two protocols, one for converting
 user defined types to jooq/jdbc compatible types, and other for backwards conversion.
 
-.Let see an example for adapt clojure persistent map interface to postgresql json file.
+.Example adapting clojure persistent map interface to postgresql json file.
 [source, clojure]
 ----
 (require '[suricatta.proto :as proto]
@@ -372,8 +360,8 @@ value to the query and it is automatically converted.
 
 == SQL Building and Formatting
 
-This section intends to explain the usage of sql building library, the lightweight layer on
-top of `jooq` dsl.
+This section intends to explain the usage of sql building library, the lightweight
+layer on top of `jooq` dsl.
 
 You can found all related functions of sql dsl on `suricatta.dsl` namespace:
 
@@ -382,7 +370,8 @@ You can found all related functions of sql dsl on `suricatta.dsl` namespace:
 (require '[suricatta.dsl :as dsl])
 ----
 
-And functions related to formating sql into string or sqlvec format in `suricatta.format` namespace:
+And functions related to formating sql into string or sqlvec format in
+`suricatta.format` namespace:
 
 [source, clojure]
 ----
@@ -390,7 +379,8 @@ And functions related to formating sql into string or sqlvec format in `suricatt
 ----
 
 
-Object instances retured by dsl api are fully compatible with the sql executing api. Let see an example:
+Object instances retured by dsl api are fully compatible with the sql executing
+api. Let see an example:
 
 [source, clojure]
 ----
@@ -424,8 +414,9 @@ Would generate SQL like this:
 select id, name from dual
 ----
 
-The rendering result depends on the dialect used. You can specify a different dialect by
-passing the `:dialect` option to the `get-sql` function of `suricatta.format` namespace:
+The rendering result depends on the dialect used. You can specify a different
+dialect by passing the `:dialect` option to the `get-sql` function of
+`suricatta.format` namespace:
 
 [source, clojure]
 ----
@@ -496,7 +487,8 @@ Also, you can specify an alias for each table:
 
 ==== The JOIN clause
 
-_suricata_ comes with a complete dsl for making join clauses. Let see one simple example:
+_suricata_ comes with a complete dsl for making join clauses. Let see one
+simple example:
 
 [source, clojure]
 ----
@@ -523,8 +515,8 @@ Also, join clause can be applied to table expressions:
 
 ==== The WHERE clause
 
-The WHERE clause can be used to JOIN or filter predicates in order to restrict the data returned
-by the query:
+The WHERE clause can be used to JOIN or filter predicates in order to restrict
+the data returned by the query:
 
 [source, clojure]
 ----
@@ -572,12 +564,15 @@ Using explicit logical operators:
 ;; => "select name from book where ((book.age > 20) or (not book.in_store))"
 ----
 
-Different kind of joins are suported with that functions: `dsl/full-outer-join`, `dsl/left-outer-join`, `dsl/right-outer-join` and `dsl/cross-join`.
+Different kind of joins are suported with that functions: `dsl/full-outer-join`,
+`dsl/left-outer-join`, `dsl/right-outer-join` and `dsl/cross-join`.
 
 
 ==== The GROUP BY clause
 
-GROUP BY can be used to create unique groups of data, to form aggregations, to remove duplicates and for other reasons. Let see an example of how it can be done using the _suricatta_ dsl:
+GROUP BY can be used to create unique groups of data, to form aggregations, to
+remove duplicates and for other reasons. Let see an example of how it can be
+done using the _suricatta_ dsl:
 
 [source, clojure]
 ----
@@ -619,8 +614,9 @@ Here's an example of how specify the ordering to the query:
 ;; => "select name from book order by name asc"
 ----
 
-In previous example we specified the order field without order direction. _surricata_ automatically
-uses `ASC` for sort fields that comes without explicit ordering direction.
+In previous example we specified the order field without order direction.
+_surricata_ automatically uses `ASC` for sort fields that comes without explicit
+ordering direction.
 
 .Specify sort direction explicitly
 [source, clojure]
@@ -656,7 +652,8 @@ uses `ASC` for sort fields that comes without explicit ordering direction.
 
 ==== The LIMIT and OFFSET clauses
 
-Let see some examples of how to apply `limit` and `offset` to your queries with _suricatta_:
+Let see some examples of how to apply `limit` and `offset` to your queries
+with _suricatta_:
 
 [source, clojure]
 ----
@@ -671,9 +668,10 @@ Let see some examples of how to apply `limit` and `offset` to your queries with 
 
 ==== The FOR UPDATE clause
 
-For inter-process synchronisation and other reasons, you may choose to use the SELECT .. FOR UPDATE
-clause to indicate to the database, that a set of cells or records should be locked by a
-given transaction for subsequent updates. Let see an example of how use it with _suricatta_ dsl:
+For inter-process synchronisation and other reasons, you may choose to use the
+`SELECT .. FOR UPDATE` clause to indicate to the database, that a set of cells
+or records should be locked by a given transaction for subsequent updates. Let
+see an example of how use it with _suricatta_ dsl:
 
 .Without specific fields
 [source, clojure]
@@ -695,9 +693,12 @@ given transaction for subsequent updates. Let see an example of how use it with 
 ;; => "select * from book for update of \"name\""
 ----
 
+
 ==== The UNION and UNION ALL clause
 
-These operators combine two results into one. UNION removes all duplicate records resulting from this combination and UNION ALL preserves all results as they are.
+These operators combine two results into one. UNION removes all duplicate
+records resulting from this combination and UNION ALL preserves all results as
+they are.
 
 .Using UNION clause
 [source, clojure]
@@ -741,7 +742,8 @@ The INSERT statement is used to insert new records into a database table.
 
 === The UPDATE statement
 
-The UPDATE statement is used to modify one or several pre-existing records in a database table.
+The UPDATE statement is used to modify one or several pre-existing records in 
+a database table.
 
 .Example of update statement without condition.
 [source, clojure]
@@ -985,6 +987,7 @@ Some databases allow expressing in-memory temporary tables using a `values()` sy
 ----
 
 WARNING: `suricatta.dsl/row` is defined as a macro and only accepts literals.
+
 
 ==== Nested SELECTs
 
