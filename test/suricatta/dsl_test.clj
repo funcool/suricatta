@@ -251,7 +251,7 @@
 (deftest dsl-update
   (testing "Update statement without condition using map"
     (let [q (-> (dsl/update :t1)
-                (dsl/set {:id 2 :name "foo"}))]
+                (dsl/set (sorted-map :id 2 :name "foo")))]
       (is (= (fmt/get-sql q)
              "update t1 set id = ?, name = ?"))))
 
