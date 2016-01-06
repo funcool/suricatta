@@ -1,5 +1,6 @@
 language: clojure
-lein: lein2
+lein: lein
+sudo: false
 
 addons:
   postgresql: 9.3
@@ -16,6 +17,9 @@ jdk:
 branches:
   only:
     - master
+
+script:
+  - lein test-all
 
 notifications:
   email:
