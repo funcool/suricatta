@@ -1,4 +1,4 @@
-(defproject funcool/suricatta "0.6.2"
+(defproject funcool/suricatta "0.7.0"
   :description "High level sql toolkit for clojure (backed by jooq library)"
   :url "https://github.com/funcool/suricatta"
   :license {:name "BSD (2-Clause)"
