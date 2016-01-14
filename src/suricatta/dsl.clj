@@ -317,11 +317,16 @@
 (defn field
   "Create a field instance."
   [data & [{:keys [alias] :as opts}]]
-  (defer
-    (let [f (-field data)]
-      (if alias
-        (.as f (clojure.core/name alias))
-        f))))
+  (let [f (-field data)]
+    (if alias
+      (.as f (clojure.core/name alias))
+      f)))
+
+(defn typed-field
+  [data type]
+  (let [f (clojure.core/name data)
+        dt (get *datatypes* type)]
+    (DSL/field f dt)))
 
 (defn val
   [v]

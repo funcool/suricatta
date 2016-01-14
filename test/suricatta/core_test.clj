@@ -89,8 +89,8 @@
   (testing "load csv"
     (sc/execute *ctx* "create table foo1 (a int, b int)")
     (let [data (str "1,2\n3,4\n")]
-      (sc/load-into *ctx* :foo1 data {:fields [(dsl/field* "a" :pg/int4)
-                                               (dsl/field* "b" :pg/int4)]
+      (sc/load-into *ctx* :foo1 data {:fields [(dsl/typed-field "a" :pg/int4)
+                                               (dsl/typed-field "b" :pg/int4)]
                                       :format :csv}))
     (let [result (sc/fetch *ctx* "select * from foo1")]
       (is (= [{:a 1, :b 2} {:a 3, :b 4}] result)))))
