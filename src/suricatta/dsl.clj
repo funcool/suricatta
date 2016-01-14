@@ -29,6 +29,9 @@
             [suricatta.impl :as impl]
             [suricatta.types :as types :refer [defer]])
   (:import org.jooq.SQLDialect
+           org.jooq.SelectJoinStep
+           org.jooq.InsertReturningStep
+           org.jooq.Row
            org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
            org.jooq.impl.DefaultDataType
@@ -388,7 +391,9 @@
   "Create join clause."
   [q t]
   (defer
-    (.join @q t)))
+    (let [^SelectJoinStep q (deref q)
+          t (-unwrap t)]
+      (.join q t))))
 
 (defn cross-join
   [step tlike]
