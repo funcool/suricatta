@@ -167,24 +167,24 @@
 ;; Protocol Implementations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmulti field* (comp class first vector))
+(defmulti -field (comp class first vector))
 
-(defmethod field* java.lang.String
+(defmethod -field java.lang.String
   [^String name & [type]]
   (let [type (get *datatypes* type)]
     (if type
       (DSL/field name type)
       (DSL/field name))))
 
-(defmethod field* clojure.lang.Keyword
+(defmethod -field clojure.lang.Keyword
   [name & args]
-  (apply field* (clojure.core/name name) args))
+  (apply -field (clojure.core/name name) args))
 
-(defmethod field* org.jooq.Field
+(defmethod -field org.jooq.Field
   [field & args]
   field)
 
-(defmethod field* org.jooq.impl.Val
+(defmethod -field org.jooq.impl.Val
   [field & args]
   field)
 
@@ -206,7 +206,7 @@
 
   clojure.lang.PersistentVector
   (-sort-field ^org.jooq.SortField [v]
-    (let [^org.jooq.Field field (field* (first v))
+    (let [^org.jooq.Field field (-field (first v))
           ^org.jooq.SortField field (case (second v)
                                       :asc (.asc field)
                                       :desc (.desc field))]
@@ -319,7 +319,7 @@
   "Create a field instance."
   [data & [{:keys [alias] :as opts}]]
   (defer
-    (let [f (field* data)]
+    (let [f (-field data)]
       (if alias
         (.as f (clojure.core/name alias))
         f))))
@@ -345,10 +345,10 @@
       (cond
        (instance? org.jooq.WithStep (first fields))
        (.select (first fields)
-                (->> (map field* (rest fields))
+                (->> (map -field (rest fields))
                      (into-array org.jooq.Field)))
        :else
-       (->> (map field* fields)
+       (->> (map -field fields)
             (into-array org.jooq.Field)
             (DSL/select))))))
 
@@ -458,7 +458,7 @@
 (defn group-by
   [q & fields]
   (defer
-    (->> (map (comp field* -unwrap) fields)
+    (->> (map (comp -field -unwrap) fields)
          (into-array org.jooq.GroupField)
          (.groupBy @q))))
 
@@ -484,7 +484,7 @@
   (defer
     (let [q (.forUpdate @q)]
       (if (seq fields)
-        (->> (map field* fields)
+        (->> (map -field fields)
              (into-array org.jooq.Field)
              (.of q))
         q))))
@@ -520,7 +520,7 @@
   (defer
     (if (= (count fields) 0)
       (.returning @t)
-      (.returning @t (->> (map field* fields)
+      (.returning @t (->> (map -field fields)
                           (into-array org.jooq.Field))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -580,8 +580,8 @@
 (defn values
   [& rows]
   (defer
-    (->> (into-array org.jooq.RowN rows)
-         (DSL/values))))
+    (-> (into-array org.jooq.RowN rows)
+        (DSL/values))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Insert statement
@@ -596,7 +596,7 @@
   [t values]
   (defer
     (-> (fn [acc [k v]]
-          (.set acc (field* k) (-unwrap v)))
+          (.set acc (-field k) (-unwrap v)))
         (reduce (-unwrap t) values)
         (.newRecord))))
 
@@ -616,7 +616,7 @@
    (defer
      (let [t (-unwrap t)]
        (reduce (fn [acc [k v]]
-                 (.set t (field* k) v))
+                 (.set t (-field k) v))
                t kv))))
   ([t k v]
    (defer
@@ -624,7 +624,7 @@
            t (-unwrap t)]
        (if (instance? org.jooq.Row k)
          (.set t k v)
-         (.set t (field* k) v))))))
+         (.set t (-field k) v))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Delete statement
@@ -672,18 +672,18 @@
   [step name & [{:keys [default] :as opts}]]
   (defer
     (let [step (-unwrap step)
-          name (field* name)
+          name (-field name)
           type (make-datatype opts)
           step (.add step name type)]
         (if default
-           (.setDefault step (field* default))
+           (.setDefault step (-field default))
            step))))
 
 (defmethod add-column org.jooq.CreateTableAsStep
   [step name & [{:keys [default] :as opts}]]
   (defer
     (let [step (-unwrap step)
-          name (field* name)
+          name (-field name)
           type (make-datatype opts)
           type (.defaulted type true)]
       (.column step name type))))
@@ -692,7 +692,7 @@
   [step name & [{:keys [type default null length] :as opts}]]
   (defer
     (let [step (-> (-unwrap step)
-                   (.alter (field* name)))]
+                   (.alter (-field name)))]
       (when (clojure.core/and (clojure.core/or null length) (clojure.core/not type))
         (throw (IllegalArgumentException.
                 "For change null or length you should specify type.")))
@@ -707,7 +707,7 @@
   [step name & [type]]
   (defer
     (let [step (-> (-unwrap step)
-                   (.drop (field* name)))]
+                   (.drop (-field name)))]
       (case type
         :cascade (.cascade step)
         :restrict (.restrict step)
@@ -719,7 +719,7 @@
   [step table field & extrafields]
   (defer
     (let [fields (->> (concat [field] extrafields)
-                      (map (comp field* -unwrap))
+                      (map (comp -field -unwrap))
                       (into-array org.jooq.Field))]
       (.on (-unwrap step) (-table table) fields))))
 
