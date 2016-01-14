@@ -143,14 +143,14 @@
 (defprotocol ITable
   (-table [_] "Table constructor."))
 
+(defprotocol IField
+  (-field [_] "Field constructor."))
+
 (defprotocol IName
   (-name [_] "Name constructor (mainly used with CTE)"))
 
 (defprotocol ITableCoerce
   (-as-table [_ params] "Table alias constructor"))
-
-(defprotocol IFieldCoerce
-  (-as-field [_ params] "Field alias constructor"))
 
 (defprotocol ICondition
   (-condition [_] "Condition constructor"))
@@ -167,26 +167,28 @@
 ;; Protocol Implementations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmulti -field (comp class first vector))
+(extend-protocol IField
+  java.lang.String
+  (-field [v]
+    (DSL/field v))
 
-(defmethod -field java.lang.String
-  [^String name & [type]]
-  (let [type (get *datatypes* type)]
-    (if type
-      (DSL/field name type)
-      (DSL/field name))))
+  clojure.lang.Keyword
+  (-field [v]
+    (DSL/field (clojure.core/name v)))
 
-(defmethod -field clojure.lang.Keyword
-  [name & args]
-  (apply -field (clojure.core/name name) args))
+  clojure.lang.PersistentVector
+  (-field [v]
+    (let [[fname falias] v]
+      (-> (-field fname)
+          (.as falias))))
 
-(defmethod -field org.jooq.Field
-  [field & args]
-  field)
+  org.jooq.Field
+  (-field [v]
+    v)
 
-(defmethod -field org.jooq.impl.Val
-  [field & args]
-  field)
+  org.jooq.impl.Val
+  (-field [v]
+    v))
 
 (extend-protocol ISortField
   java.lang.String
@@ -219,6 +221,12 @@
 (extend-protocol ITable
   java.lang.String
   (-table [s] (DSL/table s))
+
+  clojure.lang.IPersistentVector
+  (-table [pv]
+    (let [[tname talias] pv]
+      (-> (-table tname)
+          (.as talias))))
 
   clojure.lang.Keyword
   (-table [kw] (-table (clojure.core/name kw)))
@@ -259,15 +267,6 @@
 (extend-protocol IVal
   Object
   (-val [v] (DSL/val v)))
-
-(extend-protocol IFieldCoerce
-  org.jooq.FieldLike
-  (-as-field [n args]
-    (let [^String alias (first args)]
-      (.asField n alias)))
-
-  suricatta.types.Deferred
-  (-as-field [n args] (-as-field @n args)))
 
 (extend-protocol ITableCoerce
   org.jooq.Name
@@ -310,10 +309,10 @@
 
 (defn as-field
   "Coerce querypart to field expression."
-  [o & args]
+  [o alias]
   (defer
-    (->> (map -unwrap args)
-         (-as-field o))))
+    (let [o (-unwrap o)]
+      (.asField o alias))))
 
 (defn field
   "Create a field instance."
@@ -343,14 +342,14 @@
   (defer
     (let [fields (map -unwrap fields)]
       (cond
-       (instance? org.jooq.WithStep (first fields))
-       (.select (first fields)
-                (->> (map -field (rest fields))
-                     (into-array org.jooq.Field)))
-       :else
-       (->> (map -field fields)
-            (into-array org.jooq.Field)
-            (DSL/select))))))
+        (instance? org.jooq.WithStep (first fields))
+        (.select (first fields)
+                 (->> (map -field (rest fields))
+                      (into-array org.jooq.Field)))
+        :else
+        (->> (map -field fields)
+             (into-array org.jooq.Field)
+             (DSL/select))))))
 
 (defn select-distinct
   "Start select statement."
@@ -392,7 +391,7 @@
   [q t]
   (defer
     (let [^SelectJoinStep q (deref q)
-          t (-unwrap t)]
+          t (-table (-unwrap t))]
       (.join q t))))
 
 (defn cross-join

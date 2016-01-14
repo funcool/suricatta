@@ -41,13 +41,13 @@
       (is (= bv [2]))))
 
   (testing "Select clause with field as condition and alias"
-    (let [q (-> (dsl/select (dsl/field "foo > 5" {:alias "bar"}))
+    (let [q (-> (dsl/select ["foo > 5" "bar"])
                 (dsl/from "baz"))]
       (is (= (fmt/get-sql q)
              "select foo > 5 \"bar\" from baz"))))
 
   (testing "Select clause with count(*) expresion"
-    (let [q (-> (dsl/select (dsl/field "count(*)" {:alias "count"}))
+    (let [q (-> (dsl/select ["count(*)" "count"])
                 (dsl/from "baz"))]
       (is (= (fmt/get-sql q)
              "select count(*) \"count\" from baz"))))
@@ -60,6 +60,13 @@
       (is (= (fmt/get-sql q)
              "select 1 \"one\" from table1 \"foo\", table2 \"bar\""))))
 
+  (testing "Select with two tables in from clause 2"
+    (let [q (-> (dsl/select-one)
+                (dsl/from ["table1" "foo"]
+                          ["table2" "bar"]))]
+      (is (= (fmt/get-sql q)
+             "select 1 \"one\" from table1 \"foo\", table2 \"bar\""))))
+
   (testing "Select clause with join"
     (let [q (-> (dsl/select-one)
                 (dsl/from (dsl/table "book"))
@@ -67,6 +74,14 @@
                 (dsl/on "book.authorid = book.id"))]
       (is (= (fmt/get-sql q)
              "select 1 \"one\" from book join author on (book.authorid = book.id)"))))
+
+  (testing "Select clause with join and aliases"
+    (let [q (-> (dsl/select-one)
+                (dsl/from ["book" "b"])
+                (dsl/join ["author" "a"])
+                (dsl/on "b.authorid = a.id"))]
+      (is (= (fmt/get-sql q)
+             "select 1 \"one\" from book \"b\" join author \"a\" on (b.authorid = a.id)"))))
 
   (testing "Select clause with join on table"
     (let [q (-> (dsl/select-one)
