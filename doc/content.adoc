@@ -451,6 +451,19 @@ You can ommit fields on `select` function to use the "SELECT *" sql form:
 ----
 
 
+==== Select with function
+
+In select clauses you can put any kind of expresions such as sql functions:
+
+[source, clojure]
+----
+(-> (dsl/select ["length(book.title)" "title_length"])
+    (dsl/from :book)
+    (fmt/get-sql))
+;; => "select length(book.title) \"title_length\" from book"
+----
+
+
 ==== The FROM clause
 
 A simple sql "select ... from" clause:
@@ -478,8 +491,8 @@ Also, you can specify an alias for each table:
 [source, clojure]
 ----
 (-> (dsl/select-one)
-    (dsl/from (dsl/table "book" {:alias "a"})
-              (dsl/table "article" {:alias "b"}))
+    (dsl/from ["book" "b"]
+              ["article" "a"])
     (fmt/get-sql))
 ;; => "select 1 from book \"a\", article \"b\""
 ----
@@ -498,6 +511,18 @@ simple example:
     (dsl/on "book.author_id = book.id")
     (fmt/get-sql))
 ;; => "select name from book join author on (book.author_id = book.id)"
+----
+
+You can use table aliases with join clauses:
+
+[source, clojure]
+----
+(-> (dsl/select :name)
+    (dsl/from ["book" "b"])
+    (dsl/join ["author" "a"])
+    (dsl/on "b.author_id = a.id")
+    (fmt/get-sql))
+;; => "select name from book \"b\" join author \"a\" on (b.author_id = a.id)"
 ----
 
 Also, join clause can be applied to table expressions:
@@ -818,6 +843,7 @@ a database table.
     (fmt/get-sql))
 ;; => "delete from t1 where (id = 1)"
 ----
+
 
 === The DDL statements
 
