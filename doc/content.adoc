@@ -457,7 +457,7 @@ In select clauses you can put any kind of expresions such as sql functions:
 
 [source, clojure]
 ----
-(-> (dsl/select ["length(book.title)" "title_length"])
+(-> (dsl/select '("length(book.title)" "title_length"))
     (dsl/from :book)
     (fmt/get-sql))
 ;; => "select length(book.title) \"title_length\" from book"
@@ -491,8 +491,8 @@ Also, you can specify an alias for each table:
 [source, clojure]
 ----
 (-> (dsl/select-one)
-    (dsl/from ["book" "b"]
-              ["article" "a"])
+    (dsl/from '("book" "b")
+              '("article" "a"))
     (fmt/get-sql))
 ;; => "select 1 from book \"a\", article \"b\""
 ----
@@ -518,8 +518,8 @@ You can use table aliases with join clauses:
 [source, clojure]
 ----
 (-> (dsl/select :name)
-    (dsl/from ["book" "b"])
-    (dsl/join ["author" "a"])
+    (dsl/from '("book" "b"))
+    (dsl/join '("author" "a"))
     (dsl/on "b.author_id = a.id")
     (fmt/get-sql))
 ;; => "select name from book \"b\" join author \"a\" on (b.author_id = a.id)"
@@ -827,6 +827,17 @@ a database table.
 ----
 (-> (dsl/update :t1)
     (dsl/set :name "foo")
+    (dsl/returning :id)
+    (fmt/get-sql {:dialect :pgsql}))
+;; => "update t1 set name = ? returning id"
+----
+
+.Example using function as value.
+[source, clojure]
+----
+(-> (dsl/update :t1)
+    (dsl/set :name (dsl/f ["concat(name, ?)" "-foo"]))
+    (dsl/set :name_length (dsl/f "length(name)"))
     (dsl/returning :id)
     (fmt/get-sql {:dialect :pgsql}))
 ;; => "update t1 set name = ? returning id"
