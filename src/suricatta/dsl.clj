@@ -32,6 +32,10 @@
            org.jooq.SelectJoinStep
            org.jooq.InsertReturningStep
            org.jooq.Row
+           org.jooq.TableLike
+           org.jooq.FieldLike
+           org.jooq.Field
+           org.jooq.Select
            org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
            org.jooq.impl.DefaultDataType
@@ -149,9 +153,6 @@
 (defprotocol IName
   (-name [_] "Name constructor (mainly used with CTE)"))
 
-(defprotocol ITableCoerce
-  (-as-table [_ params] "Table alias constructor"))
-
 (defprotocol ICondition
   (-condition [_] "Condition constructor"))
 
@@ -162,6 +163,9 @@
   "Protocol mainly defined for uniform unwrapping
   deferred queries."
   (-unwrap [_] "Unwrap the object"))
+
+(defprotocol ITableCoerce
+  (-as-table [_ params] "Table coersion."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol Implementations
@@ -176,19 +180,33 @@
   (-field [v]
     (DSL/field (clojure.core/name v)))
 
-  clojure.lang.PersistentVector
+  clojure.lang.IPersistentList
   (-field [v]
-    (let [[fname falias] v]
+    (let [[fname falias] v
+          falias (clojure.core/name falias)]
       (-> (-field fname)
           (.as falias))))
 
-  org.jooq.Field
+  clojure.lang.IPersistentVector
   (-field [v]
-    v)
+    (let [[fname & params] v
+          fname (clojure.core/name fname)
+          params (into-array Object params)]
+      (DSL/field fname params)))
+
+  org.jooq.FieldLike
+  (-field [v] (.asField v))
+
+  org.jooq.Field
+  (-field [v] v)
 
   org.jooq.impl.Val
-  (-field [v]
-    v))
+  (-field [v] v)
+
+  suricatta.types.Deferred
+  (-field [t]
+    (-field @t)))
+
 
 (extend-protocol ISortField
   java.lang.String
@@ -220,16 +238,19 @@
 
 (extend-protocol ITable
   java.lang.String
-  (-table [s] (DSL/table s))
+  (-table [s]
+    (DSL/table s))
 
-  clojure.lang.IPersistentVector
+  clojure.lang.IPersistentList
   (-table [pv]
-    (let [[tname talias] pv]
+    (let [[tname talias] pv
+          talias (clojure.core/name talias)]
       (-> (-table tname)
           (.as talias))))
 
   clojure.lang.Keyword
-  (-table [kw] (-table (clojure.core/name kw)))
+  (-table [kw]
+    (-table (clojure.core/name kw)))
 
   org.jooq.Table
   (-table [t] t)
@@ -268,25 +289,6 @@
   Object
   (-val [v] (DSL/val v)))
 
-(extend-protocol ITableCoerce
-  org.jooq.Name
-  (-as-table [^org.jooq.Name n args]
-    (.as n ^String (first args)))
-
-  org.jooq.DerivedColumnList
-  (-as-table [n args]
-    (.as n (first args)))
-
-  org.jooq.TableLike
-  (-as-table [n args]
-    (let [^String alias (first args)]
-      (->> (into-array String (rest args))
-           (.asTable n alias))))
-
-  suricatta.types.Deferred
-  (-as-table [t args]
-    (-as-table @t args)))
-
 (extend-protocol IDeferred
   Object
   (-unwrap [self]
@@ -296,31 +298,58 @@
   (-unwrap [self]
     (-unwrap @self)))
 
+(extend-protocol ITableCoerce
+  org.jooq.Name
+  (-as-table [v selectexp]
+    (assert (instance? Select selectexp))
+    (.as v selectexp))
+
+  org.jooq.DerivedColumnList
+  (-as-table [v selectexp]
+    (assert (instance? Select selectexp))
+    (.as v selectexp)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common DSL functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn as-table
-  "Coerce querypart to table expression."
-  [o & args]
-  (defer
-    (->> (map -unwrap args)
-         (-as-table o))))
-
-(defn as-field
-  "Coerce querypart to field expression."
-  [o alias]
-  (defer
-    (let [o (-unwrap o)]
-      (.asField o alias))))
-
 (defn field
   "Create a field instance."
-  [data & [{:keys [alias] :as opts}]]
-  (let [f (-field data)]
-    (if alias
-      (.as f (clojure.core/name alias))
-      f)))
+  ([v]
+   (-field v))
+  ([v alias]
+   (-> (-field v)
+       (.as (clojure.core/name alias)))))
+
+(defn table
+  "Create a table instance."
+  ([v]
+   (-table v))
+  ([v alias]
+   (-> (-table v)
+       (.as (clojure.core/name alias)))))
+
+(defn to-table
+  "Coerce querypart to table expression."
+  [texp talias & params]
+  (defer
+    (let [texp (-unwrap texp)
+          talias (-unwrap talias)]
+      (cond
+        (clojure.core/and (satisfies? ITableCoerce texp)
+                          (instance? Select talias))
+        (-as-table texp talias)
+
+        (instance? TableLike texp)
+        (let [talias (clojure.core/name (-unwrap talias))
+              params (into-array String (map clojure.core/name params))]
+          (.asTable texp talias params))))))
+
+(defn f
+  "Create a field instance, specialized on
+  create function like field instance."
+  [v]
+  (-field v))
 
 (defn typed-field
   [data type]
@@ -331,15 +360,6 @@
 (defn val
   [v]
   (-val v))
-
-(defn table
-  "Create a table instance."
-  [data & [{:keys [alias] :as opts}]]
-  (defer
-    (let [f (-table data)]
-      (if alias
-        (.as f (clojure.core/name alias))
-        f))))
 
 (defn select
   "Start select statement."
