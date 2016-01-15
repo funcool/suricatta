@@ -637,16 +637,24 @@
 (defn set
   "Attach values to the UPDATE statement."
   ([t kv]
+   {:pre [(map? kv)]}
    (defer
      (let [t (-unwrap t)]
-       (reduce (fn [acc [k v]]
-                 (.set t (-field k) v))
-               t kv))))
+       (run! (fn [[k v]]
+               (let [k (-unwrap k)
+                     v (-unwrap v)]
+                 (.set t (-field k) v))) kv)
+       t)))
   ([t k v]
    (defer
      (let [v (-unwrap v)
+           k (-unwrap k)
            t (-unwrap t)]
-       (if (instance? org.jooq.Row k)
+       (if (clojure.core/and
+            (instance? org.jooq.Row k)
+            (clojure.core/or
+             (instance? org.jooq.Row v)
+             (instance? org.jooq.Select v)))
          (.set t k v)
          (.set t (-field k) v))))))
 
