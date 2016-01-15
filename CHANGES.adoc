@@ -1,5 +1,27 @@
 = Changelog
 
+== 0.8.0
+
+Date: 2016-01-16
+
+Breaking changes:
+
+- The approach introduced in previous version for create
+  aliases is a little bit changed. Now uses lists instead vector for avoid
+  confusion with the widelly used vector for pass params.
+- Removed `as-table` function (replaced with `to-table` with specific
+  implementation for common table expresions).
+- The functions `field` and `table` now receives alias as optional argument
+  instead of map of options.
+
+
+Other changes:
+
+- Add `f` function as shortcut for declare functions. Previously `field` is used
+  (and can continue to be used). Is just a shortcut.
+- Set function improved.
+
+
 == 0.7.0
 
 Date: 2016-01-15
