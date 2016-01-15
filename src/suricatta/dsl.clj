@@ -415,9 +415,9 @@
   "Create join clause."
   [q t]
   (defer
-    (let [^SelectJoinStep q (deref q)
+    (let [q (-unwrap q)
           t (-table (-unwrap t))]
-      (.join q t))))
+      (.join ^SelectJoinStep q t))))
 
 (defn cross-join
   [step tlike]
