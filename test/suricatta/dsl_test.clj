@@ -41,35 +41,27 @@
       (is (= bv [2]))))
 
   (testing "Select clause with field as condition and alias"
-    (let [q (-> (dsl/select ["foo > 5" "bar"])
+    (let [q (-> (dsl/select '("foo > 5" "bar"))
                 (dsl/from "baz"))]
       (is (= (fmt/get-sql q)
              "select foo > 5 \"bar\" from baz"))))
 
   (testing "Select clause with count(*) expresion"
-    (let [q (-> (dsl/select ["count(*)" "count"])
+    (let [q (-> (dsl/select '("count(*)" "count"))
                 (dsl/from "baz"))]
       (is (= (fmt/get-sql q)
              "select count(*) \"count\" from baz"))))
 
-  (testing "Select with two tables in from clause"
-    (let [q (-> (dsl/select-one)
-                (dsl/from
-                 (dsl/table "table1" {:alias "foo"})
-                 (dsl/table "table2" {:alias "bar"})))]
-      (is (= (fmt/get-sql q)
-             "select 1 \"one\" from table1 \"foo\", table2 \"bar\""))))
-
   (testing "Select with two tables in from clause 2"
     (let [q (-> (dsl/select-one)
-                (dsl/from ["table1" "foo"]
-                          ["table2" "bar"]))]
+                (dsl/from '("table1" "foo")
+                          '("table2" "bar")))]
       (is (= (fmt/get-sql q)
              "select 1 \"one\" from table1 \"foo\", table2 \"bar\""))))
 
   (testing "Select clause with join"
     (let [q (-> (dsl/select-one)
-                (dsl/from (dsl/table "book"))
+                (dsl/from "book")
                 (dsl/join "author")
                 (dsl/on "book.authorid = book.id"))]
       (is (= (fmt/get-sql q)
@@ -77,8 +69,8 @@
 
   (testing "Select clause with join and aliases"
     (let [q (-> (dsl/select-one)
-                (dsl/from ["book" "b"])
-                (dsl/join ["author" "a"])
+                (dsl/from '("book" "b"))
+                (dsl/join '("author" "a"))
                 (dsl/on "b.authorid = a.id"))]
       (is (= (fmt/get-sql q)
              "select 1 \"one\" from book \"b\" join author \"a\" on (b.authorid = a.id)"))))
@@ -226,7 +218,7 @@
                  (-> (dsl/values
                       (dsl/row 1 2)
                       (dsl/row 3 4))
-                     (dsl/as-table "t1" "f1" "f2"))))]
+                     (dsl/to-table "t1" "f1" "f2"))))]
       (is (= (fmt/get-sql q {:dialect :pgsql})
              "select f1, f2 from (values(?, ?), (?, ?)) as \"t1\"(\"f1\", \"f2\")"))))
 
@@ -241,7 +233,7 @@
     (let [q (-> (dsl/select)
                 (dsl/from (-> (dsl/select :f1)
                               (dsl/from :t1)
-                              (dsl/as-table "tt1" "f1"))))]
+                              (dsl/to-table "tt1" "f1"))))]
       (is (= (fmt/get-sql q {:dialect :pgsql})
              "select \"tt1\".\"f1\" from (select f1 from t1) as \"tt1\"(\"f1\")"))))
 
@@ -249,7 +241,7 @@
     (let [sq (-> (dsl/select (dsl/field "count(*)"))
                  (dsl/from :book)
                  (dsl/where "book.authorid = author.id"))
-          q  (-> (dsl/select :fullname, (dsl/as-field sq "books"))
+          q  (-> (dsl/select :fullname, (dsl/field sq "books"))
                  (dsl/from :author))]
       (is (= (fmt/get-sql q)
              "select fullname, (select count(*) from book where (book.authorid = author.id)) \"books\" from author"))))
@@ -283,6 +275,12 @@
                 (dsl/set :name "foo"))]
       (is (= (fmt/get-sql q)
              "update t1 set id = ?, name = ?"))))
+
+  (testing "Update statement without condition and using function"
+    (let [q (-> (dsl/update :t1)
+                (dsl/set :val (dsl/f ["concat(val, ?)" "bar"])))]
+      (is (= (fmt/sqlvec q)
+             ["update t1 set val = concat(val, ?)" "bar"]))))
 
   (testing "Update statement with condition"
     (let [q (-> (dsl/update :t1)
@@ -326,24 +324,25 @@
 
 (deftest dsl-common-table-expressions
   (testing "Common table expressions"
-    (let [cte1 (-> (dsl/name :t1)
-                   (dsl/with-fields :f1 :f2)
-                   (dsl/as-table (dsl/select (dsl/val 1) (dsl/val "a"))))
-          cte2 (-> (dsl/name :t2)
-                   (dsl/with-fields :f1 :f2)
-                   (dsl/as-table (dsl/select (dsl/val 2) (dsl/val "b"))))
-          q1   (-> (dsl/with cte1 cte2)
-                   (dsl/select (dsl/field "t1.f2"))
-                   (dsl/from :t1 :t2))
+    (let [
+          ;; cte1 (-> (dsl/name :t1)
+          ;;          (dsl/with-fields :f1 :f2)
+          ;;          (dsl/to-table (dsl/select (dsl/val 1) (dsl/val "a"))))
+          ;; cte2 (-> (dsl/name :t2)
+          ;;          (dsl/with-fields :f1 :f2)
+          ;;          (dsl/to-table (dsl/select (dsl/val 2) (dsl/val "b"))))
+          ;; q1   (-> (dsl/with cte1 cte2)
+          ;;          (dsl/select (dsl/field "t1.f2"))
+          ;;          (dsl/from :t1 :t2))
 
           ;; Same as previous code but less verbose.
           q    (-> (dsl/with
                     (-> (dsl/name :t1)
                         (dsl/with-fields :f1 :f2)
-                        (dsl/as-table (dsl/select (dsl/val 1) (dsl/val "a"))))
+                        (dsl/to-table (dsl/select (dsl/val 1) (dsl/val "a"))))
                     (-> (dsl/name :t2)
                         (dsl/with-fields :f1 :f2)
-                        (dsl/as-table (dsl/select (dsl/val 2) (dsl/val "b")))))
+                        (dsl/to-table (dsl/select (dsl/val 2) (dsl/val "b")))))
                    (dsl/select (dsl/field "t1.f2"))
                    (dsl/from :t1 :t2))
           sql  (fmt/get-sql q {:type :inlined :dialect :pgsql})
