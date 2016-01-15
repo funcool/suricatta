@@ -640,11 +640,11 @@
    {:pre [(map? kv)]}
    (defer
      (let [t (-unwrap t)]
-       (run! (fn [[k v]]
-               (let [k (-unwrap k)
-                     v (-unwrap v)]
-                 (.set t (-field k) v))) kv)
-       t)))
+       (reduce-kv (fn [acc k v]
+                 (let [k (-unwrap k)
+                       v (-unwrap v)]
+                   (.set acc (-field k) v)))
+                  t kv))))
   ([t k v]
    (defer
      (let [v (-unwrap v)
