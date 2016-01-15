@@ -80,7 +80,7 @@
 <h1>suricatta documentation</h1>
 <div class="details">
 <span id="author" class="author">Andrey Antukh, &lt;niwi@niwi.nz&gt;</span><br>
-<span id="revdate">0.6.2</span>
+<span id="revdate">0.8.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -174,7 +174,7 @@ dependency vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">funcool/suricatta</span> <span class="tok-s">&quot;0.6.2&quot;</span><span class="tok-p">]</span></code></pre>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">funcool/suricatta</span> <span class="tok-s">&quot;0.8.0&quot;</span><span class="tok-p">]</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -671,6 +671,20 @@ dialect by passing the <code>:dialect</code> option to the <code>get-sql</code> 
 </div>
 </div>
 <div class="sect3">
+<h4 id="_select_with_function"><a class="link" href="#_select_with_function">Select with function</a></h4>
+<div class="paragraph">
+<p>In select clauses you can put any kind of expresions such as sql functions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-o">&#39;</span><span class="tok-p">(</span><span class="tok-s">&quot;length(book.title)&quot;</span> <span class="tok-s">&quot;title_length&quot;</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select length(book.title) \&quot;title_length\&quot; from book&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
 <h4 id="_the_from_clause"><a class="link" href="#_the_from_clause">The FROM clause</a></h4>
 <div class="paragraph">
 <p>A simple sql "select &#8230;&#8203; from" clause:</p>
@@ -700,8 +714,8 @@ dialect by passing the <code>:dialect</code> option to the <code>get-sql</code> 
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select-one</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nf">dsl/table</span> <span class="tok-s">&quot;book&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:alias</span> <span class="tok-s">&quot;a&quot;</span><span class="tok-p">})</span>
-              <span class="tok-p">(</span><span class="tok-nf">dsl/table</span> <span class="tok-s">&quot;article&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:alias</span> <span class="tok-s">&quot;b&quot;</span><span class="tok-p">}))</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-o">&#39;</span><span class="tok-p">(</span><span class="tok-s">&quot;book&quot;</span> <span class="tok-s">&quot;b&quot;</span><span class="tok-p">)</span>
+              <span class="tok-o">&#39;</span><span class="tok-p">(</span><span class="tok-s">&quot;article&quot;</span> <span class="tok-s">&quot;a&quot;</span><span class="tok-p">))</span>
     <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select 1 from book \&quot;a\&quot;, article \&quot;b\&quot;&quot;</span></code></pre>
 </div>
@@ -721,6 +735,19 @@ simple example:</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-s">&quot;book.author_id = book.id&quot;</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book join author on (book.author_id = book.id)&quot;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can use table aliases with join clauses:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-o">&#39;</span><span class="tok-p">(</span><span class="tok-s">&quot;book&quot;</span> <span class="tok-s">&quot;b&quot;</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/join</span> <span class="tok-o">&#39;</span><span class="tok-p">(</span><span class="tok-s">&quot;author&quot;</span> <span class="tok-s">&quot;a&quot;</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-s">&quot;b.author_id = a.id&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;select name from book \&quot;b\&quot; join author \&quot;a\&quot; on (b.author_id = a.id)&quot;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1041,6 +1068,17 @@ a database table.</p>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name</span> <span class="tok-s">&quot;foo&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/returning</span> <span class="tok-ss">:id</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
+<span class="tok-c1">;; =&gt; &quot;update t1 set name = ? returning id&quot;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Example using function as value.</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name</span> <span class="tok-p">(</span><span class="tok-nf">dsl/f</span> <span class="tok-p">[</span><span class="tok-s">&quot;concat(name, ?)&quot;</span> <span class="tok-s">&quot;-foo&quot;</span><span class="tok-p">]))</span>
+    <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name_length</span> <span class="tok-p">(</span><span class="tok-nf">dsl/f</span> <span class="tok-s">&quot;length(name)&quot;</span><span class="tok-p">))</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/returning</span> <span class="tok-ss">:id</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
 <span class="tok-c1">;; =&gt; &quot;update t1 set name = ? returning id&quot;</span></code></pre>
@@ -1520,7 +1558,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-01-06 15:35:35 EET
+Last updated 2016-01-15 19:48:13 EET
 </div>
 </div>
 </body>
