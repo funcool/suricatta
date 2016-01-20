@@ -290,6 +290,9 @@
   (-val [v] (DSL/val v)))
 
 (extend-protocol IDeferred
+  nil
+  (-unwrap [v] v)
+
   Object
   (-unwrap [self]
     (impl/wrap-if-need self))
