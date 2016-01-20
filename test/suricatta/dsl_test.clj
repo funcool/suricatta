@@ -91,6 +91,13 @@
       (is (= (fmt/get-sql q)
              "select 1 \"one\" from book where ((book.age > ?) and (book.in_store is ?))"))))
 
+  (testing "Where with nil argument"
+    (let [q (-> (dsl/select "name")
+                (dsl/from "book")
+                (dsl/where ["author_id = coalesce(?, 123)" nil]))]
+      (is (= (fmt/get-sql q)
+             "select name from book where (author_id = coalesce(?, 123))"))))
+
   (testing "Select clause with group by"
     (let [q (-> (dsl/select (dsl/field "authorid")
                             (dsl/field "count(*)"))
