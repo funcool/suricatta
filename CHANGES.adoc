@@ -1,5 +1,13 @@
 = Changelog
 
+== 0.8.1
+
+Date: 2016-02-08
+
+- Add additional parameters to sqlvec enablig the option to specify the dialect.
+- Add the ability to use insert statements in fetch operations.
+
+
 == 0.8.0
 
 Date: 2016-01-16
