@@ -137,3 +137,16 @@
       (let [result (sc/fetch ctx "select * from foo")]
         (is (= 0 (count result))))))
 )
+
+
+(deftest formatting
+  (testing "sqlvec properly handles dialect."
+    (let [op (-> (dsl/insert-into :users)
+                 (dsl/insert-values {:username "foobar"})
+                 (dsl/returning :id))
+          result1 (fmt/sqlvec op)
+          result2 (fmt/sqlvec op {:dialect :postgresql})]
+      (is (= result1 ["insert into users (username) values (?)" "foobar"]))
+      (is (= result2 ["insert into users (username) values (?) returning id"
+                      "foobar"])))))
+

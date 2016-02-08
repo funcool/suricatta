@@ -70,7 +70,7 @@
   "Renders a query sql into string."
   ([q]
    (proto/-get-sql q nil nil))
-  ([q {:keys [type dialect] :as opts}]
+  ([q {:keys [type dialect] :or {type :indexed} :as opts}]
    (proto/-get-sql q type dialect)))
 
 (defn get-bind-values
@@ -80,7 +80,8 @@
 
 (defn sqlvec
   "Get sql with bind values in a `sqlvec` format."
-  [q]
-  (apply vector
-         (get-sql q {:type :indexed})
-         (get-bind-values q)))
+  ([q] (sqlvec q nil))
+  ([q opts]
+   (apply vector
+          (get-sql q opts)
+          (get-bind-values q))))
