@@ -331,6 +331,16 @@
       (-> (.fetch context query)
           (result->vector opts))))
 
+  org.jooq.Query
+  (-fetch [^Query query ^Context ctx opts]
+    (let [^DSLContext context (proto/-get-context ctx)
+          ^Configuration config (proto/-get-config ctx)
+          ^SQLDialect dialect (.dialect config)
+          sqlvec (apply vector
+                        (proto/-get-sql query :indexed dialect)
+                        (proto/-get-bind-values query))]
+      (proto/-fetch sqlvec ctx opts)))
+
   suricatta.types.Deferred
   (-fetch [deferred ctx opts]
     (proto/-fetch @deferred ctx opts))

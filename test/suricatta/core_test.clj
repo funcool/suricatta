@@ -52,6 +52,14 @@
       (is (= (sc/fetch q) [{:x 1}]))
       (is (= (sc/execute q) 1))
       (is (= (sc/execute q) 1))))
+
+  (testing "Fetch from insert statement."
+    (sc/execute *ctx* "create temporary table foo (n int) on commit drop")
+    (let [op (-> (dsl/insert-into :foo)
+                 (dsl/insert-values {:n 1})
+                 (dsl/returning :n))
+          result (sc/fetch-one *ctx* op)]
+      (is (= result {:n 1}))))
 )
 
 (deftest lazy-fetch
