@@ -1,6 +1,6 @@
 = suricatta documentation
 Andrey Antukh, <niwi@niwi.nz>
-0.8.0
+0.8.1
 :toc: left
 :!numbered:
 :source-highlighter: pygments
@@ -32,7 +32,7 @@ dependency vector on your *_project.clj_* file:
 
 [source,clojure]
 ----
-[funcool/suricatta "0.8.0"]
+[funcool/suricatta "0.8.1"]
 ----
 
 _Suricatta_ is only runs with *JDK >= 8* and *Clojure >= 1.5*
