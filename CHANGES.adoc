@@ -1,5 +1,13 @@
 = Changelog
 
+== 0.9.0
+
+Date: 2016-03-20
+
+- Update clojure to 1.8.0
+- Update jOOQ to 3.7.3
+
+
 == 0.8.1
 
 Date: 2016-02-08
