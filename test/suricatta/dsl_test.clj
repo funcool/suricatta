@@ -261,6 +261,11 @@
                 (dsl/insert-values {:f1 2 :f2 4}))]
       (is (= (fmt/get-sql q {:dialect :pgsql})
              "insert into t1 (f1, f2) values (?, ?), (?, ?)"))))
+  (testing "Insert statement with nil values"
+    (let [q (-> (dsl/insert-into :t1)
+                (dsl/insert-values {:f1 1 :f2 nil :f3 2}))]
+      (is (= (fmt/get-sql q {:dialect :pgsql})
+             "insert into t1 (f1, f3) values (?, ?)"))))
   (testing "Insert statement from values as maps with returning"
     (let [q (-> (dsl/insert-into :t1)
                 (dsl/insert-values {:f1 1 :f2 3})
