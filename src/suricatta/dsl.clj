@@ -623,7 +623,9 @@
   [t values]
   (defer
     (-> (fn [acc [k v]]
-          (.set acc (-field k) (-unwrap v)))
+          (if (nil? v)
+            acc
+            (.set acc (-field k) (-unwrap v))))
         (reduce (-unwrap t) values)
         (.newRecord))))
 
