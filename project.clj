@@ -10,7 +10,7 @@
   {:dev {:global-vars {*warn-on-reflection* false}
          :jvm-opts ["-Dclojure.compiler.direct-linking=true"]
          :aliases {"test-all"
-                   ["with-profile" "1.8:dev,1.7:dev,1.6:dev,1.5:dev,dev" "test"]}
+                   ["with-profile" "dev,1.8:dev,1.7:dev,1.6:dev,1.5:dev" "test"]}
          :plugins [[lein-ancient "0.6.10"]]
          :dependencies [[org.postgresql/postgresql "9.4.1208"]
                         [com.h2database/h2 "1.4.192"]
