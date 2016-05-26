@@ -512,14 +512,14 @@ user defined types to jooq/jdbc compatible types, and other for backwards conver
 <span class="tok-p">(</span><span class="tok-nf">extend-protocol</span> <span class="tok-nv">proto/IParamType</span>
   <span class="tok-nv">clojure.lang.IPersistentMap</span>
   <span class="tok-p">(</span><span class="tok-nf">-render</span> <span class="tok-p">[</span><span class="tok-nv">self</span> <span class="tok-nv">ctx</span><span class="tok-p">]</span>
-    <span class="tok-p">(</span><span class="tok-k">if </span><span class="tok-p">(</span><span class="tok-nf">proto/-render-inline?</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-k">if </span><span class="tok-p">(</span><span class="tok-nf">proto/-inline?</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
       <span class="tok-p">(</span><span class="tok-nb">str </span><span class="tok-s">&quot;&#39;&quot;</span> <span class="tok-p">(</span><span class="tok-nf">json/encode</span> <span class="tok-nv">self</span><span class="tok-p">)</span> <span class="tok-s">&quot;&#39;::json&quot;</span><span class="tok-p">)</span>
       <span class="tok-s">&quot;?::json&quot;</span><span class="tok-p">))</span>
 
   <span class="tok-p">(</span><span class="tok-nf">-bind</span> <span class="tok-p">[</span><span class="tok-nv">self</span> <span class="tok-nv">ctx</span><span class="tok-p">]</span>
-    <span class="tok-p">(</span><span class="tok-nb">when-not </span><span class="tok-p">(</span><span class="tok-nf">proto/-render-inline?</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
-      <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">stmt</span> <span class="tok-p">(</span><span class="tok-nf">proto/-get-statement</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
-            <span class="tok-nv">idx</span>  <span class="tok-p">(</span><span class="tok-nf">proto/-get-next-bindindex</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nb">when-not </span><span class="tok-p">(</span><span class="tok-nf">proto/-inline?</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
+      <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">stmt</span> <span class="tok-p">(</span><span class="tok-nf">proto/-statement</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
+            <span class="tok-nv">idx</span>  <span class="tok-p">(</span><span class="tok-nf">proto/-next-bind-index</span> <span class="tok-nv">ctx</span><span class="tok-p">)</span>
             <span class="tok-nv">obj</span> <span class="tok-p">(</span><span class="tok-nb">doto </span><span class="tok-p">(</span><span class="tok-nf">PGobject.</span><span class="tok-p">)</span>
                   <span class="tok-p">(</span><span class="tok-nf">.setType</span> <span class="tok-s">&quot;json&quot;</span><span class="tok-p">)</span>
                   <span class="tok-p">(</span><span class="tok-nf">.setValue</span> <span class="tok-p">(</span><span class="tok-nf">json/encode</span> <span class="tok-p">(</span><span class="tok-nf">.-data</span> <span class="tok-nv">self</span><span class="tok-p">))))]</span>
@@ -556,13 +556,13 @@ value to the query and it is automatically converted.</p>
 <div class="title">Insert and query example using postgresql json fields.</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Create table</span>
-<span class="tok-p">(</span><span class="tok-nf">sc/execute</span> <span class="tok-nv">*ctx*</span> <span class="tok-s">&quot;create table t1 (k json)&quot;</span><span class="tok-p">)</span>
+<span class="tok-p">(</span><span class="tok-nf">sc/execute</span> <span class="tok-nv">ctx</span> <span class="tok-s">&quot;create table t1 (k json)&quot;</span><span class="tok-p">)</span>
 
 <span class="tok-c1">;; Insert a json value</span>
-<span class="tok-p">(</span><span class="tok-nf">sc/execute</span> <span class="tok-nv">*ctx*</span> <span class="tok-p">[</span><span class="tok-s">&quot;insert into t1 (k) values (?)&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:foo</span> <span class="tok-mi">1</span><span class="tok-p">}])</span>
+<span class="tok-p">(</span><span class="tok-nf">sc/execute</span> <span class="tok-nv">ctx</span> <span class="tok-p">[</span><span class="tok-s">&quot;insert into t1 (k) values (?)&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:foo</span> <span class="tok-mi">1</span><span class="tok-p">}])</span>
 
 <span class="tok-c1">;; Query a table with json value</span>
-<span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">*ctx*</span> <span class="tok-p">[</span><span class="tok-s">&quot;select * from t1&quot;</span><span class="tok-p">])</span>
+<span class="tok-p">(</span><span class="tok-nf">sc/fetch</span> <span class="tok-nv">ctx</span> <span class="tok-p">[</span><span class="tok-s">&quot;select * from t1&quot;</span><span class="tok-p">])</span>
 <span class="tok-c1">;; =&gt; [{:k {:foo 1}}]</span></code></pre>
 </div>
 </div>
@@ -632,13 +632,13 @@ api. Let see an example:</p>
 </div>
 <div class="paragraph">
 <p>The rendering result depends on the dialect used. You can specify a different
-dialect by passing the <code>:dialect</code> option to the <code>get-sql</code> function of
+dialect by passing the <code>:dialect</code> option to the <code>sql</code> function of
 <code>suricatta.format</code> namespace:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:id</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:postgresql</span><span class="tok-p">}))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:postgresql</span><span class="tok-p">}))</span>
 <span class="tok-c1">;; =&gt; &quot;select id, name&quot;</span></code></pre>
 </div>
 </div>
@@ -651,7 +651,7 @@ dialect by passing the <code>:dialect</code> option to the <code>get-sql</code> 
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select-distinct</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select distinct name&quot;</span></code></pre>
 </div>
 </div>
@@ -665,7 +665,7 @@ dialect by passing the <code>:dialect</code> option to the <code>get-sql</code> 
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select * from book&quot;</span></code></pre>
 </div>
 </div>
@@ -679,7 +679,7 @@ dialect by passing the <code>:dialect</code> option to the <code>get-sql</code> 
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-o">&#39;</span><span class="tok-p">(</span><span class="tok-s">&quot;length(book.title)&quot;</span> <span class="tok-s">&quot;title_length&quot;</span><span class="tok-p">))</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select length(book.title) \&quot;title_length\&quot; from book&quot;</span></code></pre>
 </div>
 </div>
@@ -693,7 +693,7 @@ dialect by passing the <code>:dialect</code> option to the <code>get-sql</code> 
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:book.id</span> <span class="tok-ss">:book.name</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select book.id, book.name from book&quot;</span></code></pre>
 </div>
 </div>
@@ -704,7 +704,7 @@ dialect by passing the <code>:dialect</code> option to the <code>get-sql</code> 
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select-one</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span> <span class="tok-ss">:article</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select 1 from book, article&quot;</span></code></pre>
 </div>
 </div>
@@ -716,7 +716,7 @@ dialect by passing the <code>:dialect</code> option to the <code>get-sql</code> 
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select-one</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-o">&#39;</span><span class="tok-p">(</span><span class="tok-s">&quot;book&quot;</span> <span class="tok-s">&quot;b&quot;</span><span class="tok-p">)</span>
               <span class="tok-o">&#39;</span><span class="tok-p">(</span><span class="tok-s">&quot;article&quot;</span> <span class="tok-s">&quot;a&quot;</span><span class="tok-p">))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select 1 from book \&quot;a\&quot;, article \&quot;b\&quot;&quot;</span></code></pre>
 </div>
 </div>
@@ -733,7 +733,7 @@ simple example:</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/join</span> <span class="tok-ss">:author</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-s">&quot;book.author_id = book.id&quot;</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book join author on (book.author_id = book.id)&quot;</span></code></pre>
 </div>
 </div>
@@ -746,7 +746,7 @@ simple example:</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-o">&#39;</span><span class="tok-p">(</span><span class="tok-s">&quot;book&quot;</span> <span class="tok-s">&quot;b&quot;</span><span class="tok-p">))</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/join</span> <span class="tok-o">&#39;</span><span class="tok-p">(</span><span class="tok-s">&quot;author&quot;</span> <span class="tok-s">&quot;a&quot;</span><span class="tok-p">))</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-s">&quot;b.author_id = a.id&quot;</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book \&quot;b\&quot; join author \&quot;a\&quot; on (b.author_id = a.id)&quot;</span></code></pre>
 </div>
 </div>
@@ -759,7 +759,7 @@ simple example:</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/table</span> <span class="tok-s">&quot;book&quot;</span><span class="tok-p">)</span>
                   <span class="tok-p">(</span><span class="tok-nf">dsl/join</span> <span class="tok-s">&quot;author&quot;</span><span class="tok-p">)</span>
                   <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-s">&quot;book.author_id = book.id&quot;</span><span class="tok-p">)))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book join author on (book.author_id = book.id)&quot;</span></code></pre>
 </div>
 </div>
@@ -775,7 +775,7 @@ the data returned by the query:</p>
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-s">&quot;book.age &gt; 100&quot;</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book where (book.age &gt; 100)&quot;</span></code></pre>
 </div>
 </div>
@@ -788,7 +788,7 @@ the data returned by the query:</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-s">&quot;book.age &gt; 100&quot;</span>
                <span class="tok-s">&quot;book.in_store = true&quot;</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book where ((book.age &gt; 100) and (book.in_store = true))&quot;</span></code></pre>
 </div>
 </div>
@@ -814,7 +814,7 @@ the data returned by the query:</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">(</span><span class="tok-nf">dsl/or</span> <span class="tok-s">&quot;book.age &gt; 20&quot;</span>
                        <span class="tok-p">(</span><span class="tok-nf">dsl/not</span> <span class="tok-s">&quot;book.in_store&quot;</span><span class="tok-p">)))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book where ((book.age &gt; 20) or (not book.in_store))&quot;</span></code></pre>
 </div>
 </div>
@@ -836,7 +836,7 @@ done using the <em>suricatta</em> dsl:</p>
                 <span class="tok-p">(</span><span class="tok-nf">dsl/field</span> <span class="tok-s">&quot;count(*)&quot;</span><span class="tok-p">))</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/group-by</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name, count(*) from book group by name&quot;</span></code></pre>
 </div>
 </div>
@@ -853,7 +853,7 @@ done using the <em>suricatta</em> dsl:</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/group-by</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/having</span> <span class="tok-p">[</span><span class="tok-s">&quot;count(*) &gt; ?&quot;</span>, <span class="tok-mi">2</span><span class="tok-p">])</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name, count(*) from book group by name having (count(*) &gt; ?)&quot;</span></code></pre>
 </div>
 </div>
@@ -869,7 +869,7 @@ done using the <em>suricatta</em> dsl:</p>
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/order-by</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book order by name asc&quot;</span></code></pre>
 </div>
 </div>
@@ -884,7 +884,7 @@ ordering direction.</p>
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/order-by</span> <span class="tok-p">[</span><span class="tok-ss">:name</span> <span class="tok-ss">:desc</span><span class="tok-p">])</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book order by name desc&quot;</span></code></pre>
 </div>
 </div>
@@ -894,7 +894,7 @@ ordering direction.</p>
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/order-by</span> <span class="tok-p">[</span><span class="tok-ss">:name</span> <span class="tok-ss">:desc</span> <span class="tok-ss">:nulls-last</span><span class="tok-p">])</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book order by name desc nulls last&quot;</span></code></pre>
 </div>
 </div>
@@ -905,7 +905,7 @@ ordering direction.</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/order-by</span> <span class="tok-p">[</span><span class="tok-s">&quot;1&quot;</span> <span class="tok-ss">:asc</span><span class="tok-p">]</span>
                   <span class="tok-p">[</span><span class="tok-s">&quot;2&quot;</span> <span class="tok-ss">:desc</span><span class="tok-p">])</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book order by 1 asc, 2 desc&quot;</span></code></pre>
 </div>
 </div>
@@ -922,7 +922,7 @@ with <em>suricatta</em>:</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/limit</span> <span class="tok-mi">10</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/offset</span> <span class="tok-mi">100</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select name from book limit ? offset ?&quot;</span></code></pre>
 </div>
 </div>
@@ -941,7 +941,7 @@ see an example of how use it with <em>suricatta</em> dsl:</p>
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/for-update</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select * from book for update&quot;</span></code></pre>
 </div>
 </div>
@@ -951,7 +951,7 @@ see an example of how use it with <em>suricatta</em> dsl:</p>
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/for-update</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select * from book for update of \&quot;name\&quot;&quot;</span></code></pre>
 </div>
 </div>
@@ -971,7 +971,7 @@ they are.</p>
         <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:books</span><span class="tok-p">))</span>
     <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
         <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:articles</span><span class="tok-p">)))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;(select name from books) union (select name from articles)&quot;</span></code></pre>
 </div>
 </div>
@@ -983,7 +983,7 @@ they are.</p>
         <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:books</span><span class="tok-p">))</span>
     <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:name</span><span class="tok-p">)</span>
         <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:articles</span><span class="tok-p">)))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;(select name from books) union all (select name from articles)&quot;</span></code></pre>
 </div>
 </div>
@@ -1016,7 +1016,7 @@ a database table.</p>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name</span> <span class="tok-s">&quot;foo&quot;</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;update t1 set name = ?&quot;</span></code></pre>
 </div>
 </div>
@@ -1025,7 +1025,7 @@ a database table.</p>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-p">{</span><span class="tok-ss">:name</span> <span class="tok-s">&quot;foo&quot;</span> <span class="tok-ss">:bar</span> <span class="tok-s">&quot;baz&quot;</span><span class="tok-p">})</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;update t1 set name = ?, bar = ?&quot;</span></code></pre>
 </div>
 </div>
@@ -1035,7 +1035,7 @@ a database table.</p>
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name</span> <span class="tok-s">&quot;foo&quot;</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">[</span><span class="tok-s">&quot;id = ?&quot;</span> <span class="tok-mi">1</span><span class="tok-p">])</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;update t1 set name = ? where (id = ?)&quot;</span></code></pre>
 </div>
 </div>
@@ -1046,7 +1046,7 @@ a database table.</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:f1</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:f2</span><span class="tok-p">)</span>
                      <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:t2</span><span class="tok-p">)</span>
                      <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">[</span><span class="tok-s">&quot;id = ?&quot;</span> <span class="tok-mi">2</span><span class="tok-p">])))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
 <span class="tok-c1">;; =&gt; &quot;update t1 set f1 = (select f2 from t2 where (id = ?))&quot;</span></code></pre>
 </div>
 </div>
@@ -1059,7 +1059,7 @@ a database table.</p>
              <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:f3</span> <span class="tok-ss">:f4</span><span class="tok-p">)</span>
                  <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:t2</span><span class="tok-p">)</span>
                  <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">[</span><span class="tok-s">&quot;id = ?&quot;</span> <span class="tok-mi">2</span><span class="tok-p">])))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
 <span class="tok-c1">;; =&gt; &quot;update t1 set (f1, f2) = (select f3, f4 from t2 where (id = ?))&quot;</span></code></pre>
 </div>
 </div>
@@ -1069,7 +1069,7 @@ a database table.</p>
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/update</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name</span> <span class="tok-s">&quot;foo&quot;</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/returning</span> <span class="tok-ss">:id</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
 <span class="tok-c1">;; =&gt; &quot;update t1 set name = ? returning id&quot;</span></code></pre>
 </div>
 </div>
@@ -1080,7 +1080,7 @@ a database table.</p>
     <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name</span> <span class="tok-p">(</span><span class="tok-nf">dsl/f</span> <span class="tok-p">[</span><span class="tok-s">&quot;concat(name, ?)&quot;</span> <span class="tok-s">&quot;-foo&quot;</span><span class="tok-p">]))</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/set</span> <span class="tok-ss">:name_length</span> <span class="tok-p">(</span><span class="tok-nf">dsl/f</span> <span class="tok-s">&quot;length(name)&quot;</span><span class="tok-p">))</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/returning</span> <span class="tok-ss">:id</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span> <span class="tok-p">{</span><span class="tok-ss">:dialect</span> <span class="tok-ss">:pgsql</span><span class="tok-p">}))</span>
 <span class="tok-c1">;; =&gt; &quot;update t1 set name = ? returning id&quot;</span></code></pre>
 </div>
 </div>
@@ -1092,7 +1092,7 @@ a database table.</p>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/delete</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-s">&quot;id = 1&quot;</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;delete from t1 where (id = 1)&quot;</span></code></pre>
 </div>
 </div>
@@ -1104,7 +1104,7 @@ a database table.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/truncate</span> <span class="tok-ss">:table1</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;truncate table table1&quot;</span></code></pre>
 </div>
 </div>
@@ -1115,7 +1115,7 @@ a database table.</p>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/create-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/add-column</span> <span class="tok-ss">:title</span> <span class="tok-p">{</span><span class="tok-ss">:type</span> <span class="tok-ss">:pg/varchar</span> <span class="tok-ss">:length</span> <span class="tok-mi">100</span> <span class="tok-ss">:null</span> <span class="tok-nv">false</span><span class="tok-p">})</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;create table t1 (title varchar(100) not null)&quot;</span></code></pre>
 </div>
 </div>
@@ -1139,7 +1139,7 @@ default value for a field in table creation statement.
 <div class="title">Drop table example</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/drop-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;drop table t1&quot;</span></code></pre>
 </div>
 </div>
@@ -1154,7 +1154,7 @@ default value for a field in table creation statement.
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/alter-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/add-column</span> <span class="tok-ss">:title</span> <span class="tok-p">{</span><span class="tok-ss">:type</span> <span class="tok-ss">:pg/varchar</span> <span class="tok-ss">:length</span> <span class="tok-mi">2</span> <span class="tok-ss">:null</span> <span class="tok-nv">false</span><span class="tok-p">})</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;alter table t1 add title varchar(2) not null&quot;</span></code></pre>
 </div>
 </div>
@@ -1163,7 +1163,7 @@ default value for a field in table creation statement.
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/alter-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/alter-column</span> <span class="tok-ss">:title</span> <span class="tok-p">{</span><span class="tok-ss">:type</span> <span class="tok-ss">:pg/varchar</span> <span class="tok-ss">:length</span> <span class="tok-mi">100</span> <span class="tok-ss">:null</span> <span class="tok-nv">false</span><span class="tok-p">})</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;alter table t1 alter title varchar(100) not null&quot;</span></code></pre>
 </div>
 </div>
@@ -1172,7 +1172,7 @@ default value for a field in table creation statement.
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/alter-table</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/drop-column</span> <span class="tok-ss">:title</span> <span class="tok-ss">:cascade</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;alter table t1 drop title cascade&quot;</span></code></pre>
 </div>
 </div>
@@ -1184,7 +1184,7 @@ default value for a field in table creation statement.
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/create-index</span> <span class="tok-s">&quot;test&quot;</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-ss">:t1</span> <span class="tok-ss">:title</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;create index \&quot;test\&quot; on t1(title)&quot;</span></code></pre>
 </div>
 </div>
@@ -1193,7 +1193,7 @@ default value for a field in table creation statement.
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/create-index</span> <span class="tok-s">&quot;test&quot;</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/on</span> <span class="tok-ss">:t1</span> <span class="tok-p">(</span><span class="tok-nf">dsl/field</span> <span class="tok-s">&quot;lower(title)&quot;</span><span class="tok-p">))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;create index \&quot;test\&quot; on t1(lower(title))&quot;</span></code></pre>
 </div>
 </div>
@@ -1204,7 +1204,7 @@ default value for a field in table creation statement.
 <div class="title">Drop index</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/drop-index</span> <span class="tok-s">&quot;test&quot;</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;drop index \&quot;test\&quot;&quot;</span></code></pre>
 </div>
 </div>
@@ -1214,7 +1214,7 @@ default value for a field in table creation statement.
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/create-sequence</span> <span class="tok-s">&quot;testseq&quot;</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;create sequence \&quot;testseq\&quot;&quot;</span></code></pre>
 </div>
 </div>
@@ -1225,7 +1225,7 @@ default value for a field in table creation statement.
 <div class="title">Restart sequence</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/alter-sequence</span> <span class="tok-s">&quot;testseq&quot;</span> <span class="tok-nv">true</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;alter sequence \&quot;testseq\&quot; restart&quot;</span></code></pre>
 </div>
 </div>
@@ -1233,7 +1233,7 @@ default value for a field in table creation statement.
 <div class="title">Restart sequence with concrete number</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/alter-sequence</span> <span class="tok-s">&quot;testseq&quot;</span> <span class="tok-mi">19</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;alter sequence \&quot;testseq\&quot; restart with 19&quot;</span></code></pre>
 </div>
 </div>
@@ -1244,7 +1244,7 @@ default value for a field in table creation statement.
 <div class="title">Drop sequence</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/drop-sequence</span> <span class="tok-s">&quot;testseq&quot;</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;drop sequence \&quot;testseq\&quot;&quot;</span></code></pre>
 </div>
 </div>
@@ -1252,7 +1252,7 @@ default value for a field in table creation statement.
 <div class="title">Drop sequence if exists</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/drop-sequence</span> <span class="tok-s">&quot;testseq&quot;</span> <span class="tok-nv">true</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;drop sequence if exists \&quot;testseq\&quot;&quot;</span></code></pre>
 </div>
 </div>
@@ -1272,7 +1272,7 @@ default value for a field in table creation statement.
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/values</span> <span class="tok-p">(</span><span class="tok-nf">dsl/row</span> <span class="tok-mi">1</span> <span class="tok-mi">2</span><span class="tok-p">)</span>
                               <span class="tok-p">(</span><span class="tok-nf">dsl/row</span> <span class="tok-mi">3</span> <span class="tok-mi">4</span><span class="tok-p">))</span>
                   <span class="tok-p">(</span><span class="tok-nf">dsl/as-table</span> <span class="tok-s">&quot;t1&quot;</span> <span class="tok-s">&quot;f1&quot;</span> <span class="tok-s">&quot;f2&quot;</span><span class="tok-p">)))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span> <span class="tok-p">{</span><span class="tok-ss">:type</span> <span class="tok-ss">:inlined</span><span class="tok-p">}))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span> <span class="tok-p">{</span><span class="tok-ss">:type</span> <span class="tok-ss">:inlined</span><span class="tok-p">}))</span>
 <span class="tok-c1">;; =&gt; &quot;select f1, f2 from (values(1, 2), (3, 4)) as \&quot;t1\&quot; (\&quot;f1\&quot;, \&quot;f2\&quot;)&quot;</span></code></pre>
 </div>
 </div>
@@ -1297,7 +1297,7 @@ default value for a field in table creation statement.
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:book</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-p">(</span><span class="tok-nb">list </span><span class="tok-s">&quot;book.age = ({0})&quot;</span> <span class="tok-p">(</span><span class="tok-nf">dsl/select-one</span><span class="tok-p">)))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 
 <span class="tok-c1">;; =&gt; &quot;select * from book where (book.age = (select 1 as \&quot;one\&quot;))&quot;</span></code></pre>
 </div>
@@ -1309,7 +1309,7 @@ default value for a field in table creation statement.
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">dsl/select</span> <span class="tok-ss">:f1</span><span class="tok-p">)</span>
                   <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:t1</span><span class="tok-p">)</span>
                   <span class="tok-p">(</span><span class="tok-nf">dsl/as-table</span> <span class="tok-s">&quot;tt1&quot;</span><span class="tok-p">)))</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select \&quot;tt1\&quot;.\&quot;f1\&quot; from (select f1 from t1) as \&quot;tt1\&quot;(\&quot;f1\&quot;)&quot;</span></code></pre>
 </div>
 </div>
@@ -1321,7 +1321,7 @@ default value for a field in table creation statement.
                                <span class="tok-p">(</span><span class="tok-nf">dsl/where</span> <span class="tok-s">&quot;book.authorid = author.id&quot;</span><span class="tok-p">)</span>
                                <span class="tok-p">(</span><span class="tok-nf">dsl/as-field</span> <span class="tok-s">&quot;books&quot;</span><span class="tok-p">)))</span>
     <span class="tok-p">(</span><span class="tok-nf">dsl/from</span> <span class="tok-ss">:author</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">fmt/get-sql</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">fmt/sql</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;select fullname, (select count(*) from book where (book.authorid = author.id)) &quot;books&quot; from author&quot;</span></code></pre>
 </div>
 </div>
@@ -1558,7 +1558,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-03-20 15:47:56 EET
+Last updated 2016-05-26 20:47:09 EEST
 </div>
 </div>
 </body>
