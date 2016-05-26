@@ -25,8 +25,8 @@
 (ns suricatta.proto)
 
 (defprotocol IContextHolder
-  (-get-context [_] "Get jooq context with attached configuration")
-  (-get-config [_] "Get attached configuration."))
+  (-context [_] "Get jooq context with attached configuration")
+  (-config [_] "Get attached configuration."))
 
 (defprotocol IConnectionFactory
   (-connection [_] "Create a jdbc connection."))
@@ -41,8 +41,8 @@
   (-fetch-lazy [q ctx opts] "Fetch lazy results executing query."))
 
 (defprotocol IRenderer
-  (-get-sql [_ type dialect] "Render a query sql into a string.")
-  (-get-bind-values [_] "Get query bind values."))
+  (-sql [_ type dialect] "Render a query sql into a string.")
+  (-bind-values [_] "Get query bind values."))
 
 (defprotocol IQuery
   (-query [_ ctx] "Build a query."))
@@ -53,9 +53,9 @@
   "A lightweight abstraction for access
   to the basic properties on the render/bind
   context instances."
-  (-get-statement [_] "Get the prepared statement if it is awailable.")
-  (-get-next-bindindex [_] "Get the next bind index (WARN: side effectful)")
-  (-render-inline? [_] "Return true in case the context is setup for inline."))
+  (-statement [_] "Get the prepared statement if it is awailable.")
+  (-next-bind-index [_] "Get the next bind index (WARN: side effectful)")
+  (-inline? [_] "Return true in case the context is setup for inline."))
 
 (defprotocol IParamType
   "A basic abstraction for adapt user defined
