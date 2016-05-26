@@ -721,8 +721,8 @@
   (defer
     (let [step (-unwrap step)
           name (-field name)
-          type (make-datatype opts)
-          type (.defaulted type true)]
+          type (cond-> (make-datatype opts)
+                 default (.defaultValue default))]
       (.column step name type))))
 
 (defn alter-column
