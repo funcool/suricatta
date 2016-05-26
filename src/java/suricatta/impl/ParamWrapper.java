@@ -1,14 +1,18 @@
 package suricatta.impl;
 
 import org.jooq.impl.DefaultDataType;
+import org.jooq.conf.ParamType;
 import org.jooq.RenderContext;
 import org.jooq.BindContext;
 import org.jooq.Context;
 import org.jooq.DataType;
 import org.jooq.Param;
 
+import static org.jooq.conf.ParamType.INDEXED;
+import static org.jooq.conf.ParamType.INLINED;
 
-@SuppressWarnings("unchecked")
+
+@SuppressWarnings({"unchecked", "deprecation"})
 public class ParamWrapper extends org.jooq.impl.CustomField
   implements Param {
 
@@ -31,6 +35,11 @@ public class ParamWrapper extends org.jooq.impl.CustomField
   @Override
   public String getParamName() {
     return null;
+  }
+
+  @Override
+  public final ParamType getParamType() {
+    return inline ? INLINED: INDEXED;
   }
 
   @Override
