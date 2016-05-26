@@ -33,13 +33,9 @@
            org.jooq.impl.DefaultConfiguration
            org.jooq.impl.DSL))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Implementation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (extend-protocol proto/IRenderer
   org.jooq.Query
-  (-get-sql [q type dialect]
+  (-sql [q type dialect]
     (let [^Configuration conf (DefaultConfiguration.)
           ^DSLContext context (DSL/using conf)]
       (when dialect
@@ -50,38 +46,42 @@
         :indexed (.render context q)
         :inlined (.renderInlined context q))))
 
-  (-get-bind-values [q]
+  (-bind-values [q]
     (let [^Configuration conf (DefaultConfiguration.)
           ^DSLContext context (DSL/using conf)]
       (into [] (.extractBindValues context q))))
 
   suricatta.types.Deferred
-  (-get-sql [self type dialect]
-    (proto/-get-sql @self type dialect))
+  (-sql [self type dialect]
+    (proto/-sql @self type dialect))
 
-  (-get-bind-values [self]
-    (proto/-get-bind-values @self)))
+  (-bind-values [self]
+    (proto/-bind-values @self)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public Api
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn get-sql
+(defn sql
   "Renders a query sql into string."
   ([q]
-   (proto/-get-sql q nil nil))
+   (proto/-sql q nil nil))
   ([q {:keys [type dialect] :or {type :indexed} :as opts}]
-   (proto/-get-sql q type dialect)))
+   (proto/-sql q type dialect)))
 
-(defn get-bind-values
+(def ^:deprecated get-sql
+  "Deprecated alias to get-sql."
+  sql)
+
+(defn bind-values
   "Get bind values from query"
   [q]
-  (proto/-get-bind-values q))
+  (proto/-bind-values q))
+
+(def ^:deprecated get-bind-values
+  "Deprecated alias to bind-values."
+  bind-values)
 
 (defn sqlvec
   "Get sql with bind values in a `sqlvec` format."
   ([q] (sqlvec q nil))
   ([q opts]
    (apply vector
-          (get-sql q opts)
-          (get-bind-values q))))
+          (sql q opts)
+          (bind-values q))))

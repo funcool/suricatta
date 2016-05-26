@@ -33,8 +33,8 @@
 
 (deftype Context [^Configuration conf]
   proto/IContextHolder
-  (-get-context [_] (DSL/using conf))
-  (-get-config [_] conf)
+  (-context [_] (DSL/using conf))
+  (-config [_] conf)
 
   java.io.Closeable
   (close [_]
@@ -79,8 +79,8 @@
     (.close query))
 
   proto/IContextHolder
-  (-get-context [_] (DSL/using conf))
-  (-get-config [_] conf))
+  (-context [_] (DSL/using conf))
+  (-config [_] conf))
 
 (defn query
   [query conf]

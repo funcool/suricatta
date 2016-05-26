@@ -43,14 +43,14 @@
 (extend-protocol proto/IParamType
   MyJson
   (-render [self ctx]
-    (if (proto/-render-inline? ctx)
+    (if (proto/-inline? ctx)
       (str "'" (json/encode (.-data self)) "'::json")
       "?::json"))
 
   (-bind [self ctx]
-    (when-not (proto/-render-inline? ctx)
-      (let [stmt (proto/-get-statement ctx)
-            idx  (proto/-get-next-bindindex ctx)
+    (when-not (proto/-inline? ctx)
+      (let [stmt (proto/-statement ctx)
+            idx  (proto/-next-bind-index ctx)
             obj (doto (PGobject.)
                   (.setType "json")
                   (.setValue (json/encode (.-data self))))]
@@ -72,15 +72,15 @@
 (extend-protocol proto/IParamType
   MyArray
   (-render [self ctx]
-    (if (proto/-render-inline? ctx)
+    (if (proto/-inline? ctx)
       (let [items (->> (map str (.-data self))
                        (interpose ","))]
         (str "'{" (apply str items) "}'::bigint[]"))
       "?::bigint[]"))
   (-bind [self ctx]
-    (when-not (proto/-render-inline? ctx)
-      (let [stmt (proto/-get-statement ctx)
-            idx  (proto/-get-next-bindindex ctx)
+    (when-not (proto/-inline? ctx)
+      (let [stmt (proto/-statement ctx)
+            idx  (proto/-next-bind-index ctx)
             con (.getConnection stmt)
             arr (into-array Long (.-data self))
             arr (.createArrayOf con "bigint" arr)]
