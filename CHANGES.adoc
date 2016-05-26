@@ -1,5 +1,17 @@
 = Changelog
 
+== 1.0.0
+
+Date: 2016-05-26
+
+- Update jOOQ to 3.8.1
+- BREAKING CHANGE: change internal protocol function names. This change will
+  affect only who use them for exented suricatta behavior.
+- Format functions renamed to more simpler names (backward compatible aliases
+  are maintained).
+- Remove internal (not documented) agent from context instances.
+
+
 == 0.9.0
 
 Date: 2016-03-20
