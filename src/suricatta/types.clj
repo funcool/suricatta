@@ -29,14 +29,9 @@
            org.jooq.Configuration
            org.jooq.ConnectionProvider
            org.jooq.SQLDialect
-           java.sql.Connection
-           clojure.lang.Agent))
+           java.sql.Connection))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Context
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(deftype Context [^Configuration conf ^Agent act]
+(deftype Context [^Configuration conf]
   proto/IContextHolder
   (-get-context [_] (DSL/using conf))
   (-get-config [_] conf)
@@ -48,12 +43,10 @@
       (.close connection)
       (.set conf (org.jooq.impl.NoConnectionProvider.)))))
 
-(defn ->context
+(defn context
   "Context instance constructor."
-  ([^Configuration conf]
-   (Context. conf (agent 0)))
-  ([^Configuration conf act]
-   (Context. conf act)))
+  [^Configuration conf]
+  (Context. conf))
 
 (defn context?
   [ctx]
@@ -89,6 +82,6 @@
   (-get-context [_] (DSL/using conf))
   (-get-config [_] conf))
 
-(defn ->query
+(defn query
   [query conf]
   (Query. query conf))
