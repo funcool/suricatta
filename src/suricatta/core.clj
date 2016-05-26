@@ -1,4 +1,4 @@
-;; Copyright (c) 2014-2015, Andrey Antukh <niwi@niwi.nz>
+;; Copyright (c) 2014-2016 Andrey Antukh <niwi@niwi.nz>
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,9 @@
   "High level sql toolkit for Clojure"
   (:require [suricatta.types :as types]
             [suricatta.proto :as proto]
+            [suricatta.transaction :as tx]
             [suricatta.impl :as impl])
-  (:import org.jooq.DSLContext
-           org.jooq.SQLDialect
-           org.jooq.TransactionContext
-           org.jooq.TransactionProvider
-           org.jooq.exception.DataAccessException;
-           org.jooq.impl.DefaultTransactionContext
+  (:import org.jooq.SQLDialect
            org.jooq.Configuration
            org.jooq.impl.DefaultConfiguration
            org.jooq.tools.jdbc.JDBCUtils
@@ -109,49 +105,17 @@
 ;; Transactions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- transaction-context
-  [^Configuration conf]
-  (let [transaction (atom nil)
-        cause       (atom nil)]
-    (reify org.jooq.TransactionContext
-      (configuration [_] conf)
-      (settings [_] (.settings conf))
-      (dialect [_] (.dialect conf))
-      (family [_] (.family (.dialect conf)))
-      (transaction [_] @transaction)
-      (transaction [self t] (reset! transaction t) self)
-      (cause [_] @cause)
-      (cause [self c] (reset! cause c) self))))
-
 (defn atomic-apply
   "Execute a function in one transaction
   or subtransaction."
-  [ctx func & args]
-  (let [^Configuration conf (.derive (proto/-get-config ctx))
-        ^TransactionContext txctx (transaction-context conf)
-        ^TransactionProvider provider (.transactionProvider conf)]
-    (doto conf
-      (.data "suricatta.rollback" false)
-      (.data "suricatta.transaction" true))
-    (try
-      (.begin provider txctx)
-      (let [result (apply func (types/->context conf) args)
-            rollback? (.data conf "suricatta.rollback")]
-        (if rollback?
-          (.rollback provider txctx)
-          (.commit provider txctx))
-        result)
-      (catch Exception cause
-        (.rollback provider (.cause txctx cause))
-        (if (instance? RuntimeException cause)
-          (throw cause)
-          (throw (DataAccessException. "Rollback caused" cause)))))))
+  [& args]
+  (apply tx/atomic-apply args))
 
 (defmacro atomic
   "Convenience macro for execute a computation
   in a transaction or subtransaction."
   [ctx & body]
-  `(atomic-apply ~ctx (fn [~ctx] ~@body)))
+  `(tx/atomic-apply ~ctx (fn [~ctx] ~@body)))
 
 (defn set-rollback!
   "Mark current transaction for rollback.
@@ -160,6 +124,4 @@
   the execution of current function, it only
   marks the current transaction for rollback."
   [ctx]
-  (let [^Configuration conf (proto/-get-config ctx)]
-    (.data conf "suricatta.rollback" true)
-    ctx))
+  (tx/set-rollback! ctx))
