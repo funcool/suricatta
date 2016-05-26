@@ -307,14 +307,14 @@ user defined types to jooq/jdbc compatible types, and other for backwards conver
 (extend-protocol proto/IParamType
   clojure.lang.IPersistentMap
   (-render [self ctx]
-    (if (proto/-render-inline? ctx)
+    (if (proto/-inline? ctx)
       (str "'" (json/encode self) "'::json")
       "?::json"))
 
   (-bind [self ctx]
-    (when-not (proto/-render-inline? ctx)
-      (let [stmt (proto/-get-statement ctx)
-            idx  (proto/-get-next-bindindex ctx)
+    (when-not (proto/-inline? ctx)
+      (let [stmt (proto/-statement ctx)
+            idx  (proto/-next-bind-index ctx)
             obj (doto (PGobject.)
                   (.setType "json")
                   (.setValue (json/encode (.-data self))))]
@@ -347,13 +347,13 @@ value to the query and it is automatically converted.
 [source, clojure]
 ----
 ;; Create table
-(sc/execute *ctx* "create table t1 (k json)")
+(sc/execute ctx "create table t1 (k json)")
 
 ;; Insert a json value
-(sc/execute *ctx* ["insert into t1 (k) values (?)" {:foo 1}])
+(sc/execute ctx ["insert into t1 (k) values (?)" {:foo 1}])
 
 ;; Query a table with json value
-(sc/fetch *ctx* ["select * from t1"])
+(sc/fetch ctx ["select * from t1"])
 ;; => [{:k {:foo 1}}]
 ----
 
@@ -415,13 +415,13 @@ select id, name from dual
 ----
 
 The rendering result depends on the dialect used. You can specify a different
-dialect by passing the `:dialect` option to the `get-sql` function of
+dialect by passing the `:dialect` option to the `sql` function of
 `suricatta.format` namespace:
 
 [source, clojure]
 ----
 (-> (dsl/select :id :name)
-    (fmt/get-sql {:dialect :postgresql}))
+    (fmt/sql {:dialect :postgresql}))
 ;; => "select id, name"
 ----
 
@@ -433,7 +433,7 @@ You can add the distinct keyword by using a special select function:
 [source, clojure]
 ----
 (-> (dsl/select-distinct :name)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select distinct name"
 ----
 
@@ -446,7 +446,7 @@ You can ommit fields on `select` function to use the "SELECT *" sql form:
 ----
 (-> (dsl/select)
     (dsl/from :book)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select * from book"
 ----
 
@@ -459,7 +459,7 @@ In select clauses you can put any kind of expresions such as sql functions:
 ----
 (-> (dsl/select '("length(book.title)" "title_length"))
     (dsl/from :book)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select length(book.title) \"title_length\" from book"
 ----
 
@@ -472,7 +472,7 @@ A simple sql "select ... from" clause:
 ----
 (-> (dsl/select :book.id :book.name)
     (dsl/from :book)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select book.id, book.name from book"
 ----
 
@@ -482,7 +482,7 @@ Also, the sql from clause supports any number of tables:
 ----
 (-> (dsl/select-one)
     (dsl/from :book :article)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select 1 from book, article"
 ----
 
@@ -493,7 +493,7 @@ Also, you can specify an alias for each table:
 (-> (dsl/select-one)
     (dsl/from '("book" "b")
               '("article" "a"))
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select 1 from book \"a\", article \"b\""
 ----
 
@@ -509,7 +509,7 @@ simple example:
     (dsl/from :book)
     (dsl/join :author)
     (dsl/on "book.author_id = book.id")
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book join author on (book.author_id = book.id)"
 ----
 
@@ -521,7 +521,7 @@ You can use table aliases with join clauses:
     (dsl/from '("book" "b"))
     (dsl/join '("author" "a"))
     (dsl/on "b.author_id = a.id")
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book \"b\" join author \"a\" on (b.author_id = a.id)"
 ----
 
@@ -533,7 +533,7 @@ Also, join clause can be applied to table expressions:
     (dsl/from (-> (dsl/table "book")
                   (dsl/join "author")
                   (dsl/on "book.author_id = book.id")))
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book join author on (book.author_id = book.id)"
 ----
 
@@ -548,7 +548,7 @@ the data returned by the query:
 (-> (dsl/select :name)
     (dsl/from :book)
     (dsl/where "book.age > 100")
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book where (book.age > 100)"
 ----
 
@@ -560,7 +560,7 @@ Building a where clause with multiple conditions:
     (dsl/from :book)
     (dsl/where "book.age > 100"
                "book.in_store = true")
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book where ((book.age > 100) and (book.in_store = true))"
 ----
 
@@ -585,7 +585,7 @@ Using explicit logical operators:
     (dsl/from :book)
     (dsl/where (dsl/or "book.age > 20"
                        (dsl/not "book.in_store")))
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book where ((book.age > 20) or (not book.in_store))"
 ----
 
@@ -605,7 +605,7 @@ done using the _suricatta_ dsl:
                 (dsl/field "count(*)"))
     (dsl/from :book)
     (dsl/group-by :name)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name, count(*) from book group by name"
 ----
 
@@ -621,7 +621,7 @@ The HAVING clause is used to further restrict aggregated data. Let see an exampl
     (dsl/from :book)
     (dsl/group-by :name)
     (dsl/having ["count(*) > ?", 2])
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name, count(*) from book group by name having (count(*) > ?)"
 ----
 
@@ -635,7 +635,7 @@ Here's an example of how specify the ordering to the query:
 (-> (dsl/select :name)
     (dsl/from :book)
     (dsl/order-by :name)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book order by name asc"
 ----
 
@@ -649,7 +649,7 @@ ordering direction.
 (-> (dsl/select :name)
     (dsl/from :book)
     (dsl/order-by [:name :desc])
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book order by name desc"
 ----
 
@@ -659,7 +659,7 @@ ordering direction.
 (-> (dsl/select :name)
     (dsl/from :book)
     (dsl/order-by [:name :desc :nulls-last])
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book order by name desc nulls last"
 ----
 
@@ -670,7 +670,7 @@ ordering direction.
     (dsl/from :book)
     (dsl/order-by ["1" :asc]
                   ["2" :desc])
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book order by 1 asc, 2 desc"
 ----
 
@@ -686,7 +686,7 @@ with _suricatta_:
     (dsl/from :book)
     (dsl/limit 10)
     (dsl/offset 100)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select name from book limit ? offset ?"
 ----
 
@@ -704,7 +704,7 @@ see an example of how use it with _suricatta_ dsl:
 (-> (dsl/select)
     (dsl/from :book)
     (dsl/for-update)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select * from book for update"
 ----
 
@@ -714,7 +714,7 @@ see an example of how use it with _suricatta_ dsl:
 (-> (dsl/select)
     (dsl/from :book)
     (dsl/for-update :name)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select * from book for update of \"name\""
 ----
 
@@ -733,7 +733,7 @@ they are.
         (dsl/from :books))
     (-> (dsl/select :name)
         (dsl/from :articles)))
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "(select name from books) union (select name from articles)"
 ----
 
@@ -745,7 +745,7 @@ they are.
         (dsl/from :books))
     (-> (dsl/select :name)
         (dsl/from :articles)))
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "(select name from books) union all (select name from articles)"
 ----
 
@@ -775,7 +775,7 @@ a database table.
 ----
 (-> (dsl/update :t1)
     (dsl/set :name "foo")
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "update t1 set name = ?"
 ----
 
@@ -784,7 +784,7 @@ a database table.
 ----
 (-> (dsl/update :t1)
     (dsl/set {:name "foo" :bar "baz"})
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "update t1 set name = ?, bar = ?"
 ----
 
@@ -794,7 +794,7 @@ a database table.
 (-> (dsl/update :t1)
     (dsl/set :name "foo")
     (dsl/where ["id = ?" 1])
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "update t1 set name = ? where (id = ?)"
 ----
 
@@ -805,7 +805,7 @@ a database table.
     (dsl/set :f1 (-> (dsl/select :f2)
                      (dsl/from :t2)
                      (dsl/where ["id = ?" 2])))
-    (fmt/get-sql {:dialect :pgsql}))
+    (fmt/sql {:dialect :pgsql}))
 ;; => "update t1 set f1 = (select f2 from t2 where (id = ?))"
 ----
 
@@ -818,7 +818,7 @@ a database table.
              (-> (dsl/select :f3 :f4)
                  (dsl/from :t2)
                  (dsl/where ["id = ?" 2])))
-    (fmt/get-sql {:dialect :pgsql}))
+    (fmt/sql {:dialect :pgsql}))
 ;; => "update t1 set (f1, f2) = (select f3, f4 from t2 where (id = ?))"
 ----
 
@@ -828,7 +828,7 @@ a database table.
 (-> (dsl/update :t1)
     (dsl/set :name "foo")
     (dsl/returning :id)
-    (fmt/get-sql {:dialect :pgsql}))
+    (fmt/sql {:dialect :pgsql}))
 ;; => "update t1 set name = ? returning id"
 ----
 
@@ -839,7 +839,7 @@ a database table.
     (dsl/set :name (dsl/f ["concat(name, ?)" "-foo"]))
     (dsl/set :name_length (dsl/f "length(name)"))
     (dsl/returning :id)
-    (fmt/get-sql {:dialect :pgsql}))
+    (fmt/sql {:dialect :pgsql}))
 ;; => "update t1 set name = ? returning id"
 ----
 
@@ -851,7 +851,7 @@ a database table.
 ----
 (-> (dsl/delete :t1)
     (dsl/where "id = 1")
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "delete from t1 where (id = 1)"
 ----
 
@@ -864,7 +864,7 @@ a database table.
 [source, clojure]
 ----
 (-> (dsl/truncate :table1)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "truncate table table1"
 ----
 
@@ -874,7 +874,7 @@ a database table.
 [source, clojure]
 (-> (dsl/create-table :t1)
     (dsl/add-column :title {:type :pg/varchar :length 100 :null false})
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "create table t1 (title varchar(100) not null)"
 
 NOTE: at this moment, the add-column function doest not permit the way to setup
@@ -887,7 +887,7 @@ default value for a field in table creation statement.
 [source, clojure]
 ----
 (-> (dsl/drop-table :t1)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "drop table t1"
 ----
 
@@ -901,7 +901,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 ----
 (-> (dsl/alter-table :t1)
     (dsl/add-column :title {:type :pg/varchar :length 2 :null false})
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "alter table t1 add title varchar(2) not null"
 ----
 
@@ -910,7 +910,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 ----
 (-> (dsl/alter-table :t1)
     (dsl/alter-column :title {:type :pg/varchar :length 100 :null false})
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "alter table t1 alter title varchar(100) not null"
 ----
 
@@ -919,7 +919,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 ----
 (-> (dsl/alter-table :t1)
     (dsl/drop-column :title :cascade)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "alter table t1 drop title cascade"
 ----
 
@@ -932,7 +932,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 ----
 (-> (dsl/create-index "test")
     (dsl/on :t1 :title)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "create index \"test\" on t1(title)"
 ----
 
@@ -941,7 +941,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 ----
 (-> (dsl/create-index "test")
     (dsl/on :t1 (dsl/field "lower(title)"))
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "create index \"test\" on t1(lower(title))"
 ----
 
@@ -953,7 +953,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 [source, clojure]
 ----
 (-> (dsl/drop-index "test")
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "drop index \"test\""
 ----
 
@@ -963,7 +963,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 [source, clojure]
 ----
 (-> (dsl/create-sequence "testseq")
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "create sequence \"testseq\""
 ----
 
@@ -974,7 +974,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 [source, clojure]
 ----
 (-> (dsl/alter-sequence "testseq" true)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "alter sequence \"testseq\" restart"
 ----
 
@@ -982,7 +982,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 [source, clojure]
 ----
 (-> (dsl/alter-sequence "testseq" 19)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "alter sequence \"testseq\" restart with 19"
 ----
 
@@ -993,7 +993,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 [source, clojure]
 ----
 (-> (dsl/drop-sequence "testseq")
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "drop sequence \"testseq\""
 ----
 
@@ -1001,7 +1001,7 @@ Alter statements are used mainly to add, modify or delete columns from table.
 [source, clojure]
 ----
 (-> (dsl/drop-sequence "testseq" true)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "drop sequence if exists \"testseq\""
 ----
 
@@ -1019,7 +1019,7 @@ Some databases allow expressing in-memory temporary tables using a `values()` sy
     (dsl/from (-> (dsl/values (dsl/row 1 2)
                               (dsl/row 3 4))
                   (dsl/as-table "t1" "f1" "f2")))
-    (fmt/get-sql {:type :inlined}))
+    (fmt/sql {:type :inlined}))
 ;; => "select f1, f2 from (values(1, 2), (3, 4)) as \"t1\" (\"f1\", \"f2\")"
 ----
 
@@ -1034,7 +1034,7 @@ WARNING: `suricatta.dsl/row` is defined as a macro and only accepts literals.
 (-> (dsl/select)
     (dsl/from :book)
     (dsl/where (list "book.age = ({0})" (dsl/select-one)))
-    (fmt/get-sql))
+    (fmt/sql))
 
 ;; => "select * from book where (book.age = (select 1 as \"one\"))"
 ----
@@ -1046,7 +1046,7 @@ WARNING: `suricatta.dsl/row` is defined as a macro and only accepts literals.
     (dsl/from (-> (dsl/select :f1)
                   (dsl/from :t1)
                   (dsl/as-table "tt1")))
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select \"tt1\".\"f1\" from (select f1 from t1) as \"tt1\"(\"f1\")"
 ----
 
@@ -1058,7 +1058,7 @@ WARNING: `suricatta.dsl/row` is defined as a macro and only accepts literals.
                                (dsl/where "book.authorid = author.id")
                                (dsl/as-field "books")))
     (dsl/from :author)
-    (fmt/get-sql))
+    (fmt/sql))
 ;; => "select fullname, (select count(*) from book where (book.authorid = author.id)) "books" from author"
 ----
 
