@@ -45,7 +45,7 @@
          ^Configuration conf (doto (DefaultConfiguration.)
                                (.set dialect)
                                (.set connection))]
-      (types/->context conf))))
+      (types/context conf))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SQL Executor
