@@ -4,7 +4,7 @@
   :license {:name "BSD (2-Clause)"
             :url "http://opensource.org/licenses/BSD-2-Clause"}
   :dependencies [[org.clojure/clojure "1.9.0-alpha3" :scope "provided"]
-                 [org.jooq/jooq "3.8.1"]]
+                 [org.jooq/jooq "3.8.2"]]
   :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"]
   :profiles
   {:dev {:global-vars {*warn-on-reflection* false}
