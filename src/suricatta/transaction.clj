@@ -53,7 +53,7 @@
       (cause [_] @cause)
       (cause [self c] (reset! cause c) self))))
 
-(defn atomic-apply
+(defn apply-atomic
   [ctx func & args]
   (let [^Configuration conf (.derive (proto/-config ctx))
         ^TransactionContext txctx (transaction-context conf)

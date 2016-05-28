@@ -106,16 +106,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn atomic-apply
-  "Execute a function in one transaction
-  or subtransaction."
+  "Deprecated alias for `apply-atomic`."
+  {:deprecated true}
   [& args]
-  (apply tx/atomic-apply args))
+  (apply tx/apply-atomic args))
+
+(defn apply-atomic
+  "Apply a function in a transaction."
+  [& args]
+  (apply tx/apply-atomic args))
 
 (defmacro atomic
   "Convenience macro for execute a computation
   in a transaction or subtransaction."
   [ctx & body]
-  `(tx/atomic-apply ~ctx (fn [~ctx] ~@body)))
+  `(tx/apply-atomic ~ctx (fn [~ctx] ~@body)))
 
 (defn set-rollback!
   "Mark current transaction for rollback.
