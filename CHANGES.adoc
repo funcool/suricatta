@@ -1,5 +1,14 @@
 = Changelog
 
+== 1.1.0
+
+Date: 2016-05-28
+
+- Rename `atomic-apply` to `apply-atomic`.
+- Keep backward compatible alias for previous change.
+- Update to jOOQ 3.8.2
+
+
 == 1.0.0
 
 Date: 2016-05-26
