@@ -648,7 +648,9 @@
        (reduce-kv (fn [acc k v]
                  (let [k (-unwrap k)
                        v (-unwrap v)]
-                   (.set acc (-field k) v)))
+                   (if (nil? v)
+                     acc
+                     (.set acc (-field k) v))))
                   t kv))))
   ([t k v]
    (defer
