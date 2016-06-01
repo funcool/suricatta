@@ -40,7 +40,6 @@
            org.jooq.impl.DefaultConfiguration
            org.jooq.impl.DefaultDataType
            org.jooq.impl.SQLDataType
-           org.jooq.util.postgres.PostgresDSL
            org.jooq.util.postgres.PostgresDataType
            org.jooq.util.mariadb.MariaDBDataType
            org.jooq.util.mysql.MySQLDataType
@@ -480,12 +479,6 @@
     (->> (map -condition clauses)
          (into-array org.jooq.Condition)
          (.where @q))))
-
-(defn array
-  "Convert an expression to an array."
-  [q]
-  (defer
-    (PostgresDSL/array @q)))
 
 (defn exists
   "Create an exists condition."

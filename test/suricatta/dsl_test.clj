@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [suricatta.core :refer :all]
             [suricatta.dsl :as dsl]
+            [suricatta.dsl.pgsql :as pgsql]
             [suricatta.format :as fmt]))
 
 (def dbspec {:subprotocol "h2"
@@ -257,7 +258,7 @@
     (let [sq (-> (dsl/select (dsl/field :id))
                  (dsl/from :book)
                  (dsl/where "book.authorid = author.id"))
-          q  (-> (dsl/select :fullname, (dsl/field (dsl/array sq) "books"))
+          q  (-> (dsl/select :fullname, (dsl/field (pgsql/array sq) "books"))
                  (dsl/from :author))]
       (is (= (fmt/sql q)
              "select fullname, array(select id from book where (book.authorid = author.id)) \"books\" from author"))))
