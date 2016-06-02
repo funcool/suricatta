@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [suricatta.core :refer :all]
             [suricatta.dsl :as dsl]
+            [suricatta.dsl.pgsql :as pgsql]
             [suricatta.format :as fmt]))
 
 (def dbspec {:subprotocol "h2"
@@ -252,6 +253,24 @@
                  (dsl/from :author))]
       (is (= (fmt/sql q)
              "select fullname, (select count(*) from book where (book.authorid = author.id)) \"books\" from author"))))
+
+  (testing "Nested select returned as array"
+    (let [sq (-> (dsl/select (dsl/field :id))
+                 (dsl/from :book)
+                 (dsl/where "book.authorid = author.id"))
+          q  (-> (dsl/select :fullname, (dsl/field (pgsql/array sq) "books"))
+                 (dsl/from :author))]
+      (is (= (fmt/sql q)
+             "select fullname, array(select id from book where (book.authorid = author.id)) \"books\" from author"))))
+
+  (testing "Nested select in where clause using exists"
+    (let [q  (-> (dsl/select :fullname)
+                 (dsl/from :author)
+                 (dsl/where (dsl/exists (-> (dsl/select :id)
+                                            (dsl/from :table)
+                                            (dsl/where ["table.author_id = author.id"])))))]
+      (is (= (fmt/sql q)
+             "select fullname from author where exists (select id from table where (table.author_id = author.id))"))))
 )
 
 (deftest dsl-insert

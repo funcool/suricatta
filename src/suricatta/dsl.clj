@@ -283,7 +283,11 @@
           params (rest v)]
       (->> (map -unwrap params)
            (into-array Object)
-           (DSL/condition sql)))))
+           (DSL/condition sql))))
+
+  suricatta.types.Deferred
+  (-condition [s]
+    (-condition @s)))
 
 (extend-protocol IVal
   Object
@@ -478,9 +482,9 @@
 
 (defn exists
   "Create an exists condition."
-  [select']
+  [q]
   (defer
-    (DSL/exists select')))
+    (DSL/exists @q)))
 
 (defn group-by
   [q & fields]
