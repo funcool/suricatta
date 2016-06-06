@@ -45,7 +45,7 @@
 (extend-protocol proto/ISQLType
   java.sql.Array
   (-convert [self]
-    (into [] (.getArray self))))
+    (into [] (map proto/-convert) (.getArray self))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
