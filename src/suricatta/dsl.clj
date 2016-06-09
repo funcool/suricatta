@@ -487,7 +487,7 @@
     (DSL/exists @q)))
 
 (defn not-exists
-  "Create an exists condition."
+  "Create a not-exists condition."
   [q]
   (defer
     (DSL/notExists @q)))
