@@ -271,7 +271,15 @@
                                             (dsl/where ["table.author_id = author.id"])))))]
       (is (= (fmt/sql q)
              "select fullname from author where exists (select id from table where (table.author_id = author.id))"))))
-)
+
+  (testing "Nested select in where clause using not-exists"
+    (let [q  (-> (dsl/select :fullname)
+                 (dsl/from :author)
+                 (dsl/where (dsl/not-exists (-> (dsl/select :id)
+                                                (dsl/from :table)
+                                                (dsl/where ["table.author_id = author.id"])))))]
+      (is (= (fmt/sql q)
+             "select fullname from author where not exists (select id from table where (table.author_id = author.id))")))))
 
 (deftest dsl-insert
   (testing "Insert statement from values as maps"
