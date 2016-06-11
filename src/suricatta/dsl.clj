@@ -486,6 +486,12 @@
   (defer
     (DSL/exists @q)))
 
+(defn not-exists
+  "Create a not-exists condition."
+  [q]
+  (defer
+    (DSL/notExists @q)))
+
 (defn group-by
   [q & fields]
   (defer
