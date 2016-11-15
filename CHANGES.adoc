@@ -1,5 +1,14 @@
 = Changelog
 
+== 1.2.0
+
+Date: 2016-11-15
+
+- Add `dsl/exists` and `dsl/not-exists` subquery clauses.
+- Add `suricatta.dsl.pgsql` namespace for PostgreSQL specific dsl extensions.
+- Update to jOOQ 3.8.6.
+
+
 == 1.1.0
 
 Date: 2016-05-28
