@@ -86,9 +86,9 @@
     (let [sql "select x, x+1 as i, 'a,b' as k from generate_series(1, 1) as x"
           result (sc/fetch *ctx* sql {:format :json})]
       (is (= (str "{\"fields\":["
-                  "{\"table\":\"\",\"name\":\"x\",\"type\":\"INT4\"},"
-                  "{\"table\":\"\",\"name\":\"i\",\"type\":\"INT4\"},"
-                  "{\"table\":\"\",\"name\":\"k\",\"type\":\"OTHER\"}],"
+                  "{\"name\":\"x\",\"type\":\"INT4\"},"
+                  "{\"name\":\"i\",\"type\":\"INT4\"},"
+                  "{\"name\":\"k\",\"type\":\"OTHER\"}],"
                   "\"records\":[[1,2,\"a,b\"]]}")
              result))))
 )
