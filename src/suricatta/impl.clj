@@ -110,6 +110,31 @@
     (bind [_ value ^BindContext ctx]
       (proto/-bind value ctx))))
 
+(extend-protocol proto/IRenderer
+  org.jooq.Query
+  (-sql [q type dialect]
+    (let [^Configuration conf (DefaultConfiguration.)
+          ^DSLContext context (DSL/using conf)]
+      (when dialect
+        (.set conf (translate-dialect dialect)))
+      (condp = type
+        nil      (.render context q)
+        :named   (.renderNamedParams context q)
+        :indexed (.render context q)
+        :inlined (.renderInlined context q))))
+
+  (-bind-values [q]
+    (let [^Configuration conf (DefaultConfiguration.)
+          ^DSLContext context (DSL/using conf)]
+      (into [] (.extractBindValues context q))))
+
+  suricatta.types.Deferred
+  (-sql [self type dialect]
+    (proto/-sql @self type dialect))
+
+  (-bind-values [self]
+    (proto/-bind-values @self)))
+
 (defn make-param-impl
   "Wraps a value that implements IParamType
   protocol in valid jOOQ Param implementation."

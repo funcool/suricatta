@@ -1,4 +1,4 @@
-;; Copyright (c) 2014, Andrey Antukh <niwi@niwi.nz>
+;; Copyright (c) 2014-2017 Andrey Antukh <niwi@niwi.nz>
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
@@ -32,31 +32,6 @@
            org.jooq.DSLContext
            org.jooq.impl.DefaultConfiguration
            org.jooq.impl.DSL))
-
-(extend-protocol proto/IRenderer
-  org.jooq.Query
-  (-sql [q type dialect]
-    (let [^Configuration conf (DefaultConfiguration.)
-          ^DSLContext context (DSL/using conf)]
-      (when dialect
-        (.set conf (impl/translate-dialect dialect)))
-      (condp = type
-        nil      (.render context q)
-        :named   (.renderNamedParams context q)
-        :indexed (.render context q)
-        :inlined (.renderInlined context q))))
-
-  (-bind-values [q]
-    (let [^Configuration conf (DefaultConfiguration.)
-          ^DSLContext context (DSL/using conf)]
-      (into [] (.extractBindValues context q))))
-
-  suricatta.types.Deferred
-  (-sql [self type dialect]
-    (proto/-sql @self type dialect))
-
-  (-bind-values [self]
-    (proto/-bind-values @self)))
 
 (defn sql
   "Renders a query sql into string."
