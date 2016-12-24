@@ -1,5 +1,13 @@
 = Changelog
 
+== 1.3.0
+
+Date: 2016-12-25
+
+- Update to jOOQ 3.8.6.
+- Fix unexpected exception when core and dsl is imported without importing format.
+
+
 == 1.2.0
 
 Date: 2016-11-15
