@@ -7,6 +7,7 @@ import org.jooq.BindContext;
 import org.jooq.Context;
 import org.jooq.DataType;
 import org.jooq.Param;
+import org.jooq.ParamMode;
 
 import static org.jooq.conf.ParamType.INDEXED;
 import static org.jooq.conf.ParamType.INLINED;
@@ -25,6 +26,11 @@ public class ParamWrapper extends org.jooq.impl.CustomField
     this.adapter = adapter;
     this.value = value;
     this.inline = false;
+  }
+
+  @Override
+  public ParamMode getParamMode() {
+    return ParamMode.IN;
   }
 
   @Override
