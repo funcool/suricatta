@@ -583,7 +583,8 @@
 (defn not
   "Negate a condition."
   [c]
-  (DSL/not c))
+  (defer
+    (DSL/not (-condition c))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common Table Expresions

@@ -468,3 +468,20 @@
       (is (= (fmt/sql q)
              "drop table t1"))))
 )
+
+(deftest dsl-not
+  (testing "boolean negation"
+    (let [q (->
+             (dsl/select :name)
+             (dsl/from :book)
+             (dsl/where (dsl/not "new")))]
+      (is (= (fmt/sql q)
+             "select name from book where not((new))"))))
+
+  (testing "negation of vector condition"
+    (let [q (->
+             (dsl/select :name)
+             (dsl/from :book)
+             (dsl/where (dsl/not ["title = ?" "test"])))]
+      (is (= (fmt/sql q)
+             "select name from book where not((title = ?))")))))
