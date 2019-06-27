@@ -26,6 +26,9 @@
 
 (defn -main
   [& args]
+  (require 'suricatta.core-test)
+  (require 'suricatta.extend-test)
+  (require 'suricatta.dsl-test)
   (let [{:keys [fail]} (run-test)]
     (if (pos? fail)
       (System/exit fail)
