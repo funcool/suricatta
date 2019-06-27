@@ -12,9 +12,7 @@
   :repl {:main-opts  ["-m" "rebel-readline.main"]}
   :ancient {:main-opts ["-m" "deps-ancient.deps-ancient"]
             :extra-deps {deps-ancient {:mvn/version "RELEASE"}}}
-
-  :test {:extra-deps {lambdaisland/kaocha {:mvn/version "0.0-521"}}
-         :main-opts ["-m" "kaocha.runner"]}
+  :test {:main-opts ["-m" "user"]}
   }}
 
 

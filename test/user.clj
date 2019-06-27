@@ -23,3 +23,11 @@
        (do (require (symbol sns))
            (test/test-vars [(resolve o)]))
        (test/test-ns o)))))
+
+(defn -main
+  [& args]
+  (let [{:keys [fail]} (run-test)]
+    (if (pos? fail)
+      (System/exit fail)
+      (System/exit 0))))
+
