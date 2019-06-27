@@ -1,4 +1,4 @@
-;; Copyright (c) 2014-2015, Andrey Antukh <niwi@niwi.nz>
+;; Copyright (c) 2014-2019 Andrey Antukh <niwi@niwi.nz>
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
@@ -51,27 +51,6 @@
 (defn context?
   [ctx]
   (instance? Context ctx))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Deferred Computation (without caching the result unlike delay)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(deftype Deferred [^clojure.lang.IFn func]
-  clojure.lang.IDeref
-  (deref [_] (func)))
-
-(defn ->deferred
-  [o]
-  (Deferred. o))
-
-(defmacro defer
-  [& body]
-  `(let [func# (fn [] ~@body)]
-     (->deferred func#)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftype Query [^ResultQuery query ^Configuration conf]
   java.io.Closeable

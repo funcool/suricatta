@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>funcool</groupId>
+  <artifactId>suricatta</artifactId>
+  <packaging>jar</packaging>
+  <version>2.0.0</version>
+  <name>suricatta</name>
+  <description>High level sql toolkit for clojure (backed by jooq library)</description>
+  <url>https://github.com/funcool/suricatta</url>
+  <licenses>
+    <license>
+      <name>BSD (2-Clause)</name>
+      <url>http://opensource.org/licenses/BSD-2-Clause</url>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:git://github.com/funcool/suricatta.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/funcool/suricatta.git</developerConnection>
+    <tag>5be805429be9e4226013af63947d19b93ecdd083
+    </tag>
+    <url>https://github.com/funcool/suricatta</url>
+  </scm>
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>resources</directory>
+      </resource>
+    </resources>
+  </build>
+  <repositories>
+    <repository>
+      <id>clojars</id>
+      <url>https://repo.clojars.org/</url>
+    </repository>
+  </repositories>
+  <dependencyManagement>
+    <dependencies/>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.clojure</groupId>
+      <artifactId>clojure</artifactId>
+      <version>1.10.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq</artifactId>
+      <version>3.11.11</version>
+    </dependency>
+  </dependencies>
+</project>

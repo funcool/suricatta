@@ -95,6 +95,11 @@
   ([cursor] (impl/cursor->lazyseq cursor {}))
   ([cursor opts] (impl/cursor->lazyseq cursor opts)))
 
+(defn typed-field
+  "Get a instance of Field definitio."
+  [data type]
+  (impl/typed-field data type))
+
 (defn load-into
   "Load data into a table. Supports csv and json formats."
   ([ctx tablename data] (load-into ctx tablename data {}))

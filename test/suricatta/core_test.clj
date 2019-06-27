@@ -1,8 +1,6 @@
 (ns suricatta.core-test
   (:require [clojure.test :refer :all]
-            [suricatta.core :as sc]
-            [suricatta.dsl :as dsl]
-            [suricatta.format :refer [get-sql get-bind-values sqlvec] :as fmt])
+            [suricatta.core :as sc])
   (:import org.jooq.impl.DSL
            org.jooq.util.postgres.PostgresDataType))
 
@@ -10,7 +8,9 @@
              :subname "mem:"})
 
 (def pgdbspec {:subprotocol "postgresql"
-               :subname "//127.0.0.1/test"})
+               :subname "//127.0.0.1:5433/test"
+               :user "test"
+               :password "test"})
 
 (def ^:dynamic *ctx*)
 
@@ -52,14 +52,6 @@
       (is (= (sc/fetch q) [{:x 1}]))
       (is (= (sc/execute q) 1))
       (is (= (sc/execute q) 1))))
-
-  (testing "Fetch from insert statement."
-    (sc/execute *ctx* "create temporary table foo (n int) on commit drop")
-    (let [op (-> (dsl/insert-into :foo)
-                 (dsl/insert-values {:n 1})
-                 (dsl/returning :n))
-          result (sc/fetch-one *ctx* op)]
-      (is (= result {:n 1}))))
 )
 
 (deftest lazy-fetch
@@ -76,7 +68,7 @@
                 (is (= (vec res) [{:x 1} {:x 2} {:x 3}]))))))
 )
 
-(deftest fetch-format
+#_(deftest fetch-format
   (testing "Fetch in csv format"
     (let [sql "select x, x+1 as i, 'a,b' as k from generate_series(1, 1) as x"
           result (sc/fetch *ctx* sql {:format :csv})]
@@ -97,8 +89,8 @@
   (testing "load csv"
     (sc/execute *ctx* "create table foo1 (a int, b int)")
     (let [data (str "1,2\n3,4\n")]
-      (sc/load-into *ctx* :foo1 data {:fields [(dsl/typed-field "a" :pg/int4)
-                                               (dsl/typed-field "b" :pg/int4)]
+      (sc/load-into *ctx* :foo1 data {:fields [(sc/typed-field "a" :pg/int4)
+                                               (sc/typed-field "b" :pg/int4)]
                                       :format :csv}))
     (let [result (sc/fetch *ctx* "select * from foo1")]
       (is (= [{:a 1, :b 2} {:a 3, :b 4}] result)))))
@@ -145,16 +137,3 @@
       (let [result (sc/fetch ctx "select * from foo")]
         (is (= 0 (count result))))))
 )
-
-
-(deftest formatting
-  (testing "sqlvec properly handles dialect."
-    (let [op (-> (dsl/insert-into :users)
-                 (dsl/insert-values {:username "foobar"})
-                 (dsl/returning :id))
-          result1 (fmt/sqlvec op)
-          result2 (fmt/sqlvec op {:dialect :postgresql})]
-      (is (= result1 ["insert into users (username) values (?)" "foobar"]))
-      (is (= result2 ["insert into users (username) values (?) returning id"
-                      "foobar"])))))
-

@@ -40,28 +40,11 @@
 (defprotocol IFetchLazy
   (-fetch-lazy [q ctx opts] "Fetch lazy results executing query."))
 
-(defprotocol IRenderer
-  (-sql [_ type dialect] "Render a query sql into a string.")
-  (-bind-values [_] "Get query bind values."))
-
 (defprotocol IQuery
   (-query [_ ctx] "Build a query."))
 
-;; Custom data types binding protocols
-
-(defprotocol IParamContext
-  "A lightweight abstraction for access
-  to the basic properties on the render/bind
-  context instances."
-  (-statement [_] "Get the prepared statement if it is awailable.")
-  (-next-bind-index [_] "Get the next bind index (WARN: side effectful)")
-  (-inline? [_] "Return true in case the context is setup for inline."))
-
-(defprotocol IParamType
-  "A basic abstraction for adapt user defined
-  types to work within suricatta."
-  (-render [_ ctx] "Render the value as sql.")
-  (-bind [_ ctx] "Bind param value to the prepared statement."))
+(defprotocol IParam
+  (-param [_ ctx] "Returns a jOOQ compatible param type."))
 
 (defprotocol ISQLType
   "An abstraction for handle the backward type
