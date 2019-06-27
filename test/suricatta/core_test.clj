@@ -1,16 +1,12 @@
 (ns suricatta.core-test
   (:require [clojure.test :refer :all]
-            [suricatta.core :as sc])
-  (:import org.jooq.impl.DSL
-           org.jooq.util.postgres.PostgresDataType))
+            [suricatta.core :as sc]))
 
 (def dbspec {:subprotocol "h2"
              :subname "mem:"})
 
 (def pgdbspec {:subprotocol "postgresql"
-               :subname "//127.0.0.1:5433/test"
-               :user "test"
-               :password "test"})
+               :subname "//127.0.0.1/test"})
 
 (def ^:dynamic *ctx*)
 

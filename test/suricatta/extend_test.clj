@@ -4,20 +4,14 @@
             [suricatta.impl :as impl]
             [suricatta.proto :as proto]
             [cheshire.core :as json])
-  (:import org.postgresql.util.PGobject
-           org.jooq.RenderContext
-           org.jooq.BindContext
-           org.jooq.QueryPart
-           org.jooq.impl.DSL))
+  (:import org.postgresql.util.PGobject))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Connection setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def dbspec {:subprotocol "postgresql"
-             :subname "//127.0.0.1:5433/test"
-             :user "test"
-             :password "test"})
+             :subname "//127.0.0.1/test"})
 
 (def ^:dynamic *ctx*)
 
