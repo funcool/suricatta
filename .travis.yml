@@ -1,6 +1,6 @@
 dist: xenial
 
-language: clojure
+language: generic
 sudo: required
 
 cache:
