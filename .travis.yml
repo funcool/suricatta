@@ -1,6 +1,6 @@
 dist: xenial
 
-language: generic
+language: java
 sudo: required
 
 cache:
@@ -21,13 +21,15 @@ services:
 before_script:
   - createdb test
 
+jdk:
+  - openjdk8
+
 branches:
   only:
     - master
     - wip
 
 script:
-  - jdk_switcher use openjdk8
   - clojure -Adev:test
 
 notifications:
