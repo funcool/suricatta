@@ -22,7 +22,6 @@ before_script:
   - createdb test
 
 jdk:
-  - oraclejdk8
   - openjdk8
 
 branches:
