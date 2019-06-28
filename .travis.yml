@@ -1,6 +1,6 @@
 dist: xenial
 
-language: generic
+language: java
 sudo: required
 
 cache:
@@ -23,10 +23,12 @@ before_script:
 
 jdk:
   - oraclejdk8
+  - openjdk8
 
 branches:
   only:
     - master
+    - wip
 
 script:
   - clojure -Adev:test
