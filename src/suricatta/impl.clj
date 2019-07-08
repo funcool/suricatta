@@ -47,7 +47,6 @@
            org.jooq.util.mariadb.MariaDBDataType
            org.jooq.util.mysql.MySQLDataType
            clojure.lang.PersistentVector
-           java.net.URI
            java.util.Properties
            java.sql.Connection
            java.sql.PreparedStatement
@@ -97,15 +96,6 @@
   [ctx obj]
   (proto/-param obj ctx))
 
-(defn- querystring->map
-  "Given a URI instance, return its querystring as
-  plain map with parsed keys and values."
-  [^URI uri]
-  (let [^String query (.getQuery uri)]
-    (->> (for [^String kvs (.split query "&")] (into [] (.split kvs "=")))
-         (into {})
-         (walk/keywordize-keys))))
-
 (defn- map->properties
   "Convert hash-map to java.utils.Properties instance. This method is used
   internally for convert dbspec map to properties instance, but it can
@@ -114,7 +104,6 @@
   (let [p (Properties.)]
     (dorun (map (fn [[k v]] (.setProperty p (name k) (str v))) (seq data)))
     p))
-
 
 (defn sql->param
   [sql & parts]
@@ -130,10 +119,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn make-connection
-  [dbspec opts]
-  (let [^Connection conn (proto/-connection dbspec)
-        opts (merge (when (map? dbspec) dbspec) opts)]
-
+  [uri opts]
+  (let [^Connection conn (proto/-connection uri opts)]
     ;; Set readonly flag if it found on the options map
     (some->> (:read-only opts)
              (.setReadOnly conn))
@@ -150,79 +137,25 @@
 
     conn))
 
-(declare uri->dbspec)
-(declare dbspec->connection)
+(defn- map->properties
+  ^java.util.Properties
+  [opts]
+  (letfn [(reduce-fn [^Properties acc k v]
+            (.setProperty acc (name k) (str v))
+            acc)]
+    (reduce-kv reduce-fn (Properties.) opts)))
 
 (extend-protocol proto/IConnectionFactory
   java.sql.Connection
-  (-connection [it] it)
+  (-connection [it opts] it)
 
   javax.sql.DataSource
-  (-connection [it]
+  (-connection [it opts]
     (.getConnection it))
 
-  clojure.lang.IPersistentMap
-  (-connection [dbspec]
-    (dbspec->connection dbspec))
-
-  java.net.URI
-  (-connection [uri]
-    (-> (uri->dbspec uri)
-        (dbspec->connection)))
-
   java.lang.String
-  (-connection [uri]
-    (let [uri (URI. uri)]
-      (proto/-connection uri))))
-
-(defn dbspec->connection
-  "Create a connection instance from dbspec."
-  [{:keys [subprotocol subname user password
-           name vendor host port datasource classname]
-    :as dbspec}]
-  (cond
-    (and name vendor)
-    (let [host   (or host "127.0.0.1")
-          port   (if port (str ":" port) "")
-          dbspec (-> (dissoc dbspec :name :vendor :host :port)
-                     (assoc :subprotocol vendor
-                            :subname (str "//" host port "/" name)))]
-      (dbspec->connection dbspec))
-
-    (and subprotocol subname)
-    (let [url (format "jdbc:%s:%s" subprotocol subname)
-          options (dissoc dbspec :subprotocol :subname)]
-
-      (when classname
-        (Class/forName classname))
-
-      (DriverManager/getConnection url (map->properties options)))
-
-    ;; NOTE: only for legacy dbspec format compatibility
-    (and datasource)
-    (proto/-connection datasource)
-
-    :else
-    (throw (IllegalArgumentException. "Invalid dbspec format"))))
-
-(defn uri->dbspec
-  "Parses a dbspec as uri into a plain dbspec. This function
-  accepts `java.net.URI` or `String` as parameter."
-  [^URI uri]
-  (let [host (.getHost uri)
-        port (.getPort uri)
-        path (.getPath uri)
-        scheme (.getScheme uri)
-        userinfo (.getUserInfo uri)]
-    (merge
-      {:subname (if (pos? port)
-                 (str "//" host ":" port path)
-                 (str "//" host path))
-       :subprotocol scheme}
-      (when userinfo
-        (let [[user password] (str/split userinfo #":")]
-          {:user user :password password}))
-      (querystring->map uri))))
+  (-connection [url opts]
+    (DriverManager/getConnection url (map->properties opts))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IExecute implementation
@@ -280,14 +213,14 @@
     (-> (reduce reduce-fn (transient {}) (.fields record))
         (persistent!))))
 
-;; TODO: optimize this
 (defn- result-record->row
   [^org.jooq.Record record]
-  (into [] (for [^int i (range (.size record))]
-             (let [value (.getValue record i)]
-               (if (satisfies? proto/ISQLType value)
-                  (proto/-convert value)
-                  value)))))
+  (letfn [(reduce-fn [acc ^Field field]
+            (let [value (.getValue field record)
+                  name (.getName field)]
+              (conj! acc (proto/-convert value))))]
+    (-> (reduce reduce-fn (transient []) (.fields record))
+        (persistent!))))
 
 (defn- result->vector
   [^org.jooq.Result result {:keys [mapfn format] :or {rows false format :record}}]

@@ -2,17 +2,11 @@
   (:require [clojure.test :refer :all]
             [suricatta.core :as sc]))
 
-(def dbspec {:subprotocol "h2"
-             :subname "mem:"})
-
-(def pgdbspec {:subprotocol "postgresql"
-               :subname "//127.0.0.1/test"})
-
 (def ^:dynamic *ctx*)
 
 (defn database-fixture
   [end]
-  (with-open [ctx (sc/context pgdbspec)]
+  (with-open [ctx (sc/context "jdbc:postgresql://127.0.0.1/test")]
     (sc/atomic ctx
       (binding [*ctx* ctx]
         (end)
@@ -51,17 +45,15 @@
 )
 
 (deftest lazy-fetch
-  ;; (testing "Fetch by default vector of rows."
-  ;;   (sc/atomic *ctx*
-  ;;     (with-open [cursor (sc/fetch-lazy *ctx* "select x from generate_series(1, 300) as x")]
-  ;;       (let [res (take 3 (sc/cursor->seq cursor {:format :row}))]
-  ;;         (is (= (mapcat identity (vec res)) [1 2 3]))))))
+  (testing "Fetch by default vector of rows."
+    (sc/atomic *ctx*
+      (with-open [cursor (sc/fetch-lazy *ctx* "select x from generate_series(1, 300) as x")]
+        (let [res (take 3 (sc/cursor->seq cursor {:format :row}))]
+          (is (= (mapcat identity (vec res)) [1 2 3]))))))
 
   (testing "Fetch by default vector of records."
     (sc/atomic *ctx*
-      (sc/execute *ctx* "create temporary table sample (id int);")
-      (sc/execute *ctx* "insert into sample (id) select x from generate_series(1,30000) as x");
-      (with-open [cursor (sc/fetch-lazy *ctx* "select id from sample;" {:fetch-size 10})]
+      (with-open [cursor (sc/fetch-lazy *ctx* "select x from generate_series(1, 300) as x;")]
         (let [res (take 3 (sc/cursor->seq cursor))]
           (is (= (vec res) [{:x 1} {:x 2} {:x 3}]))))))
   )
@@ -95,7 +87,7 @@
 
 (deftest transactions
   (testing "Execute in a transaction"
-    (with-open [ctx (sc/context dbspec)]
+    (with-open [ctx (sc/context "jdbc:h2:mem:")]
       (sc/execute ctx "create table foo (id int)")
       (sc/atomic ctx
         (sc/execute ctx ["insert into foo (id) values (?), (?)" 1 2])
@@ -110,7 +102,7 @@
               (is (= 2 (count result)))))))))
 
   (testing "Execute in a transaction with explicit rollback"
-    (with-open [ctx (sc/context dbspec)]
+    (with-open [ctx (sc/context "jdbc:h2:mem:")]
       (sc/execute ctx "create table foo (id int)")
       (sc/atomic ctx
         (sc/execute ctx ["insert into foo (id) values (?), (?)" 1 2])
@@ -123,7 +115,7 @@
           (is (= 2 (count result)))))))
 
   (testing "Execute in a transaction with explicit rollback"
-    (with-open [ctx (sc/context dbspec)]
+    (with-open [ctx (sc/context "jdbc:h2:mem:")]
       (sc/execute ctx "create table foo (id int)")
       (sc/atomic ctx
         (sc/execute ctx ["insert into foo (id) values (?), (?)" 1 2])

@@ -36,16 +36,16 @@
 
 (defn context
   "Context constructor."
-  ([dbspec] (context dbspec {}))
-  ([dbspec opts]
-   (let [^Connection connection (impl/make-connection dbspec opts)
-         ^SQLDialect dialect (if (:dialect dbspec)
-                               (impl/translate-dialect (:dialect dbspec))
+  ([uri] (context uri {}))
+  ([uri opts]
+   (let [^Connection connection (impl/make-connection uri opts)
+         ^SQLDialect dialect (if (:dialect opts)
+                               (impl/translate-dialect (:dialect opts))
                                (JDBCUtils/dialect connection))
          ^Configuration conf (doto (DefaultConfiguration.)
                                (.set dialect)
                                (.set connection))]
-      (types/context conf))))
+     (types/context conf))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SQL Executor
