@@ -36,16 +36,16 @@
 
 (defn context
   "Context constructor."
-  ([dbspec] (context dbspec {}))
-  ([dbspec opts]
-   (let [^Connection connection (impl/make-connection dbspec opts)
-         ^SQLDialect dialect (if (:dialect dbspec)
-                               (impl/translate-dialect (:dialect dbspec))
+  ([uri] (context uri {}))
+  ([uri opts]
+   (let [^Connection connection (impl/make-connection uri opts)
+         ^SQLDialect dialect (if (:dialect opts)
+                               (impl/translate-dialect (:dialect opts))
                                (JDBCUtils/dialect connection))
          ^Configuration conf (doto (DefaultConfiguration.)
                                (.set dialect)
                                (.set connection))]
-      (types/context conf))))
+     (types/context conf))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SQL Executor
@@ -85,15 +85,15 @@
   You should explicitly close the cursor at the end of
   iteration for release resources."
   ([ctx q] (proto/-fetch-lazy q ctx {}))
-  ([ctx q opts] (proto/-fetch-lazy q ctx {})))
+  ([ctx q opts] (proto/-fetch-lazy q ctx opts)))
 
-(defn cursor->lazyseq
+(defn cursor->seq
   "Transform a cursor in a lazyseq.
 
   The returned lazyseq will return values until a cursor
   is closed or all values are fetched."
-  ([cursor] (impl/cursor->lazyseq cursor {}))
-  ([cursor opts] (impl/cursor->lazyseq cursor opts)))
+  ([cursor] (impl/cursor->seq cursor {}))
+  ([cursor opts] (impl/cursor->seq cursor opts)))
 
 (defn typed-field
   "Get a instance of Field definitio."
@@ -109,12 +109,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Transactions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn atomic-apply
-  "Deprecated alias for `apply-atomic`."
-  {:deprecated true}
-  [& args]
-  (apply tx/apply-atomic args))
 
 (defn apply-atomic
   "Apply a function in a transaction."

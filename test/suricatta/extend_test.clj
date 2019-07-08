@@ -10,14 +10,11 @@
 ;; Connection setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def dbspec {:subprotocol "postgresql"
-             :subname "//127.0.0.1/test"})
-
 (def ^:dynamic *ctx*)
 
 (defn setup-connection-fixture
   [end]
-  (with-open [ctx (sc/context dbspec)]
+  (with-open [ctx (sc/context "jdbc:postgresql://127.0.0.1/test")]
     (sc/atomic ctx
       (binding [*ctx* ctx]
         (end)

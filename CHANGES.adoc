@@ -1,5 +1,22 @@
 = Changelog
 
+== 2.0.0
+
+Date: unreleased
+
+BREAKING CHANGES:
+- `suricatta.format` namespace is removed
+- `suricatta.dsl` namespace is removed
+- dbspec connection format is removed (now only the simplest methods
+  are supported: `DataSource` instance and URL.
+- `cursor->lazyseq` is renamed to `cursor->seq`
+- New and simplfied method for add type extensions (see docs).
+
+Other changes:
+- Many performance improvements on standart queries.
+- Many performance improvements on lazy fetching.
+
+
 == 1.3.1
 
 Date: 2016-12-25

@@ -29,7 +29,6 @@
             [clojure.walk :as walk])
   (:import org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
-           org.jooq.conf.ParamType
            org.jooq.tools.jdbc.JDBCUtils
            org.jooq.SQLDialect
            org.jooq.DSLContext
@@ -40,20 +39,19 @@
            org.jooq.Param
            org.jooq.Result
            org.jooq.Cursor
-           org.jooq.RenderContext
-           org.jooq.BindContext
            org.jooq.Configuration
            org.jooq.util.postgres.PostgresDataType
            org.jooq.util.mariadb.MariaDBDataType
            org.jooq.util.mysql.MySQLDataType
            clojure.lang.PersistentVector
-           java.net.URI
            java.util.Properties
            java.sql.Connection
            java.sql.PreparedStatement
            java.sql.DriverManager
            javax.sql.DataSource
            suricatta.types.Context))
+
+(set! *warn-on-reflection* true)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
@@ -84,41 +82,16 @@
    :repeatable-read  Connection/TRANSACTION_REPEATABLE_READ
    :serializable     Connection/TRANSACTION_SERIALIZABLE})
 
-(defn- render-inline?
-  "Return true if the current render/bind context
-  allow inline sql rendering.
 
-  This function should be used on third party
-  types/fields adapters."
-  {:internal true}
-  [^org.jooq.Context context]
-  (let [^ParamType ptype (.paramType context)]
-    (or (= ptype ParamType/INLINED)
-        (= ptype ParamType/NAMED_OR_INLINED))))
+;; Default implementation for avoid call `satisfies?`
 
-(defn sql->param
-  [sql & parts]
-  (letfn [(wrap-if-need [item]
-            (if (instance? Param item)
-              item
-              (DSL/val item)))]
-    (DSL/field sql (->> (map wrap-if-need parts)
-                        (into-array QueryPart)))))
+(extend-protocol proto/IParam
+  Object
+  (-param [v _] v))
 
 (defn wrap-if-need
   [ctx obj]
-  (if (satisfies? proto/IParam obj)
-    (proto/-param obj ctx)
-    obj))
-
-(defn- querystring->map
-  "Given a URI instance, return its querystring as
-  plain map with parsed keys and values."
-  [^URI uri]
-  (let [^String query (.getQuery uri)]
-    (->> (for [^String kvs (.split query "&")] (into [] (.split kvs "=")))
-         (into {})
-         (walk/keywordize-keys))))
+  (proto/-param obj ctx))
 
 (defn- map->properties
   "Convert hash-map to java.utils.Properties instance. This method is used
@@ -129,15 +102,22 @@
     (dorun (map (fn [[k v]] (.setProperty p (name k) (str v))) (seq data)))
     p))
 
+(defn sql->param
+  [sql & parts]
+  (letfn [(wrap-if-need [item]
+            (if (instance? Param item)
+              item
+              (DSL/val item)))]
+    (DSL/field sql (->> (map wrap-if-need parts)
+                        (into-array QueryPart)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Connection management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn make-connection
-  [dbspec opts]
-  (let [^Connection conn (proto/-connection dbspec)
-        opts (merge (when (map? dbspec) dbspec) opts)]
-
+  [uri opts]
+  (let [^Connection conn (proto/-connection uri opts)]
     ;; Set readonly flag if it found on the options map
     (some->> (:read-only opts)
              (.setReadOnly conn))
@@ -154,83 +134,36 @@
 
     conn))
 
-(declare uri->dbspec)
-(declare dbspec->connection)
+(defn- map->properties
+  ^java.util.Properties
+  [opts]
+  (letfn [(reduce-fn [^Properties acc k v]
+            (.setProperty acc (name k) (str v))
+            acc)]
+    (reduce-kv reduce-fn (Properties.) opts)))
 
 (extend-protocol proto/IConnectionFactory
   java.sql.Connection
-  (-connection [it] it)
+  (-connection [it opts] it)
 
   javax.sql.DataSource
-  (-connection [it]
+  (-connection [it opts]
     (.getConnection it))
 
-  clojure.lang.IPersistentMap
-  (-connection [dbspec]
-    (dbspec->connection dbspec))
-
-  java.net.URI
-  (-connection [uri]
-    (-> (uri->dbspec uri)
-        (dbspec->connection)))
-
   java.lang.String
-  (-connection [uri]
-    (let [uri (URI. uri)]
-      (proto/-connection uri))))
-
-(defn dbspec->connection
-  "Create a connection instance from dbspec."
-  [{:keys [subprotocol subname user password
-           name vendor host port datasource classname]
-    :as dbspec}]
-  (cond
-    (and name vendor)
-    (let [host   (or host "127.0.0.1")
-          port   (if port (str ":" port) "")
-          dbspec (-> (dissoc dbspec :name :vendor :host :port)
-                     (assoc :subprotocol vendor
-                            :subname (str "//" host port "/" name)))]
-      (dbspec->connection dbspec))
-
-    (and subprotocol subname)
-    (let [url (format "jdbc:%s:%s" subprotocol subname)
-          options (dissoc dbspec :subprotocol :subname)]
-
-      (when classname
-        (Class/forName classname))
-
-      (DriverManager/getConnection url (map->properties options)))
-
-    ;; NOTE: only for legacy dbspec format compatibility
-    (and datasource)
-    (proto/-connection datasource)
-
-    :else
-    (throw (IllegalArgumentException. "Invalid dbspec format"))))
-
-(defn uri->dbspec
-  "Parses a dbspec as uri into a plain dbspec. This function
-  accepts `java.net.URI` or `String` as parameter."
-  [^URI uri]
-  (let [host (.getHost uri)
-        port (.getPort uri)
-        path (.getPath uri)
-        scheme (.getScheme uri)
-        userinfo (.getUserInfo uri)]
-    (merge
-      {:subname (if (pos? port)
-                 (str "//" host ":" port path)
-                 (str "//" host path))
-       :subprotocol scheme}
-      (when userinfo
-        (let [[user password] (str/split userinfo #":")]
-          {:user user :password password}))
-      (querystring->map uri))))
+  (-connection [url opts]
+    (let [url (if (.startsWith url "jdbc:") url (str "jdbc:" url))]
+      (DriverManager/getConnection url (map->properties opts)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IExecute implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- make-params
+  ^"[Ljava.lang.Object;"
+  [^DSLContext context params]
+  (->> (map (partial wrap-if-need context) params)
+       (into-array Object)))
 
 (extend-protocol proto/IExecute
   java.lang.String
@@ -243,13 +176,13 @@
     (let [^DSLContext context (proto/-context ctx)]
       (.execute context query)))
 
-  clojure.lang.PersistentVector
+  PersistentVector
   (-execute [^PersistentVector sqlvec ^Context ctx]
     (let [^DSLContext context (proto/-context ctx)
-          ^Query query (->> (map (partial wrap-if-need context) (rest sqlvec))
-                            (into-array Object)
-                            (.query context (first sqlvec)))]
-      (.execute context query)))
+          ^String sql (first sqlvec)
+          params (make-params context (rest sqlvec))
+          query (.query context sql params)]
+      (.execute context ^Query query)))
 
   suricatta.types.Query
   (-execute [query ctx]
@@ -263,38 +196,39 @@
 ;; IFetch Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Default implementation for avoid call to `satisfies?`
+(extend-protocol proto/ISQLType
+  Object
+  (-convert [v] v))
+
 (defn- result-record->record
   [^org.jooq.Record record]
-  (into {} (for [^int i (range (.size record))]
-             (let [^Field field (.field record i)
-                   value (.getValue record i)]
-               [(keyword (.toLowerCase (.getName field)))
-                (if (satisfies? proto/ISQLType value)
-                  (proto/-convert value)
-                  value)]))))
+  (letfn [(reduce-fn [acc ^Field field]
+            (let [value (.getValue field record)
+                  name (.getName field)]
+              (assoc! acc (keyword (.toLowerCase name))
+                      (proto/-convert value))))]
+    (-> (reduce reduce-fn (transient {}) (.fields record))
+        (persistent!))))
 
 (defn- result-record->row
   [^org.jooq.Record record]
-  (into [] (for [^int i (range (.size record))]
-             (let [value (.getValue record i)]
-               (if (satisfies? proto/ISQLType value)
-                  (proto/-convert value)
-                  value)))))
+  (letfn [(reduce-fn [acc ^Field field]
+            (let [value (.getValue field record)
+                  name (.getName field)]
+              (conj! acc (proto/-convert value))))]
+    (-> (reduce reduce-fn (transient []) (.fields record))
+        (persistent!))))
 
 (defn- result->vector
-  [^org.jooq.Result result {:keys [mapfn into format]
-                            :or {rows false format :record}}]
+  [^org.jooq.Result result {:keys [mapfn format] :or {rows false format :record}}]
   (if mapfn
     (mapv mapfn result)
-    (condp = format
+    (case format
       :record (mapv result-record->record result)
       :row    (mapv result-record->row result)
-      :json   (if into
-                (.formatJSON result into)
-                (.formatJSON result))
-      :csv    (if into
-                (.formatCSV result into)
-                (.formatCSV result)))))
+      :json   (.formatJSON result)
+      :csv    (.formatCSV result))))
 
 (extend-protocol proto/IFetch
   String
@@ -306,9 +240,10 @@
   PersistentVector
   (-fetch [^PersistentVector sqlvec ^Context ctx opts]
     (let [^DSLContext context (proto/-context ctx)
-          ^ResultQuery query (->> (into-array Object (map (partial wrap-if-need context) (rest sqlvec)))
-                                  (.resultQuery context (first sqlvec)))]
-      (-> (.fetch context query)
+          ^String sql (first  sqlvec)
+          params (make-params context (rest sqlvec))
+          query (.resultQuery context sql params)]
+      (-> (.fetch context ^ResultQuery query)
           (result->vector opts))))
 
   org.jooq.ResultQuery
@@ -335,33 +270,33 @@
   (-fetch-lazy [^String query ^Context ctx opts]
     (let [^DSLContext context (proto/-context ctx)
           ^ResultQuery query  (.resultQuery context query)]
-      (.fetchSize query (get opts :fetch-size 60))
-      (.fetchLazy context query)))
+      (->> (.fetchSize query (get opts :fetch-size 128))
+           (.fetchLazy context))))
 
-  clojure.lang.PersistentVector
+  PersistentVector
   (-fetch-lazy [^PersistentVector sqlvec ^Context ctx opts]
     (let [^DSLContext context (proto/-context ctx)
-          ^ResultQuery query (->> (into-array Object (rest sqlvec))
-                                  (.resultQuery context (first sqlvec)))]
-      (.fetchSize query (get opts :fetch-size 100))
-      (.fetchLazy context query)))
+          ^String sql (first sqlvec)
+          params (make-params context (rest sqlvec))
+          query  (.resultQuery context sql params)]
+      (->> (.fetchSize query (get opts :fetch-size 128))
+           (.fetchLazy context))))
 
   org.jooq.ResultQuery
   (-fetch-lazy [^ResultQuery query ^Context ctx opts]
     (let [^DSLContext context (proto/-context ctx)]
-      (.fetchSize query (get opts :fetch-size 100))
-      (.fetchLazy context query))))
+      (->> (.fetchSize query (get opts :fetch-size 128))
+           (.fetchLazy context)))))
 
-(defn cursor->lazyseq
+(defn cursor->seq
   [^Cursor cursor {:keys [format mapfn] :or {format :record}}]
-  (let [lseq (fn thisfn []
-               (when (.hasNext cursor)
-                 (let [item (.fetchOne cursor)
-                       record (condp = format
-                                :record (result-record->record item)
-                                :row (result-record->row item))]
-                   (cons record (lazy-seq (thisfn))))))]
-    (lseq)))
+  (letfn [(transform-fn [item]
+            (if mapfn
+              (mapfn item)
+              (case format
+                :record (result-record->record item)
+                :row (result-record->row item))))]
+    (sequence (map transform-fn) cursor)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IQuery Implementation
