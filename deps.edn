@@ -1,19 +1,22 @@
 {:deps {org.clojure/clojure {:mvn/version "1.10.1"}
-        org.jooq/jooq {:mvn/version "3.11.11"}}
-
+        org.jooq/jooq {:mvn/version "3.11.11"}
+        ;; org.jooq/jooq {:mvn/version "3.9.0"}
+        }
  :paths ["src"]
- :aliases
- {:dev {:extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}
-                     org.clojure/tools.namespace {:mvn/version "0.3.0"}
-                     org.postgresql/postgresql {:mvn/version "42.2.6"}
-                     com.h2database/h2 {:mvn/version "1.4.199"}
-                     cheshire/cheshire {:mvn/version "5.8.1"}}
-        :extra-paths ["test"]}
-  :repl {:main-opts  ["-m" "rebel-readline.main"]}
-  :ancient {:main-opts ["-m" "deps-ancient.deps-ancient"]
-            :extra-deps {deps-ancient {:mvn/version "RELEASE"}}}
-  :test {:main-opts ["-m" "user"]}
-  }}
+ :aliases {:dev {:extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}
+                              org.clojure/tools.namespace {:mvn/version "0.3.0"}
+                              org.postgresql/postgresql {:mvn/version "42.2.6"}
+                              com.h2database/h2 {:mvn/version "1.4.199"}
+                              cheshire/cheshire {:mvn/version "5.8.1"}}
+                 :extra-paths ["test"]}
+           :bench {:extra-deps {seancorfield/next.jdbc {:mvn/version "1.0.1"}
+                                funcool/clojure.jdbc {:mvn/version "0.9.0"}
+                                criterium/criterium {:mvn/version "0.4.5"}}}
+           :repl {:main-opts  ["-m" "rebel-readline.main"]}
+           :ancient {:main-opts ["-m" "deps-ancient.deps-ancient"]
+                     :extra-deps {deps-ancient {:mvn/version "RELEASE"}}}
+           :test {:main-opts ["-m" "user"]}
+           }}
 
 
 

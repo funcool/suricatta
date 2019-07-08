@@ -85,15 +85,15 @@
   You should explicitly close the cursor at the end of
   iteration for release resources."
   ([ctx q] (proto/-fetch-lazy q ctx {}))
-  ([ctx q opts] (proto/-fetch-lazy q ctx {})))
+  ([ctx q opts] (proto/-fetch-lazy q ctx opts)))
 
-(defn cursor->lazyseq
+(defn cursor->seq
   "Transform a cursor in a lazyseq.
 
   The returned lazyseq will return values until a cursor
   is closed or all values are fetched."
-  ([cursor] (impl/cursor->lazyseq cursor {}))
-  ([cursor opts] (impl/cursor->lazyseq cursor opts)))
+  ([cursor] (impl/cursor->seq cursor {}))
+  ([cursor opts] (impl/cursor->seq cursor opts)))
 
 (defn typed-field
   "Get a instance of Field definitio."

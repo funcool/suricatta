@@ -51,18 +51,20 @@
 )
 
 (deftest lazy-fetch
-  (testing "Fetch by default vector of rows."
-    (sc/atomic *ctx*
-            (with-open [cursor (sc/fetch-lazy *ctx* "select x from generate_series(1, 300) as x")]
-              (let [res (take 3 (sc/cursor->lazyseq cursor {:format :row}))]
-                (is (= (mapcat identity (vec res)) [1 2 3]))))))
+  ;; (testing "Fetch by default vector of rows."
+  ;;   (sc/atomic *ctx*
+  ;;     (with-open [cursor (sc/fetch-lazy *ctx* "select x from generate_series(1, 300) as x")]
+  ;;       (let [res (take 3 (sc/cursor->seq cursor {:format :row}))]
+  ;;         (is (= (mapcat identity (vec res)) [1 2 3]))))))
 
   (testing "Fetch by default vector of records."
     (sc/atomic *ctx*
-            (with-open [cursor (sc/fetch-lazy *ctx* "select x from generate_series(1, 300) as x")]
-              (let [res (take 3 (sc/cursor->lazyseq cursor))]
-                (is (= (vec res) [{:x 1} {:x 2} {:x 3}]))))))
-)
+      (sc/execute *ctx* "create temporary table sample (id int);")
+      (sc/execute *ctx* "insert into sample (id) select x from generate_series(1,30000) as x");
+      (with-open [cursor (sc/fetch-lazy *ctx* "select id from sample;" {:fetch-size 10})]
+        (let [res (take 3 (sc/cursor->seq cursor))]
+          (is (= (vec res) [{:x 1} {:x 2} {:x 3}]))))))
+  )
 
 #_(deftest fetch-format
   (testing "Fetch in csv format"

@@ -276,7 +276,7 @@ sequence. Let's see one example:
 
 (sc/atomic ctx
   (with-open [cursor (sc/fetch-lazy ctx sql {:fetch-size 10})]
-    (doseq [item (sc/cursor->lazyseq cursor)]
+    (doseq [item (sc/cursor->seq cursor)]
       (println item))))
 
 ;; This should print something similar to:
@@ -285,8 +285,8 @@ sequence. Let's see one example:
 ;; ...
 ----
 
-The third parameter of `sc/fetch-lazy` function is the optional default fetch
-size (currently 100.)
+The third parameter  of `sc/fetch-lazy` function is  the optional. The
+default fetch size is `100`.
 
 
 === Custom types
