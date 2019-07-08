@@ -1,6 +1,6 @@
 = suricatta documentation
 Andrey Antukh, <niwi@niwi.nz>
-1.3.1
+2.0.0
 :toc: left
 :!numbered:
 :source-highlighter: pygments
@@ -50,48 +50,19 @@ management, transaction isolation flags and sql rendering dialect.
 
 You can create a **context** from:
 
-- a hash-map dbspec format (plain connection params).
 - a datasource instance (connection pool).
-- a link:http://funcool.github.io/clojure.jdbc/latest/[clojure.jdbc] connection
-  instance.
+- a valid jdbc url
 
-.This is a default aspect of one dbspec.
-[source,clojure]
-----
-(def dbspec {:subprotocol "postgresql"
-             :subname "//localhost:5432/dbname"
-             :user "username"         ;; Optional
-             :password "password"}    ;; Optional
-----
 
-==== Create Context from plain dbspec.
+==== Create Context from jdbc url
 
 .Example creating context from dbspec.
 [source, clojure]
 ----
 (require '[suricatta.core :as sc])
-(with-open [ctx (sc/context {:subprotocol "h2"
-                             :subname "mem:"})]
+(with-open [ctx (sc/context "h2:mem:")]
   (do-something-with ctx))
 ----
-
-==== Create Context from _clojure.jdbc_ connection.
-
-.Example creating context from _clojure.jdbc_ connection instance.
-[source, clojure]
-----
-(require '[jdbc.core :as jdbc])
-(require '[suricatta.core :as sc])
-
-(def dbspec {:subprotocol "h2"
-             :subname "mem:"})
-
-(with-open [conn (jdbc/connection dbspec)
-            ctx (sc/context conn)]
-  (do-something ctx))
-----
-
-NOTE: when closing the _suricatta_ context, the wrapped connection will also be closed.
 
 
 ==== Create Context from DataSource.
@@ -100,12 +71,11 @@ DataSource is the preferd way to connect to the database in production enviromen
 and is usually used to implement connection pools.
 
 In our case we will use *hikaricp* as a datasource with a connection pool. Lets
-start by adding hikari's dependency entry to your _project.clj_:
+start by adding hikari's dependency entry to your _deps.edn_:
 
 [source, clojure]
 ----
-[hikari-cp "0.13.0" :exclusions [com.zaxxer/HikariCP]]
-[com.zaxxer/HikariCP-java6 "2.2.5"]
+hikari-cp/hikari-cp {:mvn/version "2.7.1"}
 ----
 
 Now create the datasource instance:
@@ -286,7 +256,7 @@ sequence. Let's see one example:
 ----
 
 The third parameter  of `sc/fetch-lazy` function is  the optional. The
-default fetch size is `100`.
+default fetch size is `128`.
 
 
 === Custom types
@@ -357,57 +327,14 @@ contains a work in progress of the new approach.
 
 If you want play with that look tests code to see how it works.
 
+
 == FAQ
 
-=== Why I should use suricatta instead of clojure.jdbc or java.jdbc?
+=== Why I should use suricatta instead of next.jdbc or java.jdbc?
 
 Unlike any jdbc library, _suricatta_ works at a slightly higher level. It hides a
 lot of idiosyncrasies of jdbc under a much *simpler, cleaner and less error prone
 api*, with better resource management.
-
-
-=== Where is the async support?
-
-In previous version _suricatta_ it had come with asynchronous support using
-core.async channels as response but since the version 0.4.0 it is removed because
-core.async is not a proper abstraction for represent a promise.
-
-In the jvm world, the proper promise abstraction is introduced in JDK8 so using
-that abstraction will force people use JDK8, something that I don't want to do at
-this moment.
-
-The great news is that async support is stil very easy implement, so you can do
-it in your own code base defining two additional functions. Here a code snippet
-for it:
-
-[source, clojure]
-----
-(require '[suricatta.core :as sc]
-         '[cats.monad.exception :as exc]
-         '[promissum.core :as p])
-
-(defn execute
-  "Execute a query asynchronously returning a CompletableFuture."
-  ([ctx q]
-   (execute ctx q {}))
-  ([ctx q opts]
-   (let [act (.-act ctx)
-         fun #(% (exc/try-on (sc/execute ctx q)))]
-     (p/promise
-      (fn [deliver]
-        (send-off act (fn [_] (fun deliver))))))))
-
-(defn fetch
-  "Execute a query asynchronously returning a CompletableFuture."
-  ([ctx q]
-   (fetch ctx q {}))
-  ([ctx q opts]
-   (let [act (.-act ctx)
-         fun #(% (exc/try-on (sc/fetch ctx q opts)))]
-     (p/promise
-      (fn [deliver]
-        (send-off act (fn [_] (fun deliver))))))))
-----
 
 
 === Why another dsl? Is it just yet another dsl?
@@ -419,13 +346,14 @@ Secondly, _suricatta_'s dsl's don't intends to be a sql abstraction. The real
 purpose of _suricatta_'s dsl is make SQL composable while still allowing use all or
 almost all vendor specific sql constructions.
 
+
 === What are some suricatta use cases?
 
 The _suricatta_ library is very flexible and it can be used in very different ways:
 
-- You can build queries with _suricatta_ and execute them with _clojure.jdbc_.
+- You can build queries with _suricatta_ and execute them with _next.jdbc_.
 - You can use _suricatta_ for executing queries with string-based sql.
-- You can combine the _suricatta_ library with _clojure.jdbc_.
+- You can combine the _suricatta_ library with _next.jdbc_.
 - And obviously, you can forget jdbc and use _suricatta_ for both purposes, building
   and/or executing queries.
 
@@ -496,7 +424,7 @@ git clone https://github.com/funcool/suricatta
 
 [source, text]
 ----
-lein test
+clojure -Adev:test
 ----
 
 === License
@@ -504,7 +432,7 @@ lein test
 _suricatta_ is licensed under BSD (2-Clause) license:
 
 ----
-Copyright (c) 2014-2015 Andrey Antukh <niwi@niwi.nz>
+Copyright (c) 2014-2019 Andrey Antukh <niwi@niwi.nz>
 
 All rights reserved.
 

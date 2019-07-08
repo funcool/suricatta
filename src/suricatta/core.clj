@@ -110,12 +110,6 @@
 ;; Transactions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn atomic-apply
-  "Deprecated alias for `apply-atomic`."
-  {:deprecated true}
-  [& args]
-  (apply tx/apply-atomic args))
-
 (defn apply-atomic
   "Apply a function in a transaction."
   [& args]

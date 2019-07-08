@@ -29,7 +29,6 @@
             [clojure.walk :as walk])
   (:import org.jooq.impl.DSL
            org.jooq.impl.DefaultConfiguration
-           org.jooq.conf.ParamType
            org.jooq.tools.jdbc.JDBCUtils
            org.jooq.SQLDialect
            org.jooq.DSLContext
@@ -40,8 +39,6 @@
            org.jooq.Param
            org.jooq.Result
            org.jooq.Cursor
-           org.jooq.RenderContext
-           org.jooq.BindContext
            org.jooq.Configuration
            org.jooq.util.postgres.PostgresDataType
            org.jooq.util.mariadb.MariaDBDataType
@@ -155,7 +152,8 @@
 
   java.lang.String
   (-connection [url opts]
-    (DriverManager/getConnection url (map->properties opts))))
+    (let [url (if (.startsWith url "jdbc:") url (str "jdbc:" url))]
+      (DriverManager/getConnection url (map->properties opts)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IExecute implementation
@@ -178,7 +176,7 @@
     (let [^DSLContext context (proto/-context ctx)]
       (.execute context query)))
 
-  clojure.lang.PersistentVector
+  PersistentVector
   (-execute [^PersistentVector sqlvec ^Context ctx]
     (let [^DSLContext context (proto/-context ctx)
           ^String sql (first sqlvec)
@@ -275,7 +273,7 @@
       (->> (.fetchSize query (get opts :fetch-size 128))
            (.fetchLazy context))))
 
-  clojure.lang.PersistentVector
+  PersistentVector
   (-fetch-lazy [^PersistentVector sqlvec ^Context ctx opts]
     (let [^DSLContext context (proto/-context ctx)
           ^String sql (first sqlvec)
