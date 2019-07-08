@@ -23,35 +23,37 @@
 ;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (ns suricatta.impl
-  (:require [suricatta.types :as types]
-            [suricatta.proto :as proto]
-            [clojure.string :as str]
-            [clojure.walk :as walk])
-  (:import org.jooq.impl.DSL
-           org.jooq.impl.DefaultConfiguration
-           org.jooq.tools.jdbc.JDBCUtils
-           org.jooq.SQLDialect
-           org.jooq.DSLContext
-           org.jooq.QueryPart
-           org.jooq.ResultQuery
-           org.jooq.Query
-           org.jooq.Field
-           org.jooq.Param
-           org.jooq.Result
-           org.jooq.Cursor
-           org.jooq.Configuration
-           org.jooq.util.postgres.PostgresDataType
-           org.jooq.util.mariadb.MariaDBDataType
-           org.jooq.util.mysql.MySQLDataType
-           clojure.lang.PersistentVector
-           java.util.Properties
-           java.sql.Connection
-           java.sql.PreparedStatement
-           java.sql.DriverManager
-           javax.sql.DataSource
-           suricatta.types.Context))
+  (:require
+   [clojure.string :as str]
+   [clojure.walk :as walk]
+   [suricatta.proto :as proto]
+   [suricatta.types :as types])
+  (:import
+   clojure.lang.PersistentVector
+   java.sql.Connection
+   java.sql.DriverManager
+   java.sql.PreparedStatement
+   java.util.Properties
+   javax.sql.DataSource
+   org.jooq.Configuration
+   org.jooq.Cursor
+   org.jooq.DSLContext
+   org.jooq.DataType
+   org.jooq.Field
+   org.jooq.Param
+   org.jooq.Query
+   org.jooq.QueryPart
+   org.jooq.Result
+   org.jooq.ResultQuery
+   org.jooq.SQLDialect
+   org.jooq.impl.DSL
+   org.jooq.impl.DefaultConfiguration
+   org.jooq.tools.jdbc.JDBCUtils
+   org.jooq.util.mariadb.MariaDBDataType
+   org.jooq.util.mysql.MySQLDataType
+   org.jooq.util.postgres.PostgresDataType))
 
-(set! *warn-on-reflection* true)
+(set! *warn-on-reflection* false)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
@@ -82,7 +84,6 @@
    :repeatable-read  Connection/TRANSACTION_REPEATABLE_READ
    :serializable     Connection/TRANSACTION_SERIALIZABLE})
 
-
 ;; Default implementation for avoid call `satisfies?`
 
 (extend-protocol proto/IParam
@@ -104,12 +105,9 @@
 
 (defn sql->param
   [sql & parts]
-  (letfn [(wrap-if-need [item]
-            (if (instance? Param item)
-              item
-              (DSL/val item)))]
-    (DSL/field sql (->> (map wrap-if-need parts)
-                        (into-array QueryPart)))))
+  (let [wrap (fn [o] (if (instance? Param o) o (DSL/val o)))
+        parts (->> (map wrap parts) (into-array QueryPart))]
+    (DSL/field ^String sql ^"[Lorg.jooq.QueryPart;" parts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Connection management
@@ -167,17 +165,17 @@
 
 (extend-protocol proto/IExecute
   java.lang.String
-  (-execute [^String sql ^Context ctx]
+  (-execute [^String sql ctx]
     (let [^DSLContext context (proto/-context ctx)]
       (.execute context sql)))
 
   org.jooq.Query
-  (-execute [^Query query ^Context ctx]
+  (-execute [^Query query ctx]
     (let [^DSLContext context (proto/-context ctx)]
       (.execute context query)))
 
   PersistentVector
-  (-execute [^PersistentVector sqlvec ^Context ctx]
+  (-execute [^PersistentVector sqlvec ctx]
     (let [^DSLContext context (proto/-context ctx)
           ^String sql (first sqlvec)
           params (make-params context (rest sqlvec))
@@ -232,13 +230,13 @@
 
 (extend-protocol proto/IFetch
   String
-  (-fetch [^String sql ^Context ctx opts]
+  (-fetch [^String sql ctx opts]
     (let [^DSLContext context (proto/-context ctx)
           ^Result result (.fetch context sql)]
       (result->vector result opts)))
 
   PersistentVector
-  (-fetch [^PersistentVector sqlvec ^Context ctx opts]
+  (-fetch [^PersistentVector sqlvec ctx opts]
     (let [^DSLContext context (proto/-context ctx)
           ^String sql (first  sqlvec)
           params (make-params context (rest sqlvec))
@@ -247,7 +245,7 @@
           (result->vector opts))))
 
   org.jooq.ResultQuery
-  (-fetch [^ResultQuery query ^Context ctx opts]
+  (-fetch [^ResultQuery query ctx opts]
     (let [^DSLContext context (proto/-context ctx)]
       (-> (.fetch context query)
           (result->vector opts))))
@@ -267,14 +265,14 @@
 
 (extend-protocol proto/IFetchLazy
   java.lang.String
-  (-fetch-lazy [^String query ^Context ctx opts]
+  (-fetch-lazy [^String query ctx opts]
     (let [^DSLContext context (proto/-context ctx)
           ^ResultQuery query  (.resultQuery context query)]
       (->> (.fetchSize query (get opts :fetch-size 128))
            (.fetchLazy context))))
 
   PersistentVector
-  (-fetch-lazy [^PersistentVector sqlvec ^Context ctx opts]
+  (-fetch-lazy [^PersistentVector sqlvec ctx opts]
     (let [^DSLContext context (proto/-context ctx)
           ^String sql (first sqlvec)
           params (make-params context (rest sqlvec))
@@ -283,7 +281,7 @@
            (.fetchLazy context))))
 
   org.jooq.ResultQuery
-  (-fetch-lazy [^ResultQuery query ^Context ctx opts]
+  (-fetch-lazy [^ResultQuery query ctx opts]
     (let [^DSLContext context (proto/-context ctx)]
       (->> (.fetchSize query (get opts :fetch-size 128))
            (.fetchLazy context)))))
@@ -315,11 +313,11 @@
   (-query [sqlvec ctx]
     (let [^DSLContext context (proto/-context ctx)
           ^Configuration conf (proto/-config ctx)
-          ^ResultQuery query  (->> (into-array Object (rest sqlvec))
-                                   (.resultQuery context (first sqlvec)))]
-      (-> (doto query
-            (.keepStatement true))
-          (types/query conf)))))
+          ^String sql (first sqlvec)
+          params (make-params context (rest sqlvec))
+          ^ResultQuery query (.resultQuery context sql params)]
+      (.keepStatement query true)
+      (types/query query conf))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Load into implementation
@@ -405,7 +403,7 @@
   [data type]
   (let [f (clojure.core/name data)
         dt (get *datatypes* type)]
-    (DSL/field f dt)))
+    (DSL/field f ^DataType dt)))
 
 (defn load-into
   [ctx tablename data {:keys [format commit fields ignore-rows
@@ -414,12 +412,12 @@
                             nullstring "" quotechar \" separator \,}}]
   (let [^DSLContext context (proto/-context ctx)
         step (.loadInto context (DSL/table (name tablename)))
-        step (condp = commit
+        step (case commit
                :none (.commitNone step)
                :each (.commitEach step)
                :all  (.commitAll step)
                (.commitAfter step commit))
-        step (condp = format
+        step (case format
                :csv  (.loadCSV step data)
                :json (.loadJSON step data))
         fields (into-array org.jooq.Field fields)]

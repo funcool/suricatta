@@ -24,12 +24,13 @@
 
 (ns suricatta.types
   (:require [suricatta.proto :as proto])
-  (:import org.jooq.impl.DSL
-           org.jooq.ResultQuery
-           org.jooq.Configuration
-           org.jooq.ConnectionProvider
-           org.jooq.SQLDialect
-           java.sql.Connection))
+  (:import
+   java.sql.Connection
+   org.jooq.Configuration
+   org.jooq.ConnectionProvider
+   org.jooq.ResultQuery
+   org.jooq.SQLDialect
+   org.jooq.impl.DSL))
 
 (deftype Context [^Configuration conf]
   proto/IContextHolder

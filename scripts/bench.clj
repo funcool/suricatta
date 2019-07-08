@@ -10,7 +10,7 @@
 (def conn1 (jdbc/get-connection uri))
 (def conn2 (sc/context uri))
 
-(def sql1 "SELECT x FROM generate_series(1, 1000) as x;")
+(def sql1 "SELECT x FROM generate_series(1, 10000) as x;")
 
 (defn test-next-jdbc1
   []
@@ -26,12 +26,12 @@
 
 (println "***** START: next.jdbc (1) *****")
 ;; (b/with-progress-reporting (b/quick-bench (test-next-jdbc1) :verbose))
-(b/quick-bench (test-next-jdbc1))
+(b/bench (test-next-jdbc1))
 (println "***** END: next.jdbc (1) *****")
 
 (println "***** START: suricatta (1) *****")
 ;; (b/with-progress-reporting (b/quick-bench (test-suricatta1) :verbose))
-(b/quick-bench (test-suricatta1))
+(b/bench (test-suricatta1))
 (println "***** END: suricatta (1) *****")
 
 
