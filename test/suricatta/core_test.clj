@@ -38,10 +38,10 @@
 
   (testing "Reuse the statement"
     (with-open [q (sc/query *ctx* ["select ? \"x\"" 1])]
-      (is (= (sc/fetch q) [{:x 1}]))
-      (is (= (sc/fetch q) [{:x 1}]))
-      (is (= (sc/execute q) 1))
-      (is (= (sc/execute q) 1))))
+      (is (= (sc/fetch *ctx* q) [{:x 1}]))
+      (is (= (sc/fetch *ctx* q) [{:x 1}]))
+      (is (= (sc/execute *ctx* q) 1))
+      (is (= (sc/execute *ctx* q) 1))))
 )
 
 (deftest lazy-fetch

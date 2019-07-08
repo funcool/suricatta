@@ -1,4 +1,4 @@
-;; Copyright (c) 2014-2015, Andrey Antukh <niwi@niwi.nz>
+;; Copyright (c) 2014-2019 Andrey Antukh <niwi@niwi.nz>
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
   (:require
    [clojure.string :as str]
    [clojure.walk :as walk]
-   [suricatta.proto :as proto]
-   [suricatta.types :as types])
+   [suricatta.proto :as proto])
   (:import
    clojure.lang.PersistentVector
    java.sql.Connection
@@ -36,6 +35,7 @@
    java.util.Properties
    javax.sql.DataSource
    org.jooq.Configuration
+   org.jooq.ConnectionProvider
    org.jooq.Cursor
    org.jooq.DSLContext
    org.jooq.DataType
@@ -46,9 +46,13 @@
    org.jooq.Result
    org.jooq.ResultQuery
    org.jooq.SQLDialect
+   org.jooq.TransactionContext
+   org.jooq.TransactionProvider
    org.jooq.impl.DSL
    org.jooq.impl.DefaultConfiguration
+   org.jooq.impl.DefaultTransactionContext
    org.jooq.tools.jdbc.JDBCUtils
+   org.jooq.exception.DataAccessException
    org.jooq.util.mariadb.MariaDBDataType
    org.jooq.util.mysql.MySQLDataType
    org.jooq.util.postgres.PostgresDataType))
@@ -113,7 +117,7 @@
 ;; Connection management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn make-connection
+(defn- make-connection
   [uri opts]
   (let [^Connection conn (proto/-connection uri opts)]
     ;; Set readonly flag if it found on the options map
@@ -139,6 +143,31 @@
             (.setProperty acc (name k) (str v))
             acc)]
     (reduce-kv reduce-fn (Properties.) opts)))
+
+(defn make-context
+  ([conf] (make-context conf nil))
+  ([conf conn]
+   (reify
+     proto/IContextHolder
+     (-context [_] (DSL/using conf))
+     (-config [_] conf)
+
+     java.io.Closeable
+     (close [_]
+       (when (and conn (not (.isClosed conn)))
+         (.close conn)
+         (.set conf (org.jooq.impl.NoConnectionProvider.)))))))
+
+(defn context
+  [uri opts]
+  (let [^Connection connection (make-connection uri opts)
+        ^SQLDialect dialect (if (:dialect opts)
+                               (translate-dialect (:dialect opts))
+                               (JDBCUtils/dialect connection))
+        ^Configuration conf (doto (DefaultConfiguration.)
+                              (.set dialect)
+                              (.set connection))]
+    (make-context conf connection)))
 
 (extend-protocol proto/IConnectionFactory
   java.sql.Connection
@@ -182,12 +211,9 @@
           query (.query context sql params)]
       (.execute context ^Query query)))
 
-  suricatta.types.Query
+  ResultQuery
   (-execute [query ctx]
-    (let [^DSLContext context (if (nil? ctx)
-                                (proto/-context query)
-                                (proto/-context ctx))
-          ^ResultQuery query  (.-query query)]
+    (let [^DSLContext context (proto/-context ctx)]
       (.execute context query))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -244,18 +270,9 @@
       (-> (.fetch context ^ResultQuery query)
           (result->vector opts))))
 
-  org.jooq.ResultQuery
+  ResultQuery
   (-fetch [^ResultQuery query ctx opts]
     (let [^DSLContext context (proto/-context ctx)]
-      (-> (.fetch context query)
-          (result->vector opts))))
-
-  suricatta.types.Query
-  (-fetch [query ctx opts]
-    (let [^DSLContext context (if (nil? ctx)
-                                (proto/-context query)
-                                (proto/-context ctx))
-          ^ResultQuery query  (.-query query)]
       (-> (.fetch context query)
           (result->vector opts)))))
 
@@ -304,20 +321,18 @@
   java.lang.String
   (-query [sql ctx]
     (let [^DSLContext context (proto/-context ctx)
-          ^Configuration conf (proto/-config ctx)
-          ^ResultQuery query  (-> (.resultQuery context sql)
-                                  (.keepStatement true))]
-      (types/query query conf)))
+          ^Configuration conf (proto/-config ctx)]
+      (-> (.resultQuery context sql)
+          (.keepStatement true))))
 
   PersistentVector
   (-query [sqlvec ctx]
     (let [^DSLContext context (proto/-context ctx)
           ^Configuration conf (proto/-config ctx)
           ^String sql (first sqlvec)
-          params (make-params context (rest sqlvec))
-          ^ResultQuery query (.resultQuery context sql params)]
-      (.keepStatement query true)
-      (types/query query conf))))
+          params (make-params context (rest sqlvec))]
+      (-> (.resultQuery context sql params)
+          (.keepStatement true)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Load into implementation
@@ -430,3 +445,50 @@
         (.nullString nullstring)
         (.separator separator)))
     (.execute step)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Transactions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn transaction-context
+  {:internal true}
+  [^Configuration conf]
+  (let [transaction (atom nil)
+        cause       (atom nil)]
+    (reify TransactionContext
+      (configuration [_] conf)
+      (settings [_] (.settings conf))
+      (dialect [_] (.dialect conf))
+      (family [_] (.family (.dialect conf)))
+      (transaction [_] @transaction)
+      (transaction [self t] (reset! transaction t) self)
+      (cause [_] @cause)
+      (cause [self c] (reset! cause c) self))))
+
+(defn apply-atomic
+  [ctx func & args]
+  (let [^Configuration conf (.derive (proto/-config ctx))
+        ^TransactionContext txctx (transaction-context conf)
+        ^TransactionProvider provider (.transactionProvider conf)]
+    (doto conf
+      (.data "suricatta.rollback" false)
+      (.data "suricatta.transaction" true))
+    (try
+      (.begin provider txctx)
+      (let [result (apply func (make-context conf) args)
+            rollback? (.data conf "suricatta.rollback")]
+        (if rollback?
+          (.rollback provider txctx)
+          (.commit provider txctx))
+        result)
+      (catch Exception cause
+        (.rollback provider (.cause txctx cause))
+        (if (instance? RuntimeException cause)
+          (throw cause)
+          (throw (DataAccessException. "Rollback caused" cause)))))))
+
+(defn set-rollback!
+  [ctx]
+  (let [^Configuration conf (proto/-config ctx)]
+    (.data conf "suricatta.rollback" true)
+    ctx))

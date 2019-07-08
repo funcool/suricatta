@@ -24,9 +24,7 @@
 
 (ns suricatta.core
   "High level sql toolkit for Clojure"
-  (:require [suricatta.types :as types]
-            [suricatta.proto :as proto]
-            [suricatta.transaction :as tx]
+  (:require [suricatta.proto :as proto]
             [suricatta.impl :as impl])
   (:import org.jooq.SQLDialect
            org.jooq.Configuration
@@ -37,15 +35,7 @@
 (defn context
   "Context constructor."
   ([uri] (context uri {}))
-  ([uri opts]
-   (let [^Connection connection (impl/make-connection uri opts)
-         ^SQLDialect dialect (if (:dialect opts)
-                               (impl/translate-dialect (:dialect opts))
-                               (JDBCUtils/dialect connection))
-         ^Configuration conf (doto (DefaultConfiguration.)
-                               (.set dialect)
-                               (.set connection))]
-     (types/context conf))))
+  ([uri opts] (impl/context uri opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SQL Executor
@@ -113,13 +103,13 @@
 (defn apply-atomic
   "Apply a function in a transaction."
   [& args]
-  (apply tx/apply-atomic args))
+  (apply impl/apply-atomic args))
 
 (defmacro atomic
   "Convenience macro for execute a computation
   in a transaction or subtransaction."
   [ctx & body]
-  `(tx/apply-atomic ~ctx (fn [~ctx] ~@body)))
+  `(impl/apply-atomic ~ctx (fn [~ctx] ~@body)))
 
 (defn set-rollback!
   "Mark current transaction for rollback.
@@ -128,4 +118,4 @@
   the execution of current function, it only
   marks the current transaction for rollback."
   [ctx]
-  (tx/set-rollback! ctx))
+  (impl/set-rollback! ctx))

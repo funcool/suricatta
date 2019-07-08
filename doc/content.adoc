@@ -177,8 +177,8 @@ resources.
 [source, clojure]
 ----
 (with-open [q (sc/query ctx ["select ?" 1])]
-  (sc/fetch q)  ;; Creates a statement
-  (sc/fetch q)) ;; Reuses the previous created statement
+  (sc/fetch ctx q)  ;; Creates a statement
+  (sc/fetch ctx q)) ;; Reuses the previous created statement
 ----
 
 
