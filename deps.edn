@@ -9,6 +9,10 @@
                  :extra-paths ["test"]}
            :bench {:extra-deps {seancorfield/next.jdbc {:mvn/version "1.0.1"}
                                 criterium/criterium {:mvn/version "0.4.5"}}}
+
+           :jar {:extra-deps {seancorfield/depstar {:mvn/version "RELEASE"}}
+                 :main-opts ["-m" "hf.depstar.jar"]}
+
            :repl {:main-opts  ["-m" "rebel-readline.main"]}
            :ancient {:main-opts ["-m" "deps-ancient.deps-ancient"]
                      :extra-deps {deps-ancient {:mvn/version "RELEASE"}}}

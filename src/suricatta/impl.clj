@@ -92,6 +92,9 @@
 
 (extend-protocol proto/IParam
   Object
+  (-param [v _] v)
+
+  nil
   (-param [v _] v))
 
 (defn wrap-if-need
@@ -223,7 +226,11 @@
 ;; Default implementation for avoid call to `satisfies?`
 (extend-protocol proto/ISQLType
   Object
+  (-convert [v] v)
+
+  nil
   (-convert [v] v))
+
 
 (defn- result-record->record
   [^org.jooq.Record record]
