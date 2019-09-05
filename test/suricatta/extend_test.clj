@@ -36,14 +36,12 @@
   MyJson
   (-param [self ctx]
     (let [qp (json/encode (.-data self))]
-      (impl/sql->param "{0}::json" qp))))
+      (impl/sql->param "{0}::jsonb" qp))))
 
 (extend-protocol proto/ISQLType
-  PGobject
+  org.jooq.JSONB
   (-convert [self]
-    (let [type (.getType self)]
-      (condp = type
-        "json" (json/decode (.getValue self) true)))))
+    (json/decode (.toString self) true)))
 
 (deftype MyArray [data])
 
@@ -73,7 +71,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest inserting-json-test
-  (sc/execute *ctx* "create table t1 (k json)")
+  (sc/execute *ctx* "create table t1 (k jsonb)")
   (sc/execute *ctx* ["insert into t1 (k) values (?)" (myjson {:foo 1})])
 
   (let [result (sc/fetch *ctx* ["select * from t1"])

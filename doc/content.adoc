@@ -26,8 +26,8 @@ Since _suricatta_ is a young project there may be some API breakage.
 
 === Install
 
-The simplest way to use _suricatta_ in a clojure project, is by including it in the
-dependency vector on your *_project.clj_* file:
+The simplest way to use _suricatta_ in a clojure project, is by
+including it in the dependency vector on your *_project.clj_* file:
 
 [source,clojure]
 ----
@@ -39,7 +39,8 @@ _Suricatta_ is only runs with *JDK >= 8* and *Clojure >= 1.5*
 
 == SQL Execution
 
-This section explains the usage of the sql execution part of the library.
+This section explains the usage of the sql execution part of the
+library.
 
 
 === Connecting to database
@@ -275,8 +276,6 @@ conversion.
          '[suricatta.impl :as impl]
          '[cheshire.core :as json])
 
-(import 'org.postgresql.util.PGobject)
-
 (extend-protocol proto/IParam
   clojure.lang.IPersistentMap
   (-param [self ctx]
@@ -292,15 +291,13 @@ Now let see the backward conversion example:
 [source, clojure]
 ----
 (extend-protocol proto/ISQLType
-  PGobject
+  org.jooq.JSON
   (-convert [self]
-    (let [type (.getType self)]
-      (condp = type
-        "json" (json/decode (.getValue self) true)))))
+    (json/decode (.toString self) true)))
 ----
 
-Having defined the two way conversions, you can pass the clojure hash-map as a
-value to the query and it is automatically converted.
+Having defined the two way conversions, you can pass the clojure
+hash-map as a value to the query and it is automatically converted.
 
 .Insert and query example using postgresql json fields.
 [source, clojure]

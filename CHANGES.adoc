@@ -1,6 +1,6 @@
 = Changelog
 
-== 2.0.0
+== 2.0.0-SNAPSHOT
 
 Date: unreleased
 
@@ -11,10 +11,12 @@ BREAKING CHANGES:
   are supported: `DataSource` instance and URL.
 - `cursor->lazyseq` is renamed to `cursor->seq`
 - New and simplfied method for add type extensions (see docs).
+- Improved json and jsonb support thanks to JOOQ 3.12.1
 
 Other changes:
 - Many performance improvements on standart queries.
 - Many performance improvements on lazy fetching.
+- Update JOOQ to 3.12.1
 
 
 == 1.3.1
